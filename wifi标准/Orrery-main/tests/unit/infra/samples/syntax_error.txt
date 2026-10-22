@@ -1,0 +1,2 @@
+File "tests/unit/infra/samples/broken.pv", line 2, character 25:
+Error: Syntax error.

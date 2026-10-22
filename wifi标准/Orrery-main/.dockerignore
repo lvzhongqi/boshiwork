@@ -1,0 +1,12 @@
+# An allowlist: the image is built from these paths and nothing else, so no
+# run, no corpus text and no config.yaml (it holds an API key) is ever sent to
+# a builder, local or remote.
+*
+!pyproject.toml
+!README.md
+!orrery/
+!docker/config.docker.yaml
+!docker/entrypoint.sh
+**/__pycache__
+**/*.pyc
+**/.DS_Store

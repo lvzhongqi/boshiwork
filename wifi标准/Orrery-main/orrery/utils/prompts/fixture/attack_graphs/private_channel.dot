@@ -1,0 +1,724 @@
+digraph {
+graph [ordering = out]
+edge [arrowhead = none, penwidth = 1.6, fontsize = 30]
+node [shape = point, width = 0, height = 0, fontsize = 30]
+Trace [label = <A trace has been found.<br/>
+>, shape = plaintext]
+P0__0 [label = "Honest Process", shape = plaintext]
+P__0 [label = "Attacker", shape = plaintext]
+Trace -> P0__0 [label = "", style = invisible, weight = 100]{rank = same; P0__0 P__0}
+P0__0 -> P0__1 [label = <>, weight = 100]
+P0__1 -> P0__2 [label = <>, weight = 100]
+P0__2 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{1}</FONT><FONT COLOR="blue">new </FONT>SUPI_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{4}</FONT><FONT COLOR="blue">new </FONT>K_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{5}</FONT><FONT COLOR="blue">new </FONT>SQNHE_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{6}</FONT><FONT COLOR="blue">new </FONT>SQNMS_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{8}</FONT><FONT COLOR="blue">new </FONT>SUCI_private_key_HN_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{10}</FONT><FONT COLOR="blue">new </FONT>SUCI_public_key_id_HN_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{11}</FONT><FONT COLOR="blue">new </FONT>SN_Id_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{13}</FONT><FONT COLOR="blue">new </FONT>serving_network_authorization_HN_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{14}</FONT><FONT COLOR="blue">new </FONT>GUTI_5G_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{9}</FONT><FONT COLOR="blue">let</FONT> SUCI_public_key_HN: pkey = pk(SUCI_private_key_HN_1)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{2}</FONT><FONT COLOR="blue">let</FONT> home_network_identifier: home_network_id<br/>
+= extract_home_network_identifier(SUPI_1)</TD></TR><TR><TD><FONT COLOR="darkgreen">{15}</FONT><FONT COLOR="blue">insert </FONT>suci_public_key_registry(extract_home_network_identifier(<br/>
+SUPI_1),SUCI_public_key_id_HN_1,pk(SUCI_private_key_HN_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{7}</FONT><FONT COLOR="blue">let</FONT> synchronization_witness_1: synchronization_witness<br/>
+= synchronize_states(SQNHE_1,SQNMS_1)</TD></TR><TR><TD><FONT COLOR="darkgreen">{16}</FONT><FONT COLOR="blue">insert </FONT>subscriber_registry(SUPI_1,K_1,SQNHE_1,<br/>
+synchronize_states(SQNHE_1,SQNMS_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{12}</FONT><FONT COLOR="blue">let</FONT> serving_network_name_1: serving_network_name<br/>
+= construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1)</TD></TR><TR><TD><FONT COLOR="darkgreen">{17}</FONT><FONT COLOR="blue">insert </FONT>serving_network_authorization_registry(<br/>
+serving_network_authorization_HN_1,construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{18}</FONT><FONT COLOR="blue">insert </FONT>guti_registry(GUTI_5G_1,SUPI_1)</TD></TR></TABLE>>]
+P0__2 -> P0__3 [label = <>, weight = 100]
+P__0 -> P__1 [label = <>, weight = 100]
+{rank = same; P__1 P0__2}
+/*RPar */
+P0__3 -> P0_9__3 [label = <>]
+P0__3 -> P0_8__3 [label = <>]
+P0__3 -> P0_7__3 [label = <>]
+P0__3 -> P0_6__3 [label = <>]
+P0__3 -> P0_5__3 [label = <>]
+P0__3 -> P0_4__3 [label = <>]
+P0__3 -> P0_3__3 [label = <>]
+P0__3 -> P0_2__3 [label = <>]
+P0__3 -> P0_1__3 [label = <>]
+P0__3 -> P0_0__3 [label = <>]
+P0__3 [label = "", fixedsize = false, width = 0, height = 0, shape = none]
+{rank = same; P0_0__3 P0_1__3 P0_2__3 P0_3__3 P0_4__3 P0_5__3 P0_6__3 P0_7__3 P0_8__3 P0_9__3}
+P0_0__3 -> P0_0__4 [label = <>, weight = 100]
+P__1 -> P__2 [label = <>, weight = 100]
+{rank = same; P__2 P0_0__4}
+P0_0__4 -> P0_0__5 [label = <>, weight = 100]
+P__2 -> P__3 [label = <>, weight = 100]
+{rank = same; P__3 P0_0__5}
+P0_0__5 -> P__3 [label = <~M = SUPI_1>, arrowhead = normal]
+P0_0__5 -> P0_0__6 [label = <>, weight = 100]
+P__3 -> P__4 [label = <>, weight = 100]
+{rank = same; P__4 P0_0__6}
+P0_0__7 [label = "", width = 0.3, height = 0.3]
+P0_0__6 -> P0_0__7 [label = <>, weight = 100]
+P0_1__3 -> P0_1__4 [label = <>, weight = 100]
+P0_0__8 [label = "", style = invisible]
+P0_0__7 -> P0_0__8 [label = <>, weight = 100, style = invisible]
+P__4 -> P__5 [label = <>, weight = 100]
+{rank = same; P__5 P0_0__8 P0_1__4}
+P0_1__4 -> P0_1__5 [label = <>, weight = 100]
+P__5 -> P__6 [label = <>, weight = 100]
+{rank = same; P__6 P0_1__5}
+P0_1__5 -> P__6 [label = <~M_1 = SN_Id_1>, arrowhead = normal]
+P0_1__5 -> P0_1__6 [label = <>, weight = 100]
+P0_0__9 [label = "", style = invisible]
+P0_0__8 -> P0_0__9 [label = <>, weight = 100, style = invisible]
+P__6 -> P__7 [label = <>, weight = 100]
+{rank = same; P__7 P0_0__9 P0_1__6}
+P0_1__7 [label = "", width = 0.3, height = 0.3]
+P0_1__6 -> P0_1__7 [label = <>, weight = 100]
+P0_2__3 -> P0_2__4 [label = <>, weight = 100]
+P0_1__8 [label = "", style = invisible]
+P0_1__7 -> P0_1__8 [label = <>, weight = 100, style = invisible]
+P0_0__10 [label = "", style = invisible]
+P0_0__9 -> P0_0__10 [label = <>, weight = 100, style = invisible]
+P__7 -> P__8 [label = <>, weight = 100]
+{rank = same; P__8 P0_0__10 P0_1__8 P0_2__4}
+P0_2__4 -> P0_2__5 [label = <>, weight = 100]
+P__8 -> P__9 [label = <>, weight = 100]
+{rank = same; P__9 P0_2__5}
+P0_2__5 -> P__9 [label = <construct_serving_network_name(~M_2,~M_3,~M_4)<br/>
+= construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1)>, arrowhead = normal]
+P0_2__5 -> P0_2__6 [label = <>, weight = 100]
+P0_1__9 [label = "", style = invisible]
+P0_1__8 -> P0_1__9 [label = <>, weight = 100, style = invisible]
+P0_0__11 [label = "", style = invisible]
+P0_0__10 -> P0_0__11 [label = <>, weight = 100, style = invisible]
+P__9 -> P__10 [label = <>, weight = 100]
+{rank = same; P__10 P0_0__11 P0_1__9 P0_2__6}
+P0_2__7 [label = "", width = 0.3, height = 0.3]
+P0_2__6 -> P0_2__7 [label = <>, weight = 100]
+P0_3__3 -> P0_3__4 [label = <>, weight = 100]
+P0_2__8 [label = "", style = invisible]
+P0_2__7 -> P0_2__8 [label = <>, weight = 100, style = invisible]
+P0_1__10 [label = "", style = invisible]
+P0_1__9 -> P0_1__10 [label = <>, weight = 100, style = invisible]
+P0_0__12 [label = "", style = invisible]
+P0_0__11 -> P0_0__12 [label = <>, weight = 100, style = invisible]
+P__10 -> P__11 [label = <>, weight = 100]
+{rank = same; P__11 P0_0__12 P0_1__10 P0_2__8 P0_3__4}
+P0_3__4 -> P0_3__5 [label = <>, weight = 100]
+P__11 -> P__12 [label = <>, weight = 100]
+{rank = same; P__12 P0_3__5}
+P0_3__5 -> P__12 [label = <~M_5 = protection_scheme_ECIES>, arrowhead = normal]
+P0_3__5 -> P0_3__6 [label = <>, weight = 100]
+P0_2__9 [label = "", style = invisible]
+P0_2__8 -> P0_2__9 [label = <>, weight = 100, style = invisible]
+P0_1__11 [label = "", style = invisible]
+P0_1__10 -> P0_1__11 [label = <>, weight = 100, style = invisible]
+P0_0__13 [label = "", style = invisible]
+P0_0__12 -> P0_0__13 [label = <>, weight = 100, style = invisible]
+P__12 -> P__13 [label = <>, weight = 100]
+{rank = same; P__13 P0_0__13 P0_1__11 P0_2__9 P0_3__6}
+P0_3__7 [label = "", width = 0.3, height = 0.3]
+P0_3__6 -> P0_3__7 [label = <>, weight = 100]
+P0_4__3 -> P0_4__4 [label = <>, weight = 100]
+P0_3__8 [label = "", style = invisible]
+P0_3__7 -> P0_3__8 [label = <>, weight = 100, style = invisible]
+P0_2__10 [label = "", style = invisible]
+P0_2__9 -> P0_2__10 [label = <>, weight = 100, style = invisible]
+P0_1__12 [label = "", style = invisible]
+P0_1__11 -> P0_1__12 [label = <>, weight = 100, style = invisible]
+P0_0__14 [label = "", style = invisible]
+P0_0__13 -> P0_0__14 [label = <>, weight = 100, style = invisible]
+P__13 -> P__14 [label = <>, weight = 100]
+{rank = same; P__14 P0_0__14 P0_1__12 P0_2__10 P0_3__8 P0_4__4}
+P0_4__4 -> P0_4__5 [label = <>, weight = 100]
+P__14 -> P__15 [label = <>, weight = 100]
+{rank = same; P__15 P0_4__5}
+P0_4__5 -> P__15 [label = <~M_6 = pk(SUCI_private_key_HN_1)>, arrowhead = normal]
+P0_4__5 -> P0_4__6 [label = <>, weight = 100]
+P0_3__9 [label = "", style = invisible]
+P0_3__8 -> P0_3__9 [label = <>, weight = 100, style = invisible]
+P0_2__11 [label = "", style = invisible]
+P0_2__10 -> P0_2__11 [label = <>, weight = 100, style = invisible]
+P0_1__13 [label = "", style = invisible]
+P0_1__12 -> P0_1__13 [label = <>, weight = 100, style = invisible]
+P0_0__15 [label = "", style = invisible]
+P0_0__14 -> P0_0__15 [label = <>, weight = 100, style = invisible]
+P__15 -> P__16 [label = <>, weight = 100]
+{rank = same; P__16 P0_0__15 P0_1__13 P0_2__11 P0_3__9 P0_4__6}
+P0_4__7 [label = "", width = 0.3, height = 0.3]
+P0_4__6 -> P0_4__7 [label = <>, weight = 100]
+P0_5__3 -> P0_5__4 [label = <>, weight = 100]
+P0_4__8 [label = "", style = invisible]
+P0_4__7 -> P0_4__8 [label = <>, weight = 100, style = invisible]
+P0_3__10 [label = "", style = invisible]
+P0_3__9 -> P0_3__10 [label = <>, weight = 100, style = invisible]
+P0_2__12 [label = "", style = invisible]
+P0_2__11 -> P0_2__12 [label = <>, weight = 100, style = invisible]
+P0_1__14 [label = "", style = invisible]
+P0_1__13 -> P0_1__14 [label = <>, weight = 100, style = invisible]
+P0_0__16 [label = "", style = invisible]
+P0_0__15 -> P0_0__16 [label = <>, weight = 100, style = invisible]
+P__16 -> P__17 [label = <>, weight = 100]
+{rank = same; P__17 P0_0__16 P0_1__14 P0_2__12 P0_3__10 P0_4__8 P0_5__4}
+P0_5__4 -> P0_5__5 [label = <>, weight = 100]
+P__17 -> P__18 [label = <>, weight = 100]
+{rank = same; P__18 P0_5__5}
+P0_5__5 -> P__18 [label = <~M_7 = SUCI_public_key_id_HN_1>, arrowhead = normal]
+P0_5__5 -> P0_5__6 [label = <>, weight = 100]
+P0_4__9 [label = "", style = invisible]
+P0_4__8 -> P0_4__9 [label = <>, weight = 100, style = invisible]
+P0_3__11 [label = "", style = invisible]
+P0_3__10 -> P0_3__11 [label = <>, weight = 100, style = invisible]
+P0_2__13 [label = "", style = invisible]
+P0_2__12 -> P0_2__13 [label = <>, weight = 100, style = invisible]
+P0_1__15 [label = "", style = invisible]
+P0_1__14 -> P0_1__15 [label = <>, weight = 100, style = invisible]
+P0_0__17 [label = "", style = invisible]
+P0_0__16 -> P0_0__17 [label = <>, weight = 100, style = invisible]
+P__18 -> P__19 [label = <>, weight = 100]
+{rank = same; P__19 P0_0__17 P0_1__15 P0_2__13 P0_3__11 P0_4__9 P0_5__6}
+P0_5__7 [label = "", width = 0.3, height = 0.3]
+P0_5__6 -> P0_5__7 [label = <>, weight = 100]
+P0_6__3 -> P0_6__4 [label = <>, weight = 100]
+P0_5__8 [label = "", style = invisible]
+P0_5__7 -> P0_5__8 [label = <>, weight = 100, style = invisible]
+P0_4__10 [label = "", style = invisible]
+P0_4__9 -> P0_4__10 [label = <>, weight = 100, style = invisible]
+P0_3__12 [label = "", style = invisible]
+P0_3__11 -> P0_3__12 [label = <>, weight = 100, style = invisible]
+P0_2__14 [label = "", style = invisible]
+P0_2__13 -> P0_2__14 [label = <>, weight = 100, style = invisible]
+P0_1__16 [label = "", style = invisible]
+P0_1__15 -> P0_1__16 [label = <>, weight = 100, style = invisible]
+P0_0__18 [label = "", style = invisible]
+P0_0__17 -> P0_0__18 [label = <>, weight = 100, style = invisible]
+P__19 -> P__20 [label = <>, weight = 100]
+{rank = same; P__20 P0_0__18 P0_1__16 P0_2__14 P0_3__12 P0_4__10 P0_5__8 P0_6__4}
+P0_6__4 -> P0_6__5 [label = <>, weight = 100]
+P__20 -> P__21 [label = <>, weight = 100]
+{rank = same; P__21 P0_6__5}
+P0_6__5 -> P__21 [label = <~M_8 = extract_home_network_identifier(SUPI_1)>, arrowhead = normal]
+P0_6__5 -> P0_6__6 [label = <>, weight = 100]
+P0_5__9 [label = "", style = invisible]
+P0_5__8 -> P0_5__9 [label = <>, weight = 100, style = invisible]
+P0_4__11 [label = "", style = invisible]
+P0_4__10 -> P0_4__11 [label = <>, weight = 100, style = invisible]
+P0_3__13 [label = "", style = invisible]
+P0_3__12 -> P0_3__13 [label = <>, weight = 100, style = invisible]
+P0_2__15 [label = "", style = invisible]
+P0_2__14 -> P0_2__15 [label = <>, weight = 100, style = invisible]
+P0_1__17 [label = "", style = invisible]
+P0_1__16 -> P0_1__17 [label = <>, weight = 100, style = invisible]
+P0_0__19 [label = "", style = invisible]
+P0_0__18 -> P0_0__19 [label = <>, weight = 100, style = invisible]
+P__21 -> P__22 [label = <>, weight = 100]
+{rank = same; P__22 P0_0__19 P0_1__17 P0_2__15 P0_3__13 P0_4__11 P0_5__9 P0_6__6}
+P0_6__7 [label = "", width = 0.3, height = 0.3]
+P0_6__6 -> P0_6__7 [label = <>, weight = 100]
+P0_7__3 [label = "!", shape = ellipse]
+P0_7_0__3 [label = "", fixedsize = false, width = 0, height = 0, shape = none]
+P0_7__3 -> P0_7_0__3 [label = <>, weight = 100]
+P0_7_0__3 -> P0_7_0__4 [label = <>, weight = 100]
+P0_7_0__4 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD>Beginning of process <FONT COLOR="darkgreen">processHN</FONT></TD></TR></TABLE>>]
+P0_7_0__4 -> P0_7_0__5 [label = <>, weight = 100]
+P0_8__3 [label = "!", shape = ellipse]
+P0_8_0__3 [label = "", fixedsize = false, width = 0, height = 0, shape = none]
+P0_8__3 -> P0_8_0__3 [label = <>, weight = 100]
+P0_8_0__3 -> P0_8_0__4 [label = <>, weight = 100]
+P0_8_0__4 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD>Beginning of process <FONT COLOR="darkgreen">processSEAF</FONT>(construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1), extract_home_network_identifier(<br/>
+SUPI_1))</TD></TR></TABLE>>]
+P0_8_0__4 -> P0_8_0__5 [label = <>, weight = 100]
+P0_9__3 [label = "!", shape = ellipse]
+P0_9_0__3 [label = "", fixedsize = false, width = 0, height = 0, shape = none]
+P0_9__3 -> P0_9_0__3 [label = <>, weight = 100]
+P0_9_0__3 -> P0_9_0__4 [label = <>, weight = 100]
+P0_9_0__4 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD>Beginning of process <FONT COLOR="darkgreen">processUE</FONT></TD></TR><TR><TD><FONT COLOR="darkgreen">{20}</FONT><FONT COLOR="blue">let</FONT> SUPI_UE: supi = SUPI_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{24}</FONT><FONT COLOR="blue">event</FONT> begin_hn_authenticates_ue_noninjective(<br/>
+SUPI_1,extract_home_network_identifier(SUPI_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{25}</FONT><FONT COLOR="blue">event</FONT> begin_hn_agrees_ue_on_snname_noninjective(<br/>
+SUPI_1,construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),extract_home_network_identifier(<br/>
+SUPI_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{22}</FONT><FONT COLOR="blue">let</FONT> SQNMS_UE: sequence_number = SQNMS_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{26}</FONT><FONT COLOR="blue">event</FONT> begin_hn_accepts_authenticated_resynchronization(<br/>
+SUPI_1,extract_home_network_identifier(SUPI_1),<br/>
+SQNMS_1)</TD></TR><TR><TD><FONT COLOR="darkgreen">{23}</FONT><FONT COLOR="blue">let</FONT> SUCI_public_key_id_HN_UE: suci_key_id =<br/>
+SUCI_public_key_id_HN_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{61}</FONT><FONT COLOR="blue">get </FONT>suci_public_key_registry(extract_home_network_identifier(<br/>
+SUPI_1),SUCI_public_key_id_HN_1,pk(SUCI_private_key_HN_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{27}</FONT><FONT COLOR="blue">new </FONT>SUCI_ephemeral_private_key_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{28}</FONT><FONT COLOR="blue">let</FONT> SUCI_ephemeral_public_key: pkey = pk(SUCI_ephemeral_private_key_1)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{3}</FONT><FONT COLOR="blue">let</FONT> subscription_identifier_part: subscription_part<br/>
+= extract_subscription_identifier_part(SUPI_1)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{29}</FONT><FONT COLOR="blue">let</FONT> SUCI_ciphertext: bitstring = aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),pk(SUCI_ephemeral_private_key_1)),pk(SUCI_private_key_HN_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{30}</FONT><FONT COLOR="blue">let</FONT> SUCI_MAC_tag: bitstring = hash((pk(SUCI_ephemeral_private_key_1),<br/>
+aenc((extract_subscription_identifier_part(SUPI_1),<br/>
+pk(SUCI_ephemeral_private_key_1)),pk(SUCI_private_key_HN_1))))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{31}</FONT><FONT COLOR="blue">let</FONT> SUCI: bitstring = make_SUCI(protection_scheme_ECIES,<br/>
+SUCI_public_key_id_HN_1,extract_home_network_identifier(<br/>
+SUPI_1),pk(SUCI_ephemeral_private_key_1),aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+pk(SUCI_ephemeral_private_key_1)),pk(SUCI_private_key_HN_1)),<br/>
+hash((pk(SUCI_ephemeral_private_key_1),aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),pk(SUCI_ephemeral_private_key_1)),pk(SUCI_private_key_HN_1)))))<br/>
+</TD></TR></TABLE>>]
+P0_9_0__4 -> P0_9_0__5 [label = <>, weight = 100]
+P__22 -> P__23 [label = <>, weight = 100]
+{rank = same; P__23 P0_9_0__4}
+P0_9_0__5 -> P0_9_0__6 [label = <>, weight = 100]
+P0_8_0__5 -> P0_8_0__6 [label = <>, weight = 100]
+P0_7_0__5 -> P0_7_0__6 [label = <>, weight = 100]
+P0_6__8 [label = "", style = invisible]
+P0_6__7 -> P0_6__8 [label = <>, weight = 100, style = invisible]
+P0_5__10 [label = "", style = invisible]
+P0_5__9 -> P0_5__10 [label = <>, weight = 100, style = invisible]
+P0_4__12 [label = "", style = invisible]
+P0_4__11 -> P0_4__12 [label = <>, weight = 100, style = invisible]
+P0_3__14 [label = "", style = invisible]
+P0_3__13 -> P0_3__14 [label = <>, weight = 100, style = invisible]
+P0_2__16 [label = "", style = invisible]
+P0_2__15 -> P0_2__16 [label = <>, weight = 100, style = invisible]
+P0_1__18 [label = "", style = invisible]
+P0_1__17 -> P0_1__18 [label = <>, weight = 100, style = invisible]
+P0_0__20 [label = "", style = invisible]
+P0_0__19 -> P0_0__20 [label = <>, weight = 100, style = invisible]
+P__23 -> P__24 [label = <>, weight = 100]
+{rank = same; P__24 P0_0__20 P0_1__18 P0_2__16 P0_3__14 P0_4__12 P0_5__10 P0_6__8 P0_7_0__6 P0_8_0__6 P0_9_0__6}
+P0_9_0__6 -> P0_9_0__7 [label = <>, weight = 100]
+P__24 -> P__25 [label = <>, weight = 100]
+{rank = same; P__25 P0_9_0__7}
+P0_9_0__7 -> P__25 [label = <(~M_9,make_SUCI(~M_10,~M_11,~M_12,~M_13,~M_14,<br/>
+~M_15))>, arrowhead = normal]
+P0_9_0__7 -> P0_9_0__8 [label = <>, weight = 100]
+P0_8_0__6 -> P0_8_0__7 [label = <>, weight = 100]
+P0_7_0__6 -> P0_7_0__7 [label = <>, weight = 100]
+P0_6__9 [label = "", style = invisible]
+P0_6__8 -> P0_6__9 [label = <>, weight = 100, style = invisible]
+P0_5__11 [label = "", style = invisible]
+P0_5__10 -> P0_5__11 [label = <>, weight = 100, style = invisible]
+P0_4__13 [label = "", style = invisible]
+P0_4__12 -> P0_4__13 [label = <>, weight = 100, style = invisible]
+P0_3__15 [label = "", style = invisible]
+P0_3__14 -> P0_3__15 [label = <>, weight = 100, style = invisible]
+P0_2__17 [label = "", style = invisible]
+P0_2__16 -> P0_2__17 [label = <>, weight = 100, style = invisible]
+P0_1__19 [label = "", style = invisible]
+P0_1__18 -> P0_1__19 [label = <>, weight = 100, style = invisible]
+P0_0__21 [label = "", style = invisible]
+P0_0__20 -> P0_0__21 [label = <>, weight = 100, style = invisible]
+P__25 -> P__26 [label = <>, weight = 100]
+{rank = same; P__26 P0_0__21 P0_1__19 P0_2__17 P0_3__15 P0_4__13 P0_5__11 P0_6__9 P0_7_0__7 P0_8_0__7 P0_9_0__8}
+P0_8_0__7 -> P0_8_0__8 [label = <>, weight = 100]
+P0_7_0__7 -> P0_7_0__8 [label = <>, weight = 100]
+P0_6__10 [label = "", style = invisible]
+P0_6__9 -> P0_6__10 [label = <>, weight = 100, style = invisible]
+P0_5__12 [label = "", style = invisible]
+P0_5__11 -> P0_5__12 [label = <>, weight = 100, style = invisible]
+P0_4__14 [label = "", style = invisible]
+P0_4__13 -> P0_4__14 [label = <>, weight = 100, style = invisible]
+P0_3__16 [label = "", style = invisible]
+P0_3__15 -> P0_3__16 [label = <>, weight = 100, style = invisible]
+P0_2__18 [label = "", style = invisible]
+P0_2__17 -> P0_2__18 [label = <>, weight = 100, style = invisible]
+P0_1__20 [label = "", style = invisible]
+P0_1__19 -> P0_1__20 [label = <>, weight = 100, style = invisible]
+P0_0__22 [label = "", style = invisible]
+P0_0__21 -> P0_0__22 [label = <>, weight = 100, style = invisible]
+P__26 -> P__27 [label = <>, weight = 100]
+{rank = same; P__27 P0_0__22 P0_1__20 P0_2__18 P0_3__16 P0_4__14 P0_5__12 P0_6__10 P0_7_0__8 P0_8_0__8}
+P0_8_0__8 -> P0_8_0__9 [label = <>, weight = 100]
+P__27 -> P__28 [label = <>, weight = 100]
+{rank = same; P__28 P0_8_0__9}
+P0_8_0__9 -> P__28 [label = <~X_1>, dir = back, arrowhead = normal]
+P0_8_0__9 -> P0_8_0__10 [label = <>, weight = 100]
+P0_7_0__8 -> P0_7_0__9 [label = <>, weight = 100]
+P0_6__11 [label = "", style = invisible]
+P0_6__10 -> P0_6__11 [label = <>, weight = 100, style = invisible]
+P0_5__13 [label = "", style = invisible]
+P0_5__12 -> P0_5__13 [label = <>, weight = 100, style = invisible]
+P0_4__15 [label = "", style = invisible]
+P0_4__14 -> P0_4__15 [label = <>, weight = 100, style = invisible]
+P0_3__17 [label = "", style = invisible]
+P0_3__16 -> P0_3__17 [label = <>, weight = 100, style = invisible]
+P0_2__19 [label = "", style = invisible]
+P0_2__18 -> P0_2__19 [label = <>, weight = 100, style = invisible]
+P0_1__21 [label = "", style = invisible]
+P0_1__20 -> P0_1__21 [label = <>, weight = 100, style = invisible]
+P0_0__23 [label = "", style = invisible]
+P0_0__22 -> P0_0__23 [label = <>, weight = 100, style = invisible]
+P__28 -> P__29 [label = <>, weight = 100]
+{rank = same; P__29 P0_0__23 P0_1__21 P0_2__19 P0_3__17 P0_4__15 P0_5__13 P0_6__11 P0_7_0__9 P0_8_0__10}
+P0_8_0__10 -> P0_8_0__11 [label = <>, weight = 100]
+P0_8_0__11 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{64}</FONT><FONT COLOR="blue">let</FONT> (registration_tag_recv: bitstring,SUCI_recv:<br/>
+bitstring) = (registration_request_tag,make_SUCI(<br/>
+protection_scheme_ECIES,SUCI_public_key_id_HN_1,<br/>
+extract_home_network_identifier(SUPI_1),a_1,aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+a_1),pk(SUCI_private_key_HN_1)),hash((a_1,aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+a_1),pk(SUCI_private_key_HN_1))))))</TD></TR><TR><TD><FONT COLOR="darkgreen">{65}</FONT><FONT COLOR="blue">if</FONT> (registration_request_tag = registration_request_tag)<br/>
+</TD></TR></TABLE>>]
+P0_8_0__11 -> P0_8_0__12 [label = <>, weight = 100]
+P0_8_0__12 -> P0_8_0__13 [label = <>, weight = 100]
+P0_7_0__9 -> P0_7_0__10 [label = <>, weight = 100]
+{rank = same; P0_7_0__10 P0_8_0__13}
+P0_8_0__13 -> P0_8_0__14 [label = <>, weight = 100]
+P0_7_0__10 -> P0_7_0__11 [label = <>, weight = 100]
+{rank = same; P0_7_0__11 P0_8_0__14}
+P0_8_0__14 -> P0_7_0__11 [label = <~X_2>, arrowhead = normal]
+P0_8_0__14 -> P0_8_0__15 [label = <>, weight = 100]
+P0_7_0__11 -> P0_7_0__12 [label = <>, weight = 100]
+{rank = same; P0_7_0__12 P0_8_0__15}
+P0_7_0__12 -> P0_7_0__13 [label = <>, weight = 100]
+P0_7_0__13 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{97}</FONT><FONT COLOR="blue">let</FONT> (authenticate_request_tag_recv: bitstring,<br/>
+SUCI_recv_1: bitstring,serving_network_name_recv:<br/>
+serving_network_name) = (nausf_authenticate_request_tag,<br/>
+make_SUCI(protection_scheme_ECIES,SUCI_public_key_id_HN_1,<br/>
+extract_home_network_identifier(SUPI_1),a_1,aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+a_1),pk(SUCI_private_key_HN_1)),hash((a_1,aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+a_1),pk(SUCI_private_key_HN_1))))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{98}</FONT><FONT COLOR="blue">if</FONT> (nausf_authenticate_request_tag = nausf_authenticate_request_tag)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{92}</FONT><FONT COLOR="blue">let</FONT> serving_network_authorization_HN_local:<br/>
+serving_authorization = serving_network_authorization_HN_1<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{150}</FONT><FONT COLOR="blue">get </FONT>serving_network_authorization_registry(<br/>
+serving_network_authorization_HN_1,construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{99}</FONT><FONT COLOR="blue">if</FONT> (construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1) = construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{100}</FONT><FONT COLOR="blue">let</FONT> make_SUCI(protection_scheme_recv: protection_scheme,<br/>
+SUCI_public_key_id_HN_recv: suci_key_id,home_network_identifier_recv:<br/>
+home_network_id,SUCI_ephemeral_public_key_recv:<br/>
+pkey,SUCI_ciphertext_recv: bitstring,SUCI_MAC_tag_recv:<br/>
+bitstring) = make_SUCI(protection_scheme_ECIES,<br/>
+SUCI_public_key_id_HN_1,extract_home_network_identifier(<br/>
+SUPI_1),a_1,aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),a_1),pk(SUCI_private_key_HN_1)),hash((<br/>
+a_1,aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),a_1),pk(SUCI_private_key_HN_1)))))</TD></TR><TR><TD><FONT COLOR="darkgreen">{101}</FONT><FONT COLOR="blue">if</FONT> (protection_scheme_ECIES = protection_scheme_ECIES)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{102}</FONT><FONT COLOR="blue">if</FONT> (extract_home_network_identifier(SUPI_1)<br/>
+= extract_home_network_identifier(SUPI_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{91}</FONT><FONT COLOR="blue">let</FONT> SUCI_public_key_id_HN_local: suci_key_id<br/>
+= SUCI_public_key_id_HN_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{103}</FONT><FONT COLOR="blue">if</FONT> (SUCI_public_key_id_HN_1 = SUCI_public_key_id_HN_1)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{149}</FONT><FONT COLOR="blue">get </FONT>suci_public_key_registry(extract_home_network_identifier(<br/>
+SUPI_1),SUCI_public_key_id_HN_1,pk(SUCI_private_key_HN_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{90}</FONT><FONT COLOR="blue">let</FONT> SUCI_private_key_HN_local: skey = SUCI_private_key_HN_1<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{104}</FONT><FONT COLOR="blue">if</FONT> (pk(SUCI_private_key_HN_1) = pk(SUCI_private_key_HN_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{105}</FONT><FONT COLOR="blue">if</FONT> (hash((a_1,aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),a_1),pk(SUCI_private_key_HN_1)))) = hash(<br/>
+(a_1,aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),a_1),pk(SUCI_private_key_HN_1)))))</TD></TR><TR><TD><FONT COLOR="darkgreen">{106}</FONT><FONT COLOR="blue">let</FONT> (subscription_identifier_part_recv: subscription_part,<br/>
+SUCI_ephemeral_public_key_inside: pkey) = (extract_subscription_identifier_part(<br/>
+SUPI_1),a_1)</TD></TR><TR><TD><FONT COLOR="darkgreen">{107}</FONT><FONT COLOR="blue">if</FONT> (a_1 = a_1)</TD></TR><TR><TD><FONT COLOR="darkgreen">{108}</FONT><FONT COLOR="blue">let</FONT> SUPI_recv_1: supi = compose_SUPI(extract_subscription_identifier_part(<br/>
+SUPI_1),extract_home_network_identifier(SUPI_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{109}</FONT><FONT COLOR="blue">event</FONT> begin_ue_authenticates_hn_noninjective(<br/>
+compose_SUPI(extract_subscription_identifier_part(<br/>
+SUPI_1),extract_home_network_identifier(SUPI_1)),<br/>
+extract_home_network_identifier(SUPI_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{110}</FONT><FONT COLOR="blue">event</FONT> begin_ue_agrees_hn_on_snname_noninjective(<br/>
+compose_SUPI(extract_subscription_identifier_part(<br/>
+SUPI_1),extract_home_network_identifier(SUPI_1)),<br/>
+construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),extract_home_network_identifier(<br/>
+SUPI_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{111}</FONT><FONT COLOR="blue">event</FONT> begin_seaf_agrees_hn_on_supi_noninjective(<br/>
+compose_SUPI(extract_subscription_identifier_part(<br/>
+SUPI_1),extract_home_network_identifier(SUPI_1)),<br/>
+construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),extract_home_network_identifier(<br/>
+SUPI_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{148}</FONT><FONT COLOR="blue">get </FONT>subscriber_registry(SUPI_1,K_1,SQNHE_1,<br/>
+synchronize_states(SQNHE_1,SQNMS_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{112}</FONT><FONT COLOR="blue">new </FONT>SQN_fresh_component_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{113}</FONT><FONT COLOR="blue">let</FONT> SQN: sequence_number = advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{114}</FONT><FONT COLOR="blue">event</FONT> begin_ue_accepts_hn_generated_fresh_sqn(<br/>
+compose_SUPI(extract_subscription_identifier_part(<br/>
+SUPI_1),extract_home_network_identifier(SUPI_1)),<br/>
+extract_home_network_identifier(SUPI_1),advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{95}</FONT><FONT COLOR="blue">let</FONT> honest_SQNMS_UE: sequence_number = SQNMS_1<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{115}</FONT><FONT COLOR="blue">event</FONT> begin_ue_rejects_hn_generated_stale_sqn(<br/>
+compose_SUPI(extract_subscription_identifier_part(<br/>
+SUPI_1),extract_home_network_identifier(SUPI_1)),<br/>
+extract_home_network_identifier(SUPI_1),SQNMS_1,<br/>
+advance_sequence(SQNHE_1,synchronize_states(SQNHE_1,<br/>
+SQNMS_1),SQN_fresh_component_2))</TD></TR><TR><TD><FONT COLOR="darkgreen">{116}</FONT><FONT COLOR="blue">insert </FONT>hn_generated_sequence(compose_SUPI(<br/>
+extract_subscription_identifier_part(SUPI_1),extract_home_network_identifier(<br/>
+SUPI_1)),advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2))</TD></TR><TR><TD><FONT COLOR="darkgreen">{117}</FONT><FONT COLOR="blue">new </FONT>RAND_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{124}</FONT><FONT COLOR="blue">let</FONT> IK_HN: integrity_key = aka_f4(K_1,RAND_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{123}</FONT><FONT COLOR="blue">let</FONT> CK_HN: cipher_key = aka_f3(K_1,RAND_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{118}</FONT><FONT COLOR="blue">let</FONT> AK_HN: bitstring = aka_f5(K_1,RAND_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{119}</FONT><FONT COLOR="blue">let</FONT> concealed_SQN: bitstring = xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))</TD></TR><TR><TD><FONT COLOR="darkgreen">{126}</FONT><FONT COLOR="blue">let</FONT> KAUSF_HN: kausf_key = derive_KAUSF(aka_f3(<br/>
+K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)))</TD></TR><TR><TD><FONT COLOR="darkgreen">{128}</FONT><FONT COLOR="blue">let</FONT> KSEAF_HN: kseaf_key = derive_KSEAF(derive_KAUSF(<br/>
+aka_f3(K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{129}</FONT><FONT COLOR="blue">event</FONT> begin_ue_agrees_hn_on_kseaf_injective(<br/>
+compose_SUPI(extract_subscription_identifier_part(<br/>
+SUPI_1),extract_home_network_identifier(SUPI_1)),<br/>
+extract_home_network_identifier(SUPI_1),derive_KSEAF(<br/>
+derive_KAUSF(aka_f3(K_1,RAND_2),aka_f4(K_1,RAND_2),<br/>
+construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1)))</TD></TR><TR><TD><FONT COLOR="darkgreen">{122}</FONT><FONT COLOR="blue">let</FONT> XRES: aka_response = aka_f2(K_1,RAND_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{125}</FONT><FONT COLOR="blue">let</FONT> XRES_star: resstar = derive_RES_star(<br/>
+aka_f3(K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),RAND_2,<br/>
+aka_f2(K_1,RAND_2))</TD></TR><TR><TD><FONT COLOR="darkgreen">{127}</FONT><FONT COLOR="blue">let</FONT> HXRES_star: hresstar = derive_HRES_star(<br/>
+RAND_2,derive_RES_star(aka_f3(K_1,RAND_2),aka_f4(<br/>
+K_1,RAND_2),construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),RAND_2,aka_f2(K_1,RAND_2)))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{120}</FONT><FONT COLOR="blue">let</FONT> MAC: mac_value = aka_f1(K_1,advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+RAND_2,amf_separation_bit_1)</TD></TR><TR><TD><FONT COLOR="darkgreen">{121}</FONT><FONT COLOR="blue">let</FONT> AUTN: bitstring = (xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)),amf_separation_bit_1,aka_f1(<br/>
+K_1,advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2),RAND_2,<br/>
+amf_separation_bit_1))</TD></TR></TABLE>>]
+P0_7_0__13 -> P0_7_0__14 [label = <>, weight = 100]
+P__29 -> P__30 [label = <>, weight = 100]
+{rank = same; P__30 P0_7_0__13}
+P0_7_0__14 -> P0_7_0__15 [label = <>, weight = 100]
+P0_6__12 [label = "", style = invisible]
+P0_6__11 -> P0_6__12 [label = <>, weight = 100, style = invisible]
+P0_5__14 [label = "", style = invisible]
+P0_5__13 -> P0_5__14 [label = <>, weight = 100, style = invisible]
+P0_4__16 [label = "", style = invisible]
+P0_4__15 -> P0_4__16 [label = <>, weight = 100, style = invisible]
+P0_3__18 [label = "", style = invisible]
+P0_3__17 -> P0_3__18 [label = <>, weight = 100, style = invisible]
+P0_2__20 [label = "", style = invisible]
+P0_2__19 -> P0_2__20 [label = <>, weight = 100, style = invisible]
+P0_1__22 [label = "", style = invisible]
+P0_1__21 -> P0_1__22 [label = <>, weight = 100, style = invisible]
+P0_0__24 [label = "", style = invisible]
+P0_0__23 -> P0_0__24 [label = <>, weight = 100, style = invisible]
+P__30 -> P__31 [label = <>, weight = 100]
+{rank = same; P__31 P0_0__24 P0_1__22 P0_2__20 P0_3__18 P0_4__16 P0_5__14 P0_6__12 P0_7_0__15}
+P0_7_0__15 -> P0_7_0__16 [label = <>, weight = 100]
+P__31 -> P__32 [label = <>, weight = 100]
+{rank = same; P__32 P0_7_0__16}
+P0_7_0__16 -> P__32 [label = <(~M_16,~M_17,(~M_18,~M_19,~M_20),~M_21,~M_22)>, arrowhead = normal]
+P0_7_0__16 -> P0_7_0__17 [label = <>, weight = 100]
+P0_6__13 [label = "", style = invisible]
+P0_6__12 -> P0_6__13 [label = <>, weight = 100, style = invisible]
+P0_5__15 [label = "", style = invisible]
+P0_5__14 -> P0_5__15 [label = <>, weight = 100, style = invisible]
+P0_4__17 [label = "", style = invisible]
+P0_4__16 -> P0_4__17 [label = <>, weight = 100, style = invisible]
+P0_3__19 [label = "", style = invisible]
+P0_3__18 -> P0_3__19 [label = <>, weight = 100, style = invisible]
+P0_2__21 [label = "", style = invisible]
+P0_2__20 -> P0_2__21 [label = <>, weight = 100, style = invisible]
+P0_1__23 [label = "", style = invisible]
+P0_1__22 -> P0_1__23 [label = <>, weight = 100, style = invisible]
+P0_0__25 [label = "", style = invisible]
+P0_0__24 -> P0_0__25 [label = <>, weight = 100, style = invisible]
+P__32 -> P__33 [label = <>, weight = 100]
+{rank = same; P__33 P0_0__25 P0_1__23 P0_2__21 P0_3__19 P0_4__17 P0_5__15 P0_6__13 P0_7_0__17}
+P0_9_0__8 -> P0_9_0__9 [label = <>, weight = 100]
+P0_8_0__15 -> P0_8_0__16 [label = <>, weight = 100]
+P0_7_0__17 -> P0_7_0__18 [label = <>, weight = 100]
+P0_6__14 [label = "", style = invisible]
+P0_6__13 -> P0_6__14 [label = <>, weight = 100, style = invisible]
+P0_5__16 [label = "", style = invisible]
+P0_5__15 -> P0_5__16 [label = <>, weight = 100, style = invisible]
+P0_4__18 [label = "", style = invisible]
+P0_4__17 -> P0_4__18 [label = <>, weight = 100, style = invisible]
+P0_3__20 [label = "", style = invisible]
+P0_3__19 -> P0_3__20 [label = <>, weight = 100, style = invisible]
+P0_2__22 [label = "", style = invisible]
+P0_2__21 -> P0_2__22 [label = <>, weight = 100, style = invisible]
+P0_1__24 [label = "", style = invisible]
+P0_1__23 -> P0_1__24 [label = <>, weight = 100, style = invisible]
+P0_0__26 [label = "", style = invisible]
+P0_0__25 -> P0_0__26 [label = <>, weight = 100, style = invisible]
+P__33 -> P__34 [label = <>, weight = 100]
+{rank = same; P__34 P0_0__26 P0_1__24 P0_2__22 P0_3__20 P0_4__18 P0_5__16 P0_6__14 P0_7_0__18 P0_8_0__16 P0_9_0__9}
+P0_9_0__9 -> P0_9_0__10 [label = <>, weight = 100]
+P__34 -> P__35 [label = <>, weight = 100]
+{rank = same; P__35 P0_9_0__10}
+P0_9_0__10 -> P__35 [label = <~X_3>, dir = back, arrowhead = normal]
+P0_9_0__10 -> P0_9_0__11 [label = <>, weight = 100]
+P0_8_0__16 -> P0_8_0__17 [label = <>, weight = 100]
+P0_7_0__18 -> P0_7_0__19 [label = <>, weight = 100]
+P0_6__15 [label = "", style = invisible]
+P0_6__14 -> P0_6__15 [label = <>, weight = 100, style = invisible]
+P0_5__17 [label = "", style = invisible]
+P0_5__16 -> P0_5__17 [label = <>, weight = 100, style = invisible]
+P0_4__19 [label = "", style = invisible]
+P0_4__18 -> P0_4__19 [label = <>, weight = 100, style = invisible]
+P0_3__21 [label = "", style = invisible]
+P0_3__20 -> P0_3__21 [label = <>, weight = 100, style = invisible]
+P0_2__23 [label = "", style = invisible]
+P0_2__22 -> P0_2__23 [label = <>, weight = 100, style = invisible]
+P0_1__25 [label = "", style = invisible]
+P0_1__24 -> P0_1__25 [label = <>, weight = 100, style = invisible]
+P0_0__27 [label = "", style = invisible]
+P0_0__26 -> P0_0__27 [label = <>, weight = 100, style = invisible]
+P__35 -> P__36 [label = <>, weight = 100]
+{rank = same; P__36 P0_0__27 P0_1__25 P0_2__23 P0_3__21 P0_4__19 P0_5__17 P0_6__15 P0_7_0__19 P0_8_0__17 P0_9_0__11}
+P0_9_0__11 -> P0_9_0__12 [label = <>, weight = 100]
+P0_9_0__12 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{34}</FONT><FONT COLOR="blue">let</FONT> (nas_request_tag_recv: bitstring,RAND_recv:<br/>
+nonce,AUTN_recv: bitstring,ngKSI_recv: ngksi) =<br/>
+(nas_authentication_request_tag,RAND_2,(xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)),amf_separation_bit_1,aka_f1(<br/>
+K_1,advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2),RAND_2,<br/>
+amf_separation_bit_1)),a)</TD></TR><TR><TD><FONT COLOR="darkgreen">{35}</FONT><FONT COLOR="blue">if</FONT> (nas_authentication_request_tag = nas_authentication_request_tag)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{36}</FONT><FONT COLOR="blue">let</FONT> (concealed_SQN_recv: bitstring,AMF_recv:<br/>
+amf,MAC_recv: mac_value) = (xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)),amf_separation_bit_1,aka_f1(<br/>
+K_1,advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2),RAND_2,<br/>
+amf_separation_bit_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{21}</FONT><FONT COLOR="blue">let</FONT> K_UE: longterm_key = K_1</TD></TR><TR><TD><FONT COLOR="darkgreen">{37}</FONT><FONT COLOR="blue">let</FONT> AK_UE: bitstring = aka_f5(K_1,RAND_2)</TD></TR><TR><TD><FONT COLOR="darkgreen">{38}</FONT><FONT COLOR="blue">let</FONT> recovered_SQN_bits: bitstring = xor(xor(<br/>
+advance_sequence(SQNHE_1,synchronize_states(SQNHE_1,<br/>
+SQNMS_1),SQN_fresh_component_2),aka_f5(K_1,RAND_2)),<br/>
+aka_f5(K_1,RAND_2))</TD></TR><TR><TD><FONT COLOR="darkgreen">{39}</FONT><FONT COLOR="blue">let</FONT> SQN_recv: sequence_number = xor(xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)),aka_f5(K_1,RAND_2))</TD></TR><TR><TD><FONT COLOR="darkgreen">{40}</FONT><FONT COLOR="blue">let</FONT> XMAC_UE: mac_value = aka_f1(K_1,xor(xor(<br/>
+advance_sequence(SQNHE_1,synchronize_states(SQNHE_1,<br/>
+SQNMS_1),SQN_fresh_component_2),aka_f5(K_1,RAND_2)),<br/>
+aka_f5(K_1,RAND_2)),RAND_2,amf_separation_bit_1)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{41}</FONT><FONT COLOR="blue">if</FONT> (aka_f1(K_1,advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2),RAND_2,<br/>
+amf_separation_bit_1) = aka_f1(K_1,xor(xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)),aka_f5(K_1,RAND_2)),RAND_2,<br/>
+amf_separation_bit_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{42}</FONT><FONT COLOR="blue">if</FONT> (check_sequence_fresh(xor(xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)),aka_f5(K_1,RAND_2)),SQNMS_1)<br/>
+= fresh_sequence_ok)</TD></TR><TR><TD><FONT COLOR="darkgreen">{43}</FONT><FONT COLOR="blue">if</FONT> (amf_separation_bit_1 = amf_separation_bit_1)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{46}</FONT><FONT COLOR="blue">let</FONT> IK_UE: integrity_key = aka_f4(K_1,RAND_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{45}</FONT><FONT COLOR="blue">let</FONT> CK_UE: cipher_key = aka_f3(K_1,RAND_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{48}</FONT><FONT COLOR="blue">let</FONT> KAUSF_UE: kausf_key = derive_KAUSF(aka_f3(<br/>
+K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2)))</TD></TR><TR><TD><FONT COLOR="darkgreen">{49}</FONT><FONT COLOR="blue">let</FONT> KSEAF_UE: kseaf_key = derive_KSEAF(derive_KAUSF(<br/>
+aka_f3(K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD><FONT COLOR="darkgreen">{50}</FONT><FONT COLOR="blue">event</FONT> begin_hn_agrees_ue_on_kseaf_injective(<br/>
+SUPI_1,extract_home_network_identifier(SUPI_1),<br/>
+derive_KSEAF(derive_KAUSF(aka_f3(K_1,RAND_2),aka_f4(<br/>
+K_1,RAND_2),construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1)))</TD></TR><TR><TD><FONT COLOR="darkgreen">{52}</FONT><FONT COLOR="blue">insert </FONT>ue_accepted_sequence(SUPI_1,xor(xor(<br/>
+advance_sequence(SQNHE_1,synchronize_states(SQNHE_1,<br/>
+SQNMS_1),SQN_fresh_component_2),aka_f5(K_1,RAND_2)),<br/>
+aka_f5(K_1,RAND_2)))</TD></TR><TR><TD><FONT COLOR="darkgreen">{44}</FONT><FONT COLOR="blue">let</FONT> RES: aka_response = aka_f2(K_1,RAND_2)<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{47}</FONT><FONT COLOR="blue">let</FONT> RES_star_UE: resstar = derive_RES_star(<br/>
+aka_f3(K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),RAND_2,<br/>
+aka_f2(K_1,RAND_2))</TD></TR></TABLE>>]
+P0_9_0__12 -> P0_9_0__13 [label = <>, weight = 100]
+P__36 -> P__37 [label = <>, weight = 100]
+{rank = same; P__37 P0_9_0__12}
+P0_9_0__13 -> P0_9_0__14 [label = <>, weight = 100]
+P0_8_0__17 -> P0_8_0__18 [label = <>, weight = 100]
+P0_7_0__19 -> P0_7_0__20 [label = <>, weight = 100]
+P0_6__16 [label = "", style = invisible]
+P0_6__15 -> P0_6__16 [label = <>, weight = 100, style = invisible]
+P0_5__18 [label = "", style = invisible]
+P0_5__17 -> P0_5__18 [label = <>, weight = 100, style = invisible]
+P0_4__20 [label = "", style = invisible]
+P0_4__19 -> P0_4__20 [label = <>, weight = 100, style = invisible]
+P0_3__22 [label = "", style = invisible]
+P0_3__21 -> P0_3__22 [label = <>, weight = 100, style = invisible]
+P0_2__24 [label = "", style = invisible]
+P0_2__23 -> P0_2__24 [label = <>, weight = 100, style = invisible]
+P0_1__26 [label = "", style = invisible]
+P0_1__25 -> P0_1__26 [label = <>, weight = 100, style = invisible]
+P0_0__28 [label = "", style = invisible]
+P0_0__27 -> P0_0__28 [label = <>, weight = 100, style = invisible]
+P__37 -> P__38 [label = <>, weight = 100]
+{rank = same; P__38 P0_0__28 P0_1__26 P0_2__24 P0_3__22 P0_4__20 P0_5__18 P0_6__16 P0_7_0__20 P0_8_0__18 P0_9_0__14}
+P0_9_0__14 -> P0_9_0__15 [label = <>, weight = 100]
+P__38 -> P__39 [label = <>, weight = 100]
+{rank = same; P__39 P0_9_0__15}
+P0_9_0__15 -> P__39 [label = <(~M_23,~M_24)>, arrowhead = normal]
+P0_9_0__15 -> P0_9_0__16 [label = <>, weight = 100]
+P0_8_0__18 -> P0_8_0__19 [label = <>, weight = 100]
+P0_7_0__20 -> P0_7_0__21 [label = <>, weight = 100]
+P0_6__17 [label = "", style = invisible]
+P0_6__16 -> P0_6__17 [label = <>, weight = 100, style = invisible]
+P0_5__19 [label = "", style = invisible]
+P0_5__18 -> P0_5__19 [label = <>, weight = 100, style = invisible]
+P0_4__21 [label = "", style = invisible]
+P0_4__20 -> P0_4__21 [label = <>, weight = 100, style = invisible]
+P0_3__23 [label = "", style = invisible]
+P0_3__22 -> P0_3__23 [label = <>, weight = 100, style = invisible]
+P0_2__25 [label = "", style = invisible]
+P0_2__24 -> P0_2__25 [label = <>, weight = 100, style = invisible]
+P0_1__27 [label = "", style = invisible]
+P0_1__26 -> P0_1__27 [label = <>, weight = 100, style = invisible]
+P0_0__29 [label = "", style = invisible]
+P0_0__28 -> P0_0__29 [label = <>, weight = 100, style = invisible]
+P__39 -> P__40 [label = <>, weight = 100]
+{rank = same; P__40 P0_0__29 P0_1__27 P0_2__25 P0_3__23 P0_4__21 P0_5__19 P0_6__17 P0_7_0__21 P0_8_0__19 P0_9_0__16}
+P0_9_0__16 -> P0_9_0__17 [label = <>, weight = 100]
+P0_9_0__17 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{54}</FONT><FONT COLOR="blue">event</FONT> end_ue_agrees_hn_on_kseaf_injective(<br/>
+SUPI_1,extract_home_network_identifier(SUPI_1),<br/>
+derive_KSEAF(derive_KAUSF(aka_f3(K_1,RAND_2),aka_f4(<br/>
+K_1,RAND_2),construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1)))</TD></TR><TR><TD><FONT COLOR="darkgreen">{55}</FONT><FONT COLOR="blue">event</FONT> end_ue_agrees_seaf_on_kseaf_injective(<br/>
+SUPI_1,construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),derive_KSEAF(derive_KAUSF(<br/>
+aka_f3(K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1)))</TD></TR><TR><TD><FONT COLOR="darkgreen">{56}</FONT><FONT COLOR="blue">event</FONT> end_ue_authenticates_hn_noninjective(<br/>
+SUPI_1,extract_home_network_identifier(SUPI_1))<br/>
+</TD></TR><TR><TD><FONT COLOR="darkgreen">{57}</FONT><FONT COLOR="blue">event</FONT> end_ue_agrees_hn_on_snname_noninjective(<br/>
+SUPI_1,construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),extract_home_network_identifier(<br/>
+SUPI_1))</TD></TR></TABLE>>]
+P0_9_0__17 -> P0_9_0__18 [label = <>, weight = 100]
+P0_9_0__18 -> P0_9_0__19 [label = <>, weight = 100]
+P0_9_0__19 [color = red, shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{58}</FONT><FONT COLOR="blue">event</FONT> end_ue_authenticates_seaf_noninjective(<br/>
+SUPI_1,construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1))</TD></TR></TABLE>>]
+P0_9_0__19 -> P0_9_0__20 [label = <>, weight = 100]
+Abbrev [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"><TR> <TD> Abbreviations </TD></TR><TR><TD>~M_9 = registration_request_tag</TD></TR><TR><TD>~M_10 = protection_scheme_ECIES</TD></TR><TR><TD>~M_11 = SUCI_public_key_id_HN_1</TD></TR><TR><TD>~M_12 = extract_home_network_identifier(SUPI_1)</TD></TR><TR><TD>~M_13 = pk(SUCI_ephemeral_private_key_1)</TD></TR><TR><TD>~M_14 = aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),pk(SUCI_ephemeral_private_key_1)),pk(SUCI_private_key_HN_1))</TD></TR><TR><TD>~M_15 = hash((pk(SUCI_ephemeral_private_key_1),aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+pk(SUCI_ephemeral_private_key_1)),pk(SUCI_private_key_HN_1))))</TD></TR><TR><TD>~X_1 = (registration_request_tag,make_SUCI(protection_scheme_ECIES,<br/>
+~M_7,~M_8,a_1,aenc((extract_subscription_identifier_part(<br/>
+~M),a_1),~M_6),hash((a_1,aenc((extract_subscription_identifier_part(<br/>
+~M),a_1),~M_6)))))<br/>
+= (registration_request_tag,<br/>
+make_SUCI(protection_scheme_ECIES,SUCI_public_key_id_HN_1,<br/>
+extract_home_network_identifier(SUPI_1),a_1,aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+a_1),pk(SUCI_private_key_HN_1)),hash((a_1,aenc(<br/>
+(extract_subscription_identifier_part(SUPI_1),<br/>
+a_1),pk(SUCI_private_key_HN_1))))))</TD></TR><TR><TD>~X_2 = (nausf_authenticate_request_tag,make_SUCI(protection_scheme_ECIES,<br/>
+SUCI_public_key_id_HN_1,extract_home_network_identifier(<br/>
+SUPI_1),a_1,aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),a_1),pk(SUCI_private_key_HN_1)),hash((<br/>
+a_1,aenc((extract_subscription_identifier_part(<br/>
+SUPI_1),a_1),pk(SUCI_private_key_HN_1))))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD>~M_16 = nausf_authenticate_response_tag</TD></TR><TR><TD>~M_17 = RAND_2</TD></TR><TR><TD>~M_18 = xor(advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2),aka_f5(<br/>
+K_1,RAND_2))</TD></TR><TR><TD>~M_19 = amf_separation_bit_1</TD></TR><TR><TD>~M_20 = aka_f1(K_1,advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2),RAND_2,<br/>
+amf_separation_bit_1)</TD></TR><TR><TD>~M_21 = derive_HRES_star(RAND_2,derive_RES_star(aka_f3(<br/>
+K_1,RAND_2),aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),RAND_2,<br/>
+aka_f2(K_1,RAND_2)))</TD></TR><TR><TD>~M_22 = derive_KSEAF(derive_KAUSF(aka_f3(K_1,RAND_2),<br/>
+aka_f4(K_1,RAND_2),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1),xor(advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+aka_f5(K_1,RAND_2))),construct_serving_network_name(<br/>
+service_code_5G,separator_colon,SN_Id_1))</TD></TR><TR><TD>~X_3 = (nas_authentication_request_tag,~M_17,(~M_18,amf_separation_bit_1,<br/>
+~M_20),a)<br/>
+= (nas_authentication_request_tag,RAND_2,<br/>
+(xor(advance_sequence(SQNHE_1,synchronize_states(<br/>
+SQNHE_1,SQNMS_1),SQN_fresh_component_2),aka_f5(<br/>
+K_1,RAND_2)),amf_separation_bit_1,aka_f1(K_1,advance_sequence(<br/>
+SQNHE_1,synchronize_states(SQNHE_1,SQNMS_1),SQN_fresh_component_2),<br/>
+RAND_2,amf_separation_bit_1)),a)</TD></TR><TR><TD>~M_23 = nas_authentication_response_tag</TD></TR><TR><TD>~M_24 = derive_RES_star(aka_f3(K_1,RAND_2),aka_f4(<br/>
+K_1,RAND_2),construct_serving_network_name(service_code_5G,<br/>
+separator_colon,SN_Id_1),RAND_2,aka_f2(K_1,RAND_2))</TD></TR></TABLE>>]Abbrev -> P__0 [style = invisible, weight =100]}

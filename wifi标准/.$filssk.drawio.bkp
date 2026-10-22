@@ -1,0 +1,91 @@
+<mxfile host="Electron" modified="2026-10-17T13:14:52.347Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.6.4 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="XXrvCqPp3tBMGXEZxDNu" version="24.6.4" type="device">
+  <diagram name="第 1 页" id="hjO63Ia7rAlODzt-PeVx">
+    <mxGraphModel dx="1908" dy="1314" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-1" value="STA" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=55;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="180" height="2301" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-2" value="AP" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=55;" vertex="1" parent="1">
+          <mxGeometry x="366" y="20" width="180" height="2301" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-3" value="TTP / AS" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};size=55;" vertex="1" parent="1">
+          <mxGeometry x="862" y="20" width="180" height="2301" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-4" value="Auth (Seq=1)&#xa;ANA=4/5, SNonce, Session&#xa;RSNE[+PMKID List]&#xa;Wrapped Data=EAP-Initiate/Reauth&#xa;[G, FFE=gSTA]（仅 PFS）" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="NY0V5AZJ7EC4bvk798OF-1" target="NY0V5AZJ7EC4bvk798OF-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="292" y="533" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-5" value="EAP-Initiate/Reauth&#xa;（RADIUS/Diameter）" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="NY0V5AZJ7EC4bvk798OF-2" target="NY0V5AZJ7EC4bvk798OF-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="713" y="794" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-6" value="EAP-Finish/Reauth (R=0/1) + rMSK&#xa;rRK/rMSK 生命周期 (L=1)" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="NY0V5AZJ7EC4bvk798OF-3" target="NY0V5AZJ7EC4bvk798OF-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="716" y="1012" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-7" value="Auth (Seq=2)&#xa;ANA=4/5, Status=0, ANonce, Session&#xa;Wrapped Data=EAP-Finish/Reauth&#xa;[G, FFE=gAP]；[PMKID]" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="NY0V5AZJ7EC4bvk798OF-2" target="NY0V5AZJ7EC4bvk798OF-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="295" y="1274" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-8" value="(Re)Assoc Request&#xa;KeyAuth=HMAC-ICK(SNonce‖ANonce‖&#xa;STA-MAC‖AP-BSSID[‖gSTA‖gAP])&#xa;AAD=Capability…FILS&#xa;Session&#xa;AEAD(PTK-KEK)" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="NY0V5AZJ7EC4bvk798OF-1" target="NY0V5AZJ7EC4bvk798OF-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="292" y="1808" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-9" value="(Re)Assoc Response&#xa;KeyAuth=HMAC-ICK(ANonce‖SNonce‖&#xa;AP-BSSID‖STA-MAC[‖gAP‖gSTA])&#xa;Key Delivery=GTK/IGTK/BIGTK/WIGTK&#xa;AEAD(PTK-KEK)" style="verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;endArrow=block;" edge="1" parent="1" source="NY0V5AZJ7EC4bvk798OF-2" target="NY0V5AZJ7EC4bvk798OF-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="295" y="2092" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-10" value="发现 + 共享知识&#xa;FILS Indication&#xa;AKM=4/5、PFS 位、TTP realm&#xa;STA↔TTP 共享 rRK&#xa;AP 经安全信道取 rMSK&#xa;AP 可选缓存 PMKSA" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="85" y="85" width="396" height="163" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-11" value="① 发送前计算&#xa;生成 SNonce、FILS Session&#xa;构造 EAP-Initiate/Reauth&#xa;（B=0,L=1,ID=0）&#xa;PFS：选 G、(skSTA,gSTA)&#xa;可选 PMKID List" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="85" y="248" width="396" height="163" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-12" value="② AP 接收后处理&#xa;G 不支持 → 77&#xa;PFS 校验 gSTA&#xa;PMKID 命中 → 用缓存 PMK&#xa;跳过 TTP&#xa;无 EAP-Initiate → 53&#xa;否则转发 TTP" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="431" y="553" width="546" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-13" value="③ TTP 接收后处理&#xa;验证 rRK / EAP-RP&#xa;失败 → R=1&#xa;成功 → 派生 rMSK&#xa;返回 EAP-Finish(R=0)" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="431" y="814" width="546" height="142" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-14" value="④ AP 处理&#xa;保存 rMSK&#xa;PFS：DHss=scalar-op(&#xa;skAP,gSTA)&#xa;构造 Auth (Seq=2)" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="431" y="1032" width="546" height="142" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-15" value="⑤ STA 接收后处理&#xa;校验 ANA/PMKID/Session&#xa;PFS 参数对称&#xa;EAP-Finish R=0 → rMSK&#xa;校验 gAP；计算 DHss&#xa;推导 PMK/PMKID/PTK&#xa;删除 rMSK、DHss" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="85" y="1294" width="396" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-16" value="⑥ 双方独立执行密钥推导&#xa;无 PFS：PMK=HMAC(SNonce‖ANonce,rMSK)&#xa;有 PFS：PMK=HMAC(SNonce‖ANonce,rMSK‖DHss)&#xa;PMKID=Truncate-128(Hash(EAP-Initiate/Reauth))&#xa;PTK=PRF-X(PMK, &quot;FILS PTK Derivation&quot;,&#xa;SPA‖AA‖SNonce‖ANonce)&#xa;→ ICK / PTK-KEK / TK" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="85" y="1479" width="396" height="185" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-17" value="⑦ AP 接收后处理&#xa;校验 Session/AEAD/RSNE&#xa;构造 KeyAuth&#39; 比对&#xa;失败 → Status 112&#xa;删 ICK/KEK/TK/PTKSA" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="431" y="1828" width="546" height="142" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-18" value="⑧ STA 接收后处理&#xa;校验 Session/AEAD/RSNE&#xa;校验 KeyAuth&#xa;安装 TK、GTK&#xa;PTKSA 完成" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="85" y="2112" width="396" height="142" as="geometry" />
+        </mxCell>
+        <mxCell id="NY0V5AZJ7EC4bvk798OF-19" value="FILS SK 认证完成：4 帧完成认证 + 关联 + 密钥确认；TTP 交互不增加 STA 往返&#xa;变体：PMKSA 缓存命中时跳过 TTP，不新建 PMKSA、仍新建 PTKSA；无 PFS 时无 G/FFE；2024 缓存+DH 时 PTK 追加 DHss" style="fillColor=#ffff88;strokeColor=#9E916F;" vertex="1" parent="1">
+          <mxGeometry x="85" y="2254" width="892" height="77" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

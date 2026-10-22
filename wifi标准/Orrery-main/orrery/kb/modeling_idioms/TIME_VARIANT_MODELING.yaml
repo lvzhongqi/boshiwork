@@ -1,0 +1,89 @@
+schema_version: 1
+
+# Time-variant parameters: timestamps, ticket lifetimes, sequence numbers.
+#
+# ProVerif has no notion of time and the Dolev-Yao attacker is not time-bounded,
+# so there is exactly one thing a timestamp buys in the symbolic model: a value
+# nobody could write down before it was created, which binds one run. That is
+# what `new` gives. Surveyed 2026-08-24 over the corpus's own ground truth:
+#
+#   ISO/IEC 9798-3 UNI.TS / MUT.TS, 9798-4 MUT.TS   new TNA: bitstring, and the
+#       file header states it outright: "Timestamp or sequence-number
+#       replay-state checking is intentionally omitted."
+#   Denning-Sacco   new T (minted by S), carried, never checked, part of the
+#       agreement vector (A, B, Kab, T)
+#   wide-mouth-frog   new ta (A), new ts (S)
+#   Neuman-Stubblebine   new Tb_2 (minted by B), reclaimed by pattern match =Tb_2
+#   ProVerif 2.05 examples/pitype/secr-auth/DenningSacco.pv   the timestamp is
+#       not modelled at all
+#   EAP-AKA-prime   SQN is a bitstring stepped by an uninterpreted one-way
+#       fun calc_sqn(...) with no reduc and no ordering
+#
+# The single corpus model that does encode an order is 5G-AKA, and it earns it:
+# the protocol has an observable resynchronisation branch (syncFailure + AUTS)
+# that does not exist unless the state word is modelled, the state word travels
+# inside a MAC, and the levels are finite (sqn0 < sqn1 < sqn2 via a pred).
+# That is the second idiom here, and its three preconditions are the gate.
+
+# The sentence the lookup tool puts in front of the cards below.
+lead: |
+  This is the method for that description; write it this way.
+
+idioms:
+  - id: time.opaque_fresh_value
+    version: 1
+    aliases:
+      - timestamp
+      - time-variant parameter
+      - ticket lifetime
+      - validity period
+      - expiry
+      - freshness value
+      - clock reading
+    positive:
+      - the document carries a timestamp or lifetime field but defines no clock arithmetic
+      - the receiver is told the value is current or not expired with no observable behaviour for the expired case
+      - the timestamp is minted by one role and echoed or forwarded by the others
+      - the timestamp appears in the agreement vector of an authentication goal
+    negative:
+      - the protocol branches observably on the state word, for example a resynchronisation or a documented reject-and-report step
+      - the state word is a counter whose ordering the protocol compares across sessions
+    prompt: |
+      Model the time-variant parameter as one opaque fresh name, minted by the role that stamps it: `new T_b: nonce;` (or `bitstring`, matching the surrounding style). Do not declare clock types, epoch or lifetime constants, or a validity destructor — none of them exist in the symbolic model, and a value built from public constants is one the attacker can mint for itself, which is weaker than the document, not stronger.
+
+      Then there are exactly two ways a receiver may treat it:
+
+      - **The receiver is not the stamping role.** It destructures the field and carries it. It performs no check on it. The value's job is to appear in the agreement vector of an authentication goal, which goal injection reads later.
+      - **The receiver is the stamping role** (the value comes back to whoever minted it). It reclaims its own value by pattern match — `if T_b_recv = T_b then`, or `let (=A_recv, K_ab: key, =T_b) = sdec(ticket, Kbs) in`. This is the precise condition: the value must be the very one this role sent, not merely one that looks valid.
+
+      Write no `@orrery-idiom` marker for this method; that marker family belongs to identity mechanisms only.
+
+  - id: time.finite_state_window
+    version: 1
+    aliases:
+      - sequence number window
+      - counter resynchronisation
+      - sqn freshness
+      - replay window
+      - monotonic counter check
+    positive:
+      - the protocol has an observable branch on the state word, such as a resynchronisation message or a documented failure report
+      - the state word travels inside an integrity-protected field
+      - the document gives a finite enumerable set of states or levels
+    negative:
+      - the document defines no behaviour for the stale case beyond dropping the message
+      - the state word is a plain timestamp with no arithmetic given
+      - the state word is carried in the clear
+    prompt: |
+      Only use this when all three hold, each readable off the document and the model: the protocol has an **observable branch** on the state word (a resynchronisation exchange, or a failure the document says is reported), the state word travels **inside integrity protection**, and its states are **finite and enumerable**. If any one fails, use `time.opaque_fresh_value` instead — a public constructor over public constants lets the attacker mint a valid state word, and the derivation space it opens can leave ProVerif without a verdict.
+
+      When they do hold, encode the order as a finite predicate rather than arithmetic, and keep both outcomes reachable:
+
+      ```
+      type sqnlevel.
+      const sqn0, sqn1, sqn2: sqnlevel.
+      pred isFresh(sqnlevel, sqnlevel).
+      clauses isFresh(sqn0, sqn1); isFresh(sqn0, sqn2); isFresh(sqn1, sqn2).
+      ```
+
+      The branch on `isFresh` sits after the integrity check that protects the state word, and the stale branch does what the document says it does. Write no `@orrery-idiom` marker.

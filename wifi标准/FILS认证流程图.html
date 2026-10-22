@@ -1,0 +1,1096 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>FILS 认证协议流程图 — IEEE 802.11ai / 802.11-2024 §12.11</title>
+<style>
+  :root{
+    --ink:#182235; --muted:#5d677a; --line:#d7deea; --bg:#eef1f6;
+    --sta:#2563eb; --ap:#0f766e; --ttp:#b45309;
+    --calc-bg:#fff8e9; --calc-line:#e3a23c;
+    --field-bg:#eef4ff; --field-line:#4f7cff;
+    --proc-bg:#eafaf1; --proc-line:#1f9d63;
+    --key-bg:#e7f7f5; --key-line:#0f766e;
+    --note-bg:#f5f1ff; --note-line:#7c5cff;
+    --danger-bg:#fff1f1; --danger-line:#dc2626;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",sans-serif;
+    font-size:11px; line-height:1.5;
+  }
+  .page{
+    width:1500px; min-height:1000px; margin:24px auto; background:#fff;
+    padding:26px 30px 28px; box-shadow:0 12px 34px rgba(20,30,60,.14);
+    border-radius:6px; position:relative;
+  }
+  .page-no{
+    position:absolute; right:18px; bottom:10px; color:#9aa4b6; font-size:10px; letter-spacing:.5px;
+  }
+  h1,h2,h3,h4{margin:0; font-weight:700;}
+  .doc-head{display:flex; align-items:flex-start; justify-content:space-between; gap:24px; border-bottom:2px solid var(--ink); padding-bottom:12px;}
+  .kicker{font-size:11px; letter-spacing:1.2px; color:var(--ap); font-weight:700; text-transform:uppercase;}
+  h1{font-size:30px; line-height:1.2; margin:5px 0 4px; letter-spacing:.5px;}
+  .sub{color:var(--muted); font-size:12px; margin:0;}
+  .legend{display:grid; grid-template-columns:1fr 1fr; gap:5px 14px; padding-top:4px; min-width:300px;}
+  .lg{display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); white-space:nowrap;}
+  .sw{width:12px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,.12); flex:0 0 auto;}
+  .sw.pre{background:#efe9ff; border-color:#8b6cf0}
+  .sw.calc{background:var(--calc-bg); border-color:var(--calc-line)}
+  .sw.field{background:var(--field-bg); border-color:var(--field-line)}
+  .sw.proc{background:var(--proc-bg); border-color:var(--proc-line)}
+  .sw.key{background:var(--key-bg); border-color:var(--key-line)}
+  .sw.danger{background:var(--danger-bg); border-color:var(--danger-line)}
+
+  .sec-title{display:flex; align-items:baseline; gap:10px; margin:14px 0 8px;}
+  .sec-title h2{font-size:17px; letter-spacing:.3px;}
+  .sec-title .num{display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--ink); color:#fff; font-size:11px; font-weight:700;}
+  .sec-title .hint{color:var(--muted); font-size:10.5px;}
+
+  .entities{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  .entity{border:1px solid var(--line); border-radius:8px; padding:9px 12px 10px; background:#fbfcfe; border-top:4px solid var(--sta);}
+  .entity.ap{border-top-color:var(--ap)}
+  .entity.ttp{border-top-color:var(--ttp); background:#fffaf2;}
+  .entity h3{font-size:13px; display:flex; align-items:center; gap:7px; margin-bottom:3px;}
+  .entity .role{font-size:10px; color:var(--muted); margin-bottom:5px;}
+  .entity ul{margin:0; padding-left:15px;}
+  .entity li{margin:1.5px 0;}
+  .entity .tag{display:inline-block; font-size:9px; font-weight:700; padding:1px 6px; border-radius:20px; background:#e8efff; color:var(--sta); margin-left:auto;}
+  .entity.ap .tag{background:#e4f5f1; color:var(--ap)}
+  .entity.ttp .tag{background:#fdeedb; color:var(--ttp)}
+  .dim{color:var(--muted)}
+
+  table.shared{width:100%; border-collapse:collapse; font-size:10px; background:#fff;}
+  table.shared th, table.shared td{border:1px solid var(--line); padding:4px 7px; vertical-align:top; text-align:left;}
+  table.shared th{background:#f2f5fa; color:#344055; font-size:9.5px; letter-spacing:.3px;}
+  table.shared td:first-child{font-weight:700; white-space:nowrap;}
+  table.shared .path-pk{color:#5b3fd1; font-weight:700;}
+  table.shared .path-sk{color:#a1560b; font-weight:700;}
+  table.shared .path-cache{color:#0b6b63; font-weight:700;}
+  .mono{font-family:Consolas,"Courier New",monospace; font-size:9.5px;}
+
+  .prereq{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+  .chip{border:1px dashed #b9c3d4; background:#f8fafd; border-radius:20px; padding:3px 10px; font-size:9.5px; color:#3d485c;}
+  .chip b{color:var(--ink)}
+
+  .trust{margin-top:10px; border:1px solid var(--line); border-radius:8px; background:#fbfcfe; padding:8px 10px;}
+  .trust-row{display:flex; align-items:center; gap:8px; margin:5px 0;}
+  .trust-row .label{width:124px; font-weight:700; font-size:10px; flex:0 0 auto;}
+  .box{border:1.5px solid var(--sta); color:var(--sta); border-radius:6px; padding:3px 9px; font-weight:700; font-size:10px; background:#fff; white-space:nowrap;}
+  .box.ap{border-color:var(--ap); color:var(--ap);}
+  .box.ttp{border-color:var(--ttp); color:var(--ttp); background:#fffaf2;}
+  .arrow{display:flex; flex-direction:column; align-items:center; color:var(--muted); font-size:9px; line-height:1.2; min-width:80px; text-align:center;}
+  .arrow .line{font-size:15px; letter-spacing:-1px; color:#8792a8;}
+  .arrow b{font-weight:600; color:#4c586d; font-size:8.5px; white-space:nowrap;}
+
+  .flow-wrap{border:1px solid var(--line); border-radius:8px; padding:10px 10px 8px; background:#fbfcfe;}
+  .flow{display:flex; align-items:stretch; gap:0;}
+  .fnode{flex:1; border:1.5px solid #b9c8e6; border-radius:7px; background:#fff; padding:6px 7px; text-align:center; position:relative;}
+  .fnode .tag{font-size:8.5px; font-weight:700; letter-spacing:.5px; color:#fff; background:#7587a8; border-radius:3px; padding:1px 6px; display:inline-block; margin-bottom:3px;}
+  .fnode.auth{border-color:#d6a04c; background:#fffaf1;}
+  .fnode.auth .tag{background:#b7791f}
+  .fnode.assoc{border-color:#58a98a; background:#f3fbf7;}
+  .fnode.assoc .tag{background:#1f8a5b}
+  .fnode.result{border-color:var(--ap); background:var(--key-bg);}
+  .fnode.result .tag{background:var(--ap)}
+  .fnode .t{font-weight:700; font-size:10.5px;}
+  .fnode .d{font-size:9px; color:var(--muted); margin-top:2px; line-height:1.35;}
+  .farw{width:22px; display:flex; align-items:center; justify-content:center; color:#7c879c; font-size:17px; flex:0 0 auto;}
+  .flow-cap{display:flex; justify-content:space-between; margin-top:7px; font-size:9px; color:var(--muted);}
+  .ttp-pop{display:flex; align-items:center; justify-content:center; gap:8px; margin:0 0 7px; font-size:9.5px; color:var(--ttp); border:1px dashed #e0b37b; background:#fffaf2; border-radius:6px; padding:3px 8px;}
+
+  .msg{border:1px solid var(--line); border-radius:8px; overflow:hidden; margin:9px 0; break-inside:avoid; background:#fff;}
+  .msg-h{display:flex; align-items:center; gap:9px; padding:5px 10px; background:#f6f8fc; border-bottom:1px solid var(--line);}
+  .step{display:inline-flex; align-items:center; justify-content:center; min-width:26px; height:20px; border-radius:4px; background:var(--ink); color:#fff; font-weight:700; font-size:10px; padding:0 5px;}
+  .dir{font-weight:700; font-size:10px; padding:1px 7px; border-radius:20px; background:#e8efff; color:var(--sta); white-space:nowrap;}
+  .dir.ap{background:#e4f5f1; color:var(--ap)}
+  .dir.ttp{background:#fdeedb; color:var(--ttp)}
+  .dir.both{background:#f0ecff; color:#5b3fd1}
+  .msg-h .title{font-weight:700; font-size:11.5px;}
+  .msg-h .tag{margin-left:auto; color:var(--muted); font-size:9.5px; white-space:nowrap;}
+  .msg-g{display:grid; grid-template-columns:1fr 1.12fr 1fr;}
+  .panel{padding:6px 9px 7px; border-right:1px solid var(--line); min-width:0;}
+  .panel:last-child{border-right:none;}
+  .panel h4{font-size:9.5px; letter-spacing:.4px; margin-bottom:3px; display:flex; align-items:center; gap:5px;}
+  .panel h4 .who{font-size:8.5px; font-weight:600; color:var(--muted); background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:10px; padding:0 6px;}
+  .panel.calc{background:var(--calc-bg);}
+  .panel.calc h4{color:#9a5b00;}
+  .panel.fields{background:var(--field-bg);}
+  .panel.fields h4{color:#2b56c4;}
+  .panel.proc{background:var(--proc-bg);}
+  .panel.proc h4{color:#137a4b;}
+  .panel.key{background:var(--key-bg);}
+  .panel.key h4{color:#0b6b63;}
+  .panel ul,.panel ol{margin:0; padding-left:14px;}
+  .panel li{margin:1.5px 0;}
+  .panel li::marker{color:#8a95a9;}
+  .panel table{width:100%; border-collapse:collapse; font-size:9px; line-height:1.35;}
+  .panel th,.panel td{border-bottom:1px solid rgba(30,50,90,.10); padding:2px 4px; vertical-align:top;}
+  .panel tr:last-child th,.panel tr:last-child td{border-bottom:none;}
+  .panel th{text-align:left; font-weight:700; color:#435170; width:33%;}
+  .formula{font-family:Consolas,"Courier New",monospace; font-size:9px; background:#fff; border:1px dashed #b9c7e8; border-radius:4px; padding:2px 5px; margin:2px 0; word-break:break-word;}
+  .note{font-size:9px; color:var(--muted); margin-top:3px; line-height:1.35;}
+  .warn{color:#a33a2b; font-weight:600;}
+
+  .derive{display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; border:1px solid var(--key-line); border-radius:8px; overflow:hidden; margin:9px 0; background:var(--key-bg); break-inside:avoid;}
+  .derive .cell{padding:7px 10px; border-right:1px solid #b9ded8;}
+  .derive .cell:last-child{border-right:none;}
+  .derive h4{color:#0b6b63; font-size:9.5px; margin-bottom:3px;}
+  .derive .big{font-family:Consolas,"Courier New",monospace; font-size:10px; font-weight:700; color:#0a4f49; margin:2px 0;}
+  .derive ul{margin:0; padding-left:14px;}
+  .derive li{margin:1px 0; font-size:9px;}
+
+  .variants{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-top:9px;}
+  .variant{border:1px solid var(--line); border-left:4px solid var(--note-line); border-radius:6px; background:#fbfaff; padding:7px 9px; break-inside:avoid;}
+  .variant h4{font-size:10px; color:#5b3fd1; margin-bottom:3px;}
+  .variant ul{margin:0; padding-left:14px;}
+  .variant li{font-size:9px; margin:1px 0;}
+
+  .result-strip{display:flex; align-items:center; gap:10px; border:1px solid var(--ap); background:var(--key-bg); border-radius:7px; padding:6px 10px; margin:8px 0; font-size:10px;}
+  .result-strip b{color:#0b6b63;}
+  .result-strip .badge{background:var(--ap); color:#fff; border-radius:4px; padding:2px 7px; font-size:9px; font-weight:700; white-space:nowrap;}
+
+  .kdf{border:1px solid var(--line); border-radius:8px; background:#fbfcfe; padding:10px 12px; margin-top:8px;}
+  .kdf h3{font-size:12px; margin-bottom:6px;}
+  .kdf-src{display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
+  .kdf-box{border:1.5px solid #b9c8e6; background:#fff; border-radius:6px; padding:5px 9px; min-width:120px; text-align:center;}
+  .kdf-box b{display:block; font-size:10.5px;}
+  .kdf-box span{font-size:8.5px; color:var(--muted);}
+  .kdf-box.secret{border-color:var(--key-line); background:var(--key-bg);}
+  .kdf-down{text-align:center; color:#7c879c; font-size:14px; line-height:1.2; margin:2px 0;}
+  .kdf-main{border:1.5px solid var(--key-line); background:var(--key-bg); border-radius:6px; padding:6px 10px; text-align:center; font-family:Consolas,"Courier New",monospace; font-size:9.5px; line-height:1.6;}
+  .kdf-keys{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:5px;}
+  .kdf-key{border:1px solid #a9d5cd; background:#fff; border-radius:5px; padding:4px 6px; text-align:center;}
+  .kdf-key b{display:block; color:#0b6b63; font-size:10px;}
+  .kdf-key span{font-size:8.5px; color:var(--muted);}
+  .kgrid{display:grid; grid-template-columns:1.15fr 1fr; gap:10px; margin-top:9px;}
+  .card{border:1px solid var(--line); border-radius:8px; background:#fff; padding:8px 10px;}
+  .card h3{font-size:11px; margin-bottom:5px; color:#28344a;}
+  .card table{width:100%; border-collapse:collapse; font-size:9px;}
+  .card th,.card td{border:1px solid #e1e6ef; padding:3px 5px; text-align:left; vertical-align:top;}
+  .card th{background:#f4f7fb; font-size:8.5px;}
+  .card code{font-family:Consolas,"Courier New",monospace; font-size:8.5px;}
+
+  .corrections{border:1px solid #e2c78f; border-radius:8px; background:#fffdf5; padding:8px 11px; margin-top:9px;}
+  .corrections h3{font-size:11px; color:#8a5a00; margin-bottom:4px;}
+  .corrections ol{margin:0; padding-left:16px;}
+  .corrections li{font-size:9.3px; margin:2px 0;}
+  .corrections b{color:#7a3f00;}
+
+  .summary{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:9px;}
+  .sum{border:1px solid var(--line); border-top:3px solid var(--ap); border-radius:6px; padding:7px 10px; background:#fbfcfe;}
+  .sum b{display:block; font-size:10.5px; margin-bottom:2px;}
+  .sum span{font-size:9.2px; color:var(--muted);}
+
+  /* readability scale for A3 print */
+  body{font-size:12px; line-height:1.45;}
+  .legend .lg{font-size:10.5px;}
+  .kicker{font-size:11.5px;}
+  .sub{font-size:12.5px;}
+  .sec-title h2{font-size:18px;}
+  .sec-title .hint{font-size:11px;}
+  .entity h3{font-size:14px;}
+  .entity .role{font-size:10.5px;}
+  .entity .tag{font-size:9.5px;}
+  table.shared{font-size:10.5px;}
+  table.shared th{font-size:10px;}
+  .mono{font-size:10.5px;}
+  .chip{font-size:10px;}
+  .trust-row .label,.box{font-size:10.5px;}
+  .arrow b{font-size:9px;}
+  .fnode .t{font-size:11.5px;}
+  .fnode .d{font-size:9.8px;}
+  .flow-cap{font-size:9.8px;}
+  .ttp-pop{font-size:10px;}
+  .msg-h .title{font-size:12.5px;}
+  .msg-h .tag{font-size:10px;}
+  .dir,.step{font-size:10.5px;}
+  .panel h4{font-size:10.5px;}
+  .panel h4 .who{font-size:9px;}
+  .panel table{font-size:10px;}
+  .panel th,.panel td{padding:2.5px 4.5px;}
+  .formula{font-size:9.8px;}
+  .note{font-size:9.8px;}
+  .derive h4{font-size:10.5px;}
+  .derive .big{font-size:10.5px;}
+  .derive li{font-size:9.8px;}
+  .variant h4{font-size:10.5px;}
+  .variant li{font-size:9.8px;}
+  .result-strip{font-size:10.8px;}
+  .result-strip .badge{font-size:9.5px;}
+  .kdf h3{font-size:12.5px;}
+  .kdf-box b{font-size:11px;}
+  .kdf-box span{font-size:9.2px;}
+  .kdf-main{font-size:10px;}
+  .kdf-key b{font-size:10.5px;}
+  .kdf-key span{font-size:9px;}
+  .card h3{font-size:11.5px;}
+  .card table{font-size:9.8px;}
+  .card th{font-size:9.2px;}
+  .card code{font-size:9.2px;}
+  .corrections h3{font-size:11.5px;}
+  .corrections li{font-size:10px;}
+  .sum b{font-size:11px;}
+  .sum span{font-size:9.8px;}
+  .page.compact{font-size:11px; line-height:1.4;}
+  .page.compact .sec-title{margin:8px 0 6px;}
+  .page.compact .msg{margin:6px 0;}
+  .page.compact .msg-h{padding:4px 9px;}
+  .page.compact .panel{padding:5px 8px 6px;}
+  .page.compact .panel h4{font-size:9.8px;}
+  .page.compact .panel table{font-size:9.2px;}
+  .page.compact .panel th,.page.compact .panel td{padding:2px 4px;}
+  .page.compact .formula,.page.compact .note{font-size:9.2px;}
+  .page.compact .derive{margin:6px 0;}
+  .page.compact .derive .cell{padding:5px 9px;}
+  .page.compact .derive .big{font-size:9.8px;}
+  .page.compact .derive li{font-size:9.2px;}
+  .page.compact .result-strip{margin:6px 0; padding:5px 10px;}
+  .subhead{display:flex; align-items:baseline; gap:10px; margin:9px 0 5px;}
+  .subhead b{font-size:12px;}
+  .subhead span{font-size:10px; color:var(--muted);}
+  table.compare{font-size:9.6px;}
+  table.compare th, table.compare td{padding:3px 6px;}
+  .keyauth-table th, .keyauth-table td{font-size:9.2px; padding:3px 5px;}
+  .keyauth-table code{font-size:8.8px;}
+  .state-table th, .state-table td{font-size:9.4px; padding:3px 6px;}
+
+  @media print{
+    @page{size:420mm 297mm; margin:8mm;}
+    .page-no{right:6mm; bottom:3mm;}
+    body{background:#fff;}
+    .page{width:auto; min-height:0; margin:0; padding:0; box-shadow:none; border-radius:0; break-after:page;}
+    .page:last-child{break-after:auto;}
+    .page-no{right:0; bottom:0;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1 ================= -->
+<section class="page">
+  <div class="doc-head">
+    <div>
+      <div class="kicker">IEEE 802.11ai-2016 &nbsp;·&nbsp; IEEE 802.11-2024 §12.11</div>
+      <h1>FILS 认证协议流程图</h1>
+      <p class="sub">Fast Initial Link Setup — 两帧认证 + 两帧关联，完成双向认证、PMK/PTK 建立与密钥确认</p>
+    </div>
+    <div class="legend">
+      <div class="lg"><span class="sw pre"></span>预共享知识 / 前提</div>
+      <div class="lg"><span class="sw calc"></span>发送前计算</div>
+      <div class="lg"><span class="sw field"></span>消息字段</div>
+      <div class="lg"><span class="sw proc"></span>接收后处理</div>
+      <div class="lg"><span class="sw key"></span>密钥 / 结果</div>
+      <div class="lg"><span class="sw danger"></span>失败 / 终止</div>
+    </div>
+  </div>
+
+  <div class="sec-title"><span class="num">1</span><h2>协议实体与信任模型</h2><span class="hint">PK 路径无 TTP；SK 路径的 TTP 交互发生在 AP 与 TTP 之间</span></div>
+
+  <div class="entities">
+    <div class="entity">
+      <h3>STA <span class="tag">发起方 / 被认证方</span></h3>
+      <div class="role">non-AP Station</div>
+      <ul>
+        <li><b>PK：</b>持有自身私钥，并可信 AP 的公钥/证书链</li>
+        <li><b>SK：</b>与 TTP 共享 <span class="mono">rRK</span>，或持有缓存的 <span class="mono">PMKSA</span></li>
+        <li>生成 <span class="mono">SNonce</span>、临时 DH 密钥、FILS Session</li>
+        <li>推导 PMK/PTK，发送 KeyAuth，验证 AP 的 KeyAuth</li>
+      </ul>
+    </div>
+    <div class="entity ap">
+      <h3>AP <span class="tag">响应方 / Authenticator</span></h3>
+      <div class="role">FILS-capable AP</div>
+      <ul>
+        <li><b>PK：</b>持有自身私钥，并可信 STA 的公钥/证书链</li>
+        <li><b>SK：</b>可选缓存 <span class="mono">PMKSA</span>；可连接 TTP</li>
+        <li>生成 <span class="mono">ANonce</span>、临时 DH 密钥，校验对端公钥</li>
+        <li>转发 EAP-RP，验证 KeyAuth，经 Key Delivery 下发 GTK</li>
+      </ul>
+    </div>
+    <div class="entity ttp">
+      <h3>TTP / AS <span class="tag">仅 SK 路径</span></h3>
+      <div class="role">Trusted Third Party / Authentication Server</div>
+      <ul>
+        <li>与 STA 预先通过完整 EAP 建立 <span class="mono">rRK</span></li>
+        <li>验证 <span class="mono">EAP-Initiate/Reauth</span></li>
+        <li>返回 <span class="mono">EAP-Finish/Reauth</span> 与 <span class="mono">rMSK</span></li>
+        <li>AP↔TTP 使用 RADIUS/Diameter，<span class="dim">不在 802.11 范围内</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="trust">
+    <div class="trust-row">
+      <div class="label" style="color:#5b3fd1">PK 路径（无 TTP）</div>
+      <span class="box">STA</span>
+      <span class="arrow"><span class="line">◀──────▶</span><b>证书链 / 可信公钥互验</b></span>
+      <span class="box ap">AP</span>
+      <span class="dim" style="font-size:9.5px">信任锚：X.509v3 证书链，或带指纹的未认证公钥</span>
+    </div>
+    <div class="trust-row">
+      <div class="label" style="color:#a1560b">SK 路径（有 TTP）</div>
+      <span class="box">STA</span>
+      <span class="arrow"><span class="line">────rRK────▶</span><b>RFC 6696 EAP-RP</b></span>
+      <span class="box ttp">TTP / AS</span>
+      <span class="arrow"><span class="line">────rMSK───▶</span><b>RADIUS / Diameter</b></span>
+      <span class="box ap">AP</span>
+    </div>
+  </div>
+
+  <div class="sec-title"><span class="num">2</span><h2>实体间共享知识</h2><span class="hint">“本次建立”一列是认证帧交换真正新增的秘密材料</span></div>
+
+  <table class="shared">
+    <thead>
+      <tr>
+        <th style="width:18%">路径</th>
+        <th style="width:24%">STA 预共享</th>
+        <th style="width:20%">AP 预共享</th>
+        <th style="width:16%">TTP 预共享</th>
+        <th style="width:22%">本次交换建立</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="path-pk">FILS Public Key<br><span class="dim" style="font-weight:400">算法 6</span></td>
+        <td>自身私钥 + 可信 AP 公钥/证书链</td>
+        <td>自身私钥 + 可信 STA 公钥/证书链</td>
+        <td>—</td>
+        <td><span class="mono">gSTA, gAP → DHss</span><br>双向签名认证</td>
+      </tr>
+      <tr>
+        <td class="path-sk">FILS Shared Key<br><span class="dim" style="font-weight:400">算法 4（无 PFS）</span></td>
+        <td><span class="mono">rRK</span>（与 TTP）<br>或缓存 <span class="mono">PMKSA</span></td>
+        <td>可选缓存 <span class="mono">PMKSA</span></td>
+        <td><span class="mono">rRK</span></td>
+        <td><span class="mono">SNonce, ANonce</span><br><span class="mono">rMSK</span>（TTP 派生）</td>
+      </tr>
+      <tr>
+        <td class="path-sk">FILS Shared Key<br><span class="dim" style="font-weight:400">算法 5（with PFS）</span></td>
+        <td><span class="mono">rRK</span> + 支持的有限循环群</td>
+        <td>有限循环群；可选缓存 <span class="mono">PMKSA</span></td>
+        <td><span class="mono">rRK</span></td>
+        <td><span class="mono">rMSK + DHss</span><br>前向保密</td>
+      </tr>
+      <tr>
+        <td class="path-cache">PMKSA 缓存<br><span class="dim" style="font-weight:400">SK / PK 均可</span></td>
+        <td>缓存 <span class="mono">PMK + PMKID</span></td>
+        <td>缓存 <span class="mono">PMK + PMKID</span></td>
+        <td>不参与（命中时）</td>
+        <td>不新建 PMKSA；<br>仅新建 <span class="mono">PTKSA</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="prereq">
+    <span class="chip"><b>有限循环群：</b>从 <span class="mono">dot11RSNAConfigDLCGroupTable</span> 选择双方共同支持的群</span>
+    <span class="chip"><b>哈希：</b>由 AKM 决定 SHA-256 / SHA-384</span>
+    <span class="chip"><b>Nonce：</b>SNonce / ANonce 各 16 octets</span>
+    <span class="chip"><b>会话绑定：</b>FILS Session 标识本次交换</span>
+    <span class="chip"><b>帧保护：</b>AEAD（AES-SIV-256/512），密钥为 PTK-KEK</span>
+  </div>
+
+  <div class="sec-title"><span class="num">3</span><h2>四帧总览：两帧认证 + 两帧关联</h2><span class="hint">SK 的 AP↔TTP 交互不增加 STA 的往返次数</span></div>
+
+  <div class="flow-wrap">
+    <div class="ttp-pop"><b>仅 SK 路径：</b>AP ⇄ TTP（EAP-RP over RADIUS/Diameter）—— 与 STA 的第 1、2 帧并行发生，不占 STA 空中往返 &nbsp;|&nbsp; <b>PK 路径：</b>无此交互</div>
+    <div class="flow">
+      <div class="fnode">
+        <span class="tag">发现</span>
+        <div class="t">Beacon / Probe / FD</div>
+        <div class="d">FILS Indication、FILS Identity、AKM、PFS 位、TTP realm</div>
+      </div>
+      <div class="farw">›</div>
+      <div class="fnode auth">
+        <span class="tag">认证 ①</span>
+        <div class="t">Auth (Seq=1)</div>
+        <div class="d">STA → AP<br>SNonce、Session、DH 公钥 / Wrapped EAP</div>
+      </div>
+      <div class="farw">›</div>
+      <div class="fnode auth">
+        <span class="tag">认证 ②</span>
+        <div class="t">Auth (Seq=2)</div>
+        <div class="d">AP → STA<br>ANonce、Session、DH 公钥 / Wrapped EAP</div>
+      </div>
+      <div class="farw">›</div>
+      <div class="fnode assoc">
+        <span class="tag">关联 ③</span>
+        <div class="t">(Re)Assoc Request</div>
+        <div class="d">STA → AP<br>KeyAuth（ICK）+ AEAD（KEK）</div>
+      </div>
+      <div class="farw">›</div>
+      <div class="fnode assoc">
+        <span class="tag">关联 ④</span>
+        <div class="t">(Re)Assoc Response</div>
+        <div class="d">AP → STA<br>KeyAuth + Key Delivery + AEAD</div>
+      </div>
+      <div class="farw">›</div>
+      <div class="fnode result">
+        <span class="tag">结果</span>
+        <div class="t">PTKSA</div>
+        <div class="d">ICK / PTK-KEK / TK<br>直接进入数据保护</div>
+      </div>
+    </div>
+    <div class="flow-cap">
+      <span><b>① + ②：</b>密钥建立 —— 产生 PMK / PMKID / PTK</span>
+      <span><b>③ + ④：</b>密钥确认 —— KeyAuth + AEAD，无 4 次 EAPOL 握手</span>
+    </div>
+  </div>
+
+  <div class="subhead"><b>两条路径速查对照</b><span>同一四帧框架，不同信任根与密钥材料</span></div>
+  <table class="shared compare">
+    <thead>
+      <tr><th style="width:15%">维度</th><th style="width:42.5%">FILS Public Key（算法 6）</th><th style="width:42.5%">FILS Shared Key（算法 4 / 5）</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>信任根</td><td>X.509v3 证书链，或带指纹的可信公钥；无 TTP</td><td>STA 与 TTP 共享的 <span class="mono">rRK</span>；AP 经 TTP 取得 <span class="mono">rMSK</span></td></tr>
+      <tr><td>TTP 参与</td><td>无</td><td>有（仅 EAP-RP 路径；命中 PMKSA 缓存时跳过）</td></tr>
+      <tr><td>临时 DH</td><td>始终执行（PFS）</td><td>仅算法 5（with PFS）；算法 4 不执行</td></tr>
+      <tr><td>两帧认证的关键材料</td><td>群 G + <span class="mono">gSTA</span> / <span class="mono">gAP</span></td><td><span class="mono">Wrapped EAP-Initiate / EAP-Finish</span>；PFS 时另加群 G 与 <span class="mono">gSTA/gAP</span></td></tr>
+      <tr><td>PMK 输入</td><td><span class="mono">DHss</span></td><td><span class="mono">rMSK</span>（算法 4）或 <span class="mono">rMSK ‖ DHss</span>（算法 5）</td></tr>
+      <tr><td>KeyAuth</td><td>首次：数字签名；命中缓存：HMAC(ICK)</td><td>HMAC(ICK)；PFS 时追加 <span class="mono">gSTA ‖ gAP</span></td></tr>
+      <tr><td>证书位置 / 典型失败码</td><td>关联帧的 FILS Public Key 元素 / 77、112</td><td>不发送证书 / 15、53、77、112、113</td></tr>
+    </tbody>
+  </table>
+  <div class="page-no">1 / 5</div>
+</section>
+
+<!-- ================= PAGE 2 ================= -->
+<section class="page compact">
+  <div class="sec-title"><span class="num">A</span><h2>路径 A：FILS Public Key Authentication（无 TTP）</h2><span class="hint">算法号 6 · 始终使用 Diffie-Hellman（PFS）</span></div>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">A1</span><span class="dir">STA → AP</span>
+      <span class="title">Authentication（Transaction Sequence = 1）</span>
+      <span class="tag">密钥建立 · 第 1 帧</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">STA</span></h4>
+        <ul>
+          <li>从 <span class="mono">dot11RSNAConfigDLCGroupTable</span> 选群 <b>G</b>（须为 AP 所支持）</li>
+          <li>生成临时私钥 <span class="mono">skSTA</span> 与公钥 <span class="mono">gSTA = scalar-op(skSTA, G)</span></li>
+          <li>生成 16 octet <span class="mono">SNonce</span> 与随机 <span class="mono">FILS Session</span></li>
+          <li>若尝试 PMKSA 缓存：RSNE 中填 <span class="mono">PMKID List</span></li>
+          <li><span class="mono">gSTA</span> 按 12.4.7.2.4 编码进 <span class="mono">FFE</span></li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">Authentication</span></h4>
+        <table>
+          <tr><th>Authentication Algorithm Number</th><td><b>6</b>（FILS PK）</td></tr>
+          <tr><th>Auth Transaction Sequence Number</th><td><b>1</b></td></tr>
+          <tr><th>Finite Cyclic Group</th><td>G（STA 选定）</td></tr>
+          <tr><th>FFE</th><td><span class="mono">gSTA</span>（临时 DH 公钥）</td></tr>
+          <tr><th>FILS Nonce</th><td><span class="mono">SNonce</span></td></tr>
+          <tr><th>FILS Session</th><td>本次会话标识</td></tr>
+          <tr><th>RSNE</th><td>1 个 Pairwise Cipher + 1 个 AKM；可选 PMKID List</td></tr>
+        </table>
+        <div class="note">注：此帧<b>不</b>携带设备证书；证书/公钥在关联帧的 FILS Public Key 元素中发送。</div>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">AP</span></h4>
+        <ol>
+          <li>群 <b>G</b> 不可接受 → 回 <b>Status 77</b> 并终止</li>
+          <li><span class="mono">gSTA</span> 八位串转群元素，按 NIST SP 800-56A 5.6.2.3.2 校验；失败终止</li>
+          <li>提取 <span class="mono">SNonce</span>、<span class="mono">gSTA</span></li>
+          <li>检查 PMKID List：命中缓存 → 走缓存；否则 → 签名模式</li>
+          <li>生成 <span class="mono">ANonce</span> 与 <span class="mono">(skAP, gAP)</span>；计算 <span class="mono">DHss = scalar-op(skAP, gSTA)</span></li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">A2</span><span class="dir ap">AP → STA</span>
+      <span class="title">Authentication（Transaction Sequence = 2）</span>
+      <span class="tag">密钥建立 · 第 2 帧</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">AP</span></h4>
+        <ul>
+          <li>设置 <span class="mono">Status = 0</span>（成功）</li>
+          <li>生成 16 octet <span class="mono">ANonce</span></li>
+          <li>在同一群 <b>G</b> 上生成 <span class="mono">(skAP, gAP)</span></li>
+          <li>回显 STA 的 <span class="mono">FILS Session</span></li>
+          <li>使用缓存时填入选中的 <span class="mono">PMKID</span></li>
+          <li>可延迟到发送前才计算 <span class="mono">DHss</span></li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">Authentication</span></h4>
+        <table>
+          <tr><th>Authentication Algorithm Number</th><td><b>6</b></td></tr>
+          <tr><th>Auth Transaction Sequence Number</th><td><b>2</b></td></tr>
+          <tr><th>Status Code</th><td>0（或 77 等错误码）</td></tr>
+          <tr><th>Finite Cyclic Group</th><td>与请求相同的 G</td></tr>
+          <tr><th>FFE</th><td><span class="mono">gAP</span></td></tr>
+          <tr><th>FILS Nonce</th><td><span class="mono">ANonce</span></td></tr>
+          <tr><th>FILS Session</th><td>与请求相同</td></tr>
+          <tr><th>RSNE</th><td>协商结果；缓存时含选中 PMKID</td></tr>
+        </table>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">STA</span></h4>
+        <ol>
+          <li>校验 <span class="mono">ANA = 6</span>、<span class="mono">Group = G</span>、<span class="mono">Session</span> 一致；否则终止</li>
+          <li><span class="mono">gAP</span> 转群元素并按 NIST 校验；失败终止</li>
+          <li>提取 <span class="mono">ANonce</span></li>
+          <li>计算 <span class="mono">DHss = scalar-op(skSTA, gAP)</span></li>
+          <li>立即执行 PMK → PTK 推导，并删除 <span class="mono">DHss</span></li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <div class="derive">
+    <div class="cell">
+      <h4>双方独立推导 · PMK / PMKID</h4>
+      <div class="big">PMK = HMAC-Hash(SNonce ‖ ANonce, DHss)</div>
+      <div class="big">PMKID = Truncate-128(Hash(gSTA ‖ gAP))</div>
+      <div class="note">PMK 长度 256 或 384 bit，由 AKM 决定；PMKID 固定 128 bit。</div>
+    </div>
+    <div class="cell">
+      <h4>双方独立推导 · PTK</h4>
+      <div class="big">PTK = PRF-X(PMK, "FILS PTK Derivation", SPA ‖ AA ‖ SNonce ‖ ANonce)</div>
+      <div class="note">SPA = STA MAC，AA = AP BSSID。非缓存 PK 的 PTK 不再附加 DHss。</div>
+    </div>
+    <div class="cell">
+      <h4>拆分与使用</h4>
+      <ul>
+        <li><b>ICK</b> → KeyAuth 的 HMAC（缓存场景）</li>
+        <li><b>PTK-KEK</b> → AEAD 保护关联帧</li>
+        <li><b>TK</b> → 后续单播数据帧</li>
+        <li>生成完成后删除 <span class="mono">DHss</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">A3</span><span class="dir">STA → AP</span>
+      <span class="title">(Re)Association Request — 密钥确认</span>
+      <span class="tag">第 3 帧 · AEAD 保护</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">STA</span></h4>
+        <ul>
+          <li><b>无缓存（首次 PK）：</b>用 STA 私钥签名<br>
+            <span class="formula">KeyAuth = Sig-STA(gSTA ‖ gAP ‖ SNonce ‖ ANonce ‖ STA-MAC ‖ AP-BSSID)</span></li>
+          <li><b>使用缓存：</b>改用 HMAC<br>
+            <span class="formula">KeyAuth = HMAC-Hash(ICK, SNonce ‖ ANonce ‖ STA-MAC ‖ AP-BSSID ‖ gSTA ‖ gAP)</span></li>
+          <li>AAD = 四元地址 + Capability Information 起至 FILS Session（含）</li>
+          <li>FILS Session 之后的组件用 <span class="mono">PTK-KEK</span> 做 AEAD 加密</li>
+          <li>把 STA 证书/公钥放入 <span class="mono">FILS Public Key</span> 元素，供 AP 验签</li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">(Re)Association Request</span></h4>
+        <table>
+          <tr><th>AAD（明文）</th><td>STA-MAC、AP-BSSID、SNonce、ANonce、Capability…FILS Session</td></tr>
+          <tr><th>FILS Session</th><td>与认证帧相同</td></tr>
+          <tr><th>密文部分</th><td>FILS Key Confirmation（KeyAuth）</td></tr>
+          <tr><th>FILS Public Key</th><td>STA 证书链 / 公钥（无缓存时必需）</td></tr>
+          <tr><th>RSNE</th><td>与 Auth 帧完全一致</td></tr>
+          <tr><th>可选</th><td>FILS HLP Container、IP Address Assignment、OCI</td></tr>
+          <tr><th>保护</th><td>AEAD(PTK-KEK)，AES-SIV-256/512</td></tr>
+        </table>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">AP</span></h4>
+        <ol>
+          <li>FILS Session 不一致 → 失败</li>
+          <li>用 PTK-KEK 做 AEAD 解密/验证；失败 → 失败</li>
+          <li>校验 RSNE 的 AKM、cipher、RSN capabilities 与 Auth 帧一致</li>
+          <li><b>无缓存：</b>从 FILS Public Key 取证书，按 RFC 5280 校验链并验签</li>
+          <li><b>缓存：</b>本地构造 <span class="mono">Key-Auth'</span> 并比对</li>
+          <li class="warn">失败：删除 ICK/PTK-KEK/TK/PTKSA，回 Status 112；未缓存时连 PMKSA 一并删除</li>
+          <li>成功：安装 PTKSA</li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">A4</span><span class="dir ap">AP → STA</span>
+      <span class="title">(Re)Association Response — 密钥确认</span>
+      <span class="tag">第 4 帧 · AEAD 保护</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">AP</span></h4>
+        <ul>
+          <li><b>无缓存：</b><span class="formula">KeyAuth = Sig-AP(gAP ‖ gSTA ‖ ANonce ‖ SNonce ‖ AP-BSSID ‖ STA-MAC)</span></li>
+          <li><b>缓存：</b><span class="formula">KeyAuth = HMAC-Hash(ICK, ANonce ‖ SNonce ‖ AP-BSSID ‖ STA-MAC ‖ gAP ‖ gSTA)</span></li>
+          <li>构造 Key Delivery：GTK；MFP 时加 IGTK；Beacon 保护时加 BIGTK；WUR 时加 WIGTK</li>
+          <li>AAD = AP-BSSID、STA-MAC、ANonce、SNonce、Capability…FILS Session</li>
+          <li>用 <span class="mono">PTK-KEK</span> 做 AEAD 加密</li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">(Re)Association Response</span></h4>
+        <table>
+          <tr><th>AAD（明文）</th><td>AP-BSSID、STA-MAC、ANonce、SNonce、Capability…FILS Session</td></tr>
+          <tr><th>FILS Session</th><td>与请求相同</td></tr>
+          <tr><th>密文部分</th><td>FILS Key Confirmation（KeyAuth）</td></tr>
+          <tr><th>Key Delivery</th><td>GTK / IGTK / BIGTK / WIGTK 及 RSC/IPN</td></tr>
+          <tr><th>FILS Public Key</th><td>AP 证书链 / 公钥（无缓存时）</td></tr>
+          <tr><th>可选</th><td>FILS HLP Container、IP 分配结果、OCI</td></tr>
+          <tr><th>保护</th><td>AEAD(PTK-KEK)</td></tr>
+        </table>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">STA</span></h4>
+        <ol>
+          <li>FILS Session 一致；AEAD 解密/验证成功</li>
+          <li>RSNE 与 Beacon/Probe/Auth 帧一致</li>
+          <li><b>无缓存：</b>用 AP 证书验签；<b>缓存：</b>构造 HMAC Key-Auth' 比对</li>
+          <li>安装 TK、GTK（及 IGTK/BIGTK/WIGTK）</li>
+          <li>PTKSA 建立完成，立即进入数据保护</li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <div class="result-strip">
+    <span class="badge">路径 A 完成</span>
+    <span><b>4 帧</b>完成认证 + 关联 + 密钥确认；<b>无 TTP、无 4 次握手</b>。首次 PK 的 KeyAuth 为数字签名；命中 PMKSA 缓存时切换为 HMAC(ICK)。</span>
+  </div>
+  <div class="page-no">2 / 5</div>
+</section>
+
+<!-- ================= PAGE 3 ================= -->
+<section class="page">
+  <div class="sec-title"><span class="num">B</span><h2>路径 B：FILS Shared Key Authentication（有 TTP）—— 密钥建立</h2><span class="hint">算法 4（无 PFS）/ 5（with PFS）· STA 不发送证书</span></div>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">B1</span><span class="dir">STA → AP</span>
+      <span class="title">Authentication（Transaction Sequence = 1）</span>
+      <span class="tag">密钥建立 · 第 1 帧</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">STA</span></h4>
+        <ul>
+          <li>生成 16 octet <span class="mono">SNonce</span> 与随机 <span class="mono">FILS Session</span></li>
+          <li>决定是否尝试 PMKSA 缓存；若尝试则生成 <span class="mono">PMKID List</span></li>
+          <li>若走 EAP-RP：构造 <span class="mono">EAP-Initiate/Reauth</span>（B=0、L=1、EAP ID=0、Cryptosuite≠1）</li>
+          <li>将其放入 <span class="mono">FILS Wrapped Data</span></li>
+          <li>若 with PFS：选群 G，生成 <span class="mono">(skSTA, gSTA)</span></li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">Authentication</span></h4>
+        <table>
+          <tr><th>Authentication Algorithm Number</th><td><b>4</b>（无 PFS）或 <b>5</b>（with PFS）</td></tr>
+          <tr><th>Auth Transaction Sequence Number</th><td><b>1</b></td></tr>
+          <tr><th>FILS Nonce</th><td><span class="mono">SNonce</span></td></tr>
+          <tr><th>FILS Session</th><td>本次会话标识</td></tr>
+          <tr><th>RSNE</th><td>cipher / AKM；可选 PMKID List</td></tr>
+          <tr><th>FILS Wrapped Data</th><td><span class="mono">EAP-Initiate/Reauth</span>（未命中缓存时）</td></tr>
+          <tr><th>Finite Cyclic Group</th><td>仅 PFS：G</td></tr>
+          <tr><th>FFE</th><td>仅 PFS：<span class="mono">gSTA</span></td></tr>
+        </table>
+        <div class="note">SK 路径<b>不发送设备证书</b>；身份由 TTP 通过 EAP-ERP 验证。</div>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">AP</span></h4>
+        <ol>
+          <li>含群且不支持 → 回 <b>Status 77</b>（ANA=5）并终止</li>
+          <li>PFS：<span class="mono">gSTA</span> 转群元素并按 NIST 校验；失败终止</li>
+          <li>检查 PMKID List：命中缓存 → 用缓存 PMK，<b>跳过 TTP</b></li>
+          <li>未命中且无 EAP-Initiate → 回 <b>Status 53</b>（invalid PMKID）</li>
+          <li>否则从 Wrapped Data 取出 EAP-Initiate，转发给 TTP</li>
+          <li>PFS：生成 <span class="mono">(skAP, gAP)</span>，可延迟到 TTP 响应后再算</li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">B2</span><span class="dir ttp">AP ⇄ TTP</span>
+      <span class="title">EAP-RP 往返：EAP-Initiate/Reauth → EAP-Finish/Reauth + rMSK</span>
+      <span class="tag">802.11 范围外（RADIUS/Diameter）</span>
+    </header>
+    <div class="msg-g" style="grid-template-columns:1fr 1.05fr 1fr">
+      <div class="panel fields">
+        <h4>AP → TTP <span class="who">请求</span></h4>
+        <table>
+          <tr><th>载体</th><td>RADIUS / Diameter Access-Request（示例）</td></tr>
+          <tr><th>EAP 报文</th><td><span class="mono">EAP-Initiate/Reauth</span></td></tr>
+          <tr><th>关键参数</th><td>B=0、L=1、EAP ID=0；Name-NAI / realm 用于定位 TTP</td></tr>
+        </table>
+        <div class="note">AP 只做解封/转发，不参与 rRK 验证。</div>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">TTP / AS</span></h4>
+        <ol>
+          <li>按 RFC 6696 验证 STA 对 <span class="mono">rRK</span> 的持有</li>
+          <li>验证失败 → <span class="mono">EAP-Finish/Reauth (R=1)</span></li>
+          <li>验证成功 → <span class="mono">EAP-Finish/Reauth (R=0)</span></li>
+          <li>派生本次 <span class="mono">rMSK</span>，并返回 rRK/rMSK 生命周期</li>
+          <li>将 EAP-Finish 与 rMSK 一起返回 AP</li>
+        </ol>
+      </div>
+      <div class="panel fields">
+        <h4>TTP → AP <span class="who">响应</span></h4>
+        <table>
+          <tr><th>EAP 报文</th><td><span class="mono">EAP-Finish/Reauth</span>（R=0/1）</td></tr>
+          <tr><th>rMSK</th><td>成功时返回，供 AP 推导 PMK</td></tr>
+          <tr><th>生命周期</th><td>rRK 与 rMSK 的生命周期（L=1）</td></tr>
+        </table>
+        <div class="note">AP 保存 rMSK 后，与 STA 独立推导相同的 PMK。</div>
+      </div>
+    </div>
+  </article>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">B3</span><span class="dir ap">AP → STA</span>
+      <span class="title">Authentication（Transaction Sequence = 2）</span>
+      <span class="tag">密钥建立 · 第 2 帧</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">AP</span></h4>
+        <ul>
+          <li>生成 16 octet <span class="mono">ANonce</span>，回显 <span class="mono">FILS Session</span></li>
+          <li>未用缓存：把 <span class="mono">EAP-Finish/Reauth</span> 放入 <span class="mono">FILS Wrapped Data</span></li>
+          <li>使用缓存：在 <span class="mono">PMKID List</span> 中指示选中的 PMKID</li>
+          <li>PFS：在同一群生成 <span class="mono">gAP</span>，并计算 <span class="mono">DHss = scalar-op(skAP, gSTA)</span></li>
+          <li>设置 <span class="mono">Status = 0</span>（成功）</li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">Authentication</span></h4>
+        <table>
+          <tr><th>Authentication Algorithm Number</th><td><b>4</b> 或 <b>5</b>（与请求一致）</td></tr>
+          <tr><th>Auth Transaction Sequence Number</th><td><b>2</b></td></tr>
+          <tr><th>Status Code</th><td>0；失败时 15 / 53 / 77 / 113</td></tr>
+          <tr><th>FILS Nonce</th><td><span class="mono">ANonce</span></td></tr>
+          <tr><th>FILS Session</th><td>与请求相同</td></tr>
+          <tr><th>FILS Wrapped Data</th><td><span class="mono">EAP-Finish/Reauth</span>（未用缓存时）</td></tr>
+          <tr><th>Finite Cyclic Group</th><td>仅 PFS：G</td></tr>
+          <tr><th>FFE / PMKID</th><td>仅 PFS：<span class="mono">gAP</span>；缓存：选中 PMKID</td></tr>
+        </table>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">STA</span></h4>
+        <ol>
+          <li>ANA 必须为 4/5；PMKID 必须匹配；FILS Session 必须相同</li>
+          <li>未用缓存时必须含 PMKID 或 EAP-Finish/Reauth</li>
+          <li>PFS 参数必须对称：发了 <span class="mono">gSTA</span> 就必须收到 <span class="mono">gAP</span>，反之亦然</li>
+          <li>处理 EAP-Finish：R=0 → 派生 <span class="mono">rMSK</span>；R=1 → 终止</li>
+          <li>PFS：校验 <span class="mono">gAP</span>，计算 <span class="mono">DHss = scalar-op(skSTA, gAP)</span></li>
+          <li>执行 PMK → PTK 推导；删除 <span class="mono">rMSK</span> 与 <span class="mono">DHss</span></li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <div class="derive">
+    <div class="cell">
+      <h4>PMK（无 PFS / 算法 4）</h4>
+      <div class="big">PMK = HMAC-Hash(SNonce ‖ ANonce, rMSK)</div>
+      <div class="note">命中 PMKSA 缓存时不重新派生 PMK，直接沿用缓存值。</div>
+    </div>
+    <div class="cell">
+      <h4>PMK（with PFS / 算法 5）</h4>
+      <div class="big">PMK = HMAC-Hash(SNonce ‖ ANonce, rMSK ‖ DHss)</div>
+      <div class="note">DHss 提供前向保密；PMK 生成后立即删除 rMSK 与 DHss。</div>
+    </div>
+    <div class="cell">
+      <h4>PMKID 与 PTK</h4>
+      <div class="big">PMKID = Truncate-128(Hash(EAP-Initiate/Reauth))</div>
+      <div class="big">PTK = PRF-X(PMK, "FILS PTK Derivation", SPA ‖ AA ‖ SNonce ‖ ANonce)</div>
+      <div class="note">每次 FILS 交换都必须新建 PTKSA。</div>
+    </div>
+  </div>
+  <div class="page-no">3 / 5</div>
+</section>
+
+<!-- ================= PAGE 4 ================= -->
+<section class="page">
+  <div class="sec-title"><span class="num">B</span><h2>路径 B（续）：密钥确认与变体</h2><span class="hint">KeyAuth 使用 ICK 做 HMAC；关联帧使用 PTK-KEK 做 AEAD</span></div>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">B4</span><span class="dir">STA → AP</span>
+      <span class="title">(Re)Association Request — 密钥确认</span>
+      <span class="tag">第 3 帧 · AEAD 保护</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">STA</span></h4>
+        <ul>
+          <li>计算 KeyAuth：<span class="formula">KeyAuth = HMAC-Hash(ICK, SNonce ‖ ANonce ‖ STA-MAC ‖ AP-BSSID [‖ gSTA ‖ gAP])</span></li>
+          <li>方括号内仅在 <b>with PFS</b> 时包含 DH 公钥</li>
+          <li>AAD = 四元地址 + Capability…FILS Session（含）</li>
+          <li>FILS Session 之后的组件用 <span class="mono">PTK-KEK</span> 做 AEAD 加密</li>
+          <li>可携带 HLP Container、IP Address Assignment</li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">(Re)Association Request</span></h4>
+        <table>
+          <tr><th>AAD（明文）</th><td>STA-MAC、AP-BSSID、SNonce、ANonce、Capability…FILS Session</td></tr>
+          <tr><th>FILS Session</th><td>与认证帧相同</td></tr>
+          <tr><th>密文部分</th><td>FILS Key Confirmation（KeyAuth）</td></tr>
+          <tr><th>RSNE</th><td>与 Auth 帧完全一致</td></tr>
+          <tr><th>可选</th><td>FILS HLP Container、IP Address Assignment、OCI</td></tr>
+          <tr><th>保护</th><td>AEAD(PTK-KEK)，AES-SIV-256/512</td></tr>
+        </table>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">AP</span></h4>
+        <ol>
+          <li>FILS Session 不一致 → 失败</li>
+          <li>用 PTK-KEK 做 AEAD 解密/验证；失败 → 失败</li>
+          <li>校验 RSNE 与 Auth 帧一致</li>
+          <li>独立构造 <span class="mono">Key-Auth'</span>，与收到的 KeyAuth 比对</li>
+          <li class="warn">失败：删除 ICK/PTK-KEK/TK/PTKSA，回 Status 112；缓存 PMKSA 可保留（可能是冒充攻击）</li>
+          <li>成功：安装 PTKSA</li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <article class="msg">
+    <header class="msg-h">
+      <span class="step">B5</span><span class="dir ap">AP → STA</span>
+      <span class="title">(Re)Association Response — 密钥确认</span>
+      <span class="tag">第 4 帧 · AEAD 保护</span>
+    </header>
+    <div class="msg-g">
+      <div class="panel calc">
+        <h4>发送前计算 <span class="who">AP</span></h4>
+        <ul>
+          <li>计算 KeyAuth：<span class="formula">KeyAuth = HMAC-Hash(ICK, ANonce ‖ SNonce ‖ AP-BSSID ‖ STA-MAC [‖ gAP ‖ gSTA])</span></li>
+          <li>请求/响应方向的 nonce 与 MAC 顺序相反，用于双向抗重放</li>
+          <li>构造 Key Delivery：GTK；MFP→IGTK；Beacon 保护→BIGTK；WUR→WIGTK</li>
+          <li>AAD = AP-BSSID、STA-MAC、ANonce、SNonce、Capability…FILS Session</li>
+          <li>用 <span class="mono">PTK-KEK</span> 做 AEAD 加密</li>
+        </ul>
+      </div>
+      <div class="panel fields">
+        <h4>消息字段 <span class="who">(Re)Association Response</span></h4>
+        <table>
+          <tr><th>AAD（明文）</th><td>AP-BSSID、STA-MAC、ANonce、SNonce、Capability…FILS Session</td></tr>
+          <tr><th>FILS Session</th><td>与请求相同</td></tr>
+          <tr><th>密文部分</th><td>FILS Key Confirmation（KeyAuth）</td></tr>
+          <tr><th>Key Delivery</th><td>GTK / IGTK / BIGTK / WIGTK 及 RSC/IPN</td></tr>
+          <tr><th>可选</th><td>FILS HLP Container、IP 分配结果、OCI</td></tr>
+          <tr><th>保护</th><td>AEAD(PTK-KEK)</td></tr>
+        </table>
+      </div>
+      <div class="panel proc">
+        <h4>接收后处理 <span class="who">STA</span></h4>
+        <ol>
+          <li>FILS Session 一致；AEAD 解密/验证成功</li>
+          <li>RSNE 与 Beacon/Probe/Auth 帧一致</li>
+          <li>构造 <span class="mono">Key-Auth'</span> 与收到的 KeyAuth 比对</li>
+          <li>安装 TK、GTK（及 IGTK/BIGTK/WIGTK）</li>
+          <li>PTKSA 建立完成，立即进入数据保护</li>
+        </ol>
+      </div>
+    </div>
+  </article>
+
+  <div class="result-strip">
+    <span class="badge">路径 B 完成</span>
+    <span><b>4 帧</b>完成认证 + 关联 + 密钥确认；TTP 交互只发生在 AP 与 TTP 之间，<b>不增加 STA 的往返次数</b>。</span>
+  </div>
+
+  <div class="sec-title"><span class="num">4</span><h2>路径变体与失败分支</h2><span class="hint">同一套四帧框架，不同字段与密钥输入</span></div>
+
+  <div class="variants">
+    <div class="variant">
+      <h4>SK 无 PFS（算法 4）</h4>
+      <ul>
+        <li>认证帧<b>无</b> Finite Cyclic Group / FFE</li>
+        <li><span class="mono">PMK = HMAC(SNonce‖ANonce, rMSK)</span></li>
+        <li>KeyAuth 不含 <span class="mono">gSTA/gAP</span></li>
+        <li>依赖 rMSK 的保密性，无前向保密</li>
+      </ul>
+    </div>
+    <div class="variant">
+      <h4>SK with PFS（算法 5）</h4>
+      <ul>
+        <li>两帧认证都带群 G 与 FFE</li>
+        <li><span class="mono">PMK = HMAC(SNonce‖ANonce, rMSK‖DHss)</span></li>
+        <li>KeyAuth 追加 <span class="mono">gSTA‖gAP</span></li>
+        <li>提供前向保密；群不支持 → 77</li>
+      </ul>
+    </div>
+    <div class="variant">
+      <h4>PMKSA 缓存（SK / PK）</h4>
+      <ul>
+        <li>Auth1 的 RSNE 带 PMKID List；Auth2 指示选中的 PMKID</li>
+        <li>命中时<b>不联系 TTP</b>、不新建 PMKSA，沿用缓存 PMK/PMKID</li>
+        <li>仍必须新建 PTKSA</li>
+        <li>2024：缓存 + DH 时，PTK 推导追加 <span class="mono">DHss</span></li>
+        <li>PK 缓存时 KeyAuth 由签名改为 HMAC(ICK)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="variants" style="grid-template-columns:1fr 1fr;">
+    <div class="variant" style="border-left-color:var(--danger-line); background:#fff7f7;">
+      <h4 style="color:#b42318">失败与状态码</h4>
+      <table style="width:100%; border-collapse:collapse; font-size:9px;">
+        <tr><th style="text-align:left; width:18%; border-bottom:1px solid #eed4d1; padding:2px 4px;">码</th><th style="text-align:left; border-bottom:1px solid #eed4d1; padding:2px 4px;">含义</th></tr>
+        <tr><td style="padding:2px 4px;">0</td><td style="padding:2px 4px;">成功</td></tr>
+        <tr><td style="padding:2px 4px;">15</td><td style="padding:2px 4px;">TTP 挑战失败（EAP-RP 验证失败）</td></tr>
+        <tr><td style="padding:2px 4px;">53</td><td style="padding:2px 4px;">无效 PMKID（未命中缓存且无 EAP-Initiate）</td></tr>
+        <tr><td style="padding:2px 4px;">77</td><td style="padding:2px 4px;">有限循环群不支持</td></tr>
+        <tr><td style="padding:2px 4px;">112</td><td style="padding:2px 4px;">FILS 认证失败（KeyAuth / AEAD 等）</td></tr>
+        <tr><td style="padding:2px 4px;">113</td><td style="padding:2px 4px;">AP 不认识 STA 所指的认证服务器</td></tr>
+      </table>
+    </div>
+    <div class="variant" style="border-left-color:var(--calc-line); background:#fffdf7;">
+      <h4 style="color:#9a5b00">密钥删除规则</h4>
+      <ul>
+        <li>PMK/PMKID 生成后：不可恢复地删除 <span class="mono">rMSK</span> 与 <span class="mono">DHss</span></li>
+        <li>PTK 生成后：删除 <span class="mono">DHss</span></li>
+        <li>AP 密钥确认失败：删 ICK/PTK-KEK/TK/PTKSA；未缓存则删 PMKSA</li>
+        <li>STA 密钥确认失败：删 ICK/PTK-KEK/PMK/TK，放弃交换</li>
+        <li>认证成功：删除密钥建立阶段的非持久秘密材料</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:9px;">
+    <h3>KeyAuth 四种构造速查</h3>
+    <table class="keyauth-table">
+      <tr><th style="width:13%">场景</th><th style="width:43.5%">请求方向（STA → AP）</th><th style="width:43.5%">响应方向（AP → STA）</th></tr>
+      <tr>
+        <td>SK 无 PFS（4）</td>
+        <td><code>HMAC-Hash(ICK, SNonce‖ANonce‖STA-MAC‖AP-BSSID)</code></td>
+        <td><code>HMAC-Hash(ICK, ANonce‖SNonce‖AP-BSSID‖STA-MAC)</code></td>
+      </tr>
+      <tr>
+        <td>SK with PFS（5）</td>
+        <td><code>HMAC-Hash(ICK, SNonce‖ANonce‖STA-MAC‖AP-BSSID‖gSTA‖gAP)</code></td>
+        <td><code>HMAC-Hash(ICK, ANonce‖SNonce‖AP-BSSID‖STA-MAC‖gAP‖gSTA)</code></td>
+      </tr>
+      <tr>
+        <td>PK + 缓存</td>
+        <td><code>HMAC-Hash(ICK, SNonce‖ANonce‖STA-MAC‖AP-BSSID‖gSTA‖gAP)</code></td>
+        <td><code>HMAC-Hash(ICK, ANonce‖SNonce‖AP-BSSID‖STA-MAC‖gAP‖gSTA)</code></td>
+      </tr>
+      <tr>
+        <td>PK 无缓存</td>
+        <td><code>Sig-STA(gSTA‖gAP‖SNonce‖ANonce‖STA-MAC‖AP-BSSID)</code></td>
+        <td><code>Sig-AP(gAP‖gSTA‖ANonce‖SNonce‖AP-BSSID‖STA-MAC)</code></td>
+      </tr>
+    </table>
+  </div>
+  <div class="page-no">4 / 5</div>
+</section>
+
+<!-- ================= PAGE 5 ================= -->
+<section class="page">
+  <div class="sec-title"><span class="num">5</span><h2>密钥推导：从 rRK / DHss 到 PTKSA</h2><span class="hint">PMK 由两条路径之一产生；PTK 每次都重新推导</span></div>
+
+  <div class="kdf">
+    <h3>输入材料</h3>
+    <div class="kdf-src">
+      <div class="kdf-box"><b>rRK</b><span>SK：STA ↔ TTP 长期共享</span></div>
+      <div class="kdf-box"><b>EAP-RP</b><span>EAP-Initiate / EAP-Finish</span></div>
+      <div class="kdf-box secret"><b>rMSK</b><span>SK：TTP → AP / STA</span></div>
+      <div class="kdf-box"><b>skSTA / skAP</b><span>PK / SK+PFS 临时私钥</span></div>
+      <div class="kdf-box secret"><b>DHss</b><span>scalar-op(私钥, 对端公钥)</span></div>
+    </div>
+    <div class="kdf-down">▼</div>
+    <div class="kdf-main">
+      <b>PMK</b> = HMAC-Hash( SNonce ‖ ANonce , &nbsp;rMSK [‖ DHss] &nbsp;/&nbsp; DHss )<br>
+      <b>PMKID</b> = Truncate-128( Hash(EAP-Initiate/Reauth) ) &nbsp;·&nbsp; 或 &nbsp;Truncate-128( Hash(gSTA ‖ gAP) )
+    </div>
+    <div class="kdf-down">▼ &nbsp; <span style="font-size:8.5px; letter-spacing:0;">PMK 256 / 384 bit，由 AKM 决定</span></div>
+    <div class="kdf-main">
+      <b>PTK</b> = PRF-X( PMK , "FILS PTK Derivation" , SPA ‖ AA ‖ SNonce ‖ ANonce [‖ DHss] )<br>
+      <span style="font-size:8.5px;">X = 512/768/896/1280 + TK_bits；方括号仅在 2024 的“PMKSA 缓存 + DH”场景加入</span>
+    </div>
+    <div class="kdf-down">▼</div>
+    <div class="kdf-keys">
+      <div class="kdf-key"><b>ICK</b><span>KeyAuth 的 HMAC 完整性密钥</span></div>
+      <div class="kdf-key"><b>PTK-KEK</b><span>AEAD 保护关联帧 / EAPOL-Key</span></div>
+      <div class="kdf-key"><b>TK</b><span>单播数据帧加密</span></div>
+      <div class="kdf-key"><b>FILS-FT / KDK</b><span>FT 初始移动域 / WUR、secure HE-LTF</span></div>
+    </div>
+  </div>
+
+  <div class="kgrid">
+    <div class="card">
+      <h3>各路径的 PMK / PMKID</h3>
+      <table>
+        <tr><th>路径</th><th>PMK</th><th>PMKID</th></tr>
+        <tr><td>SK 无 PFS（4）</td><td><code>HMAC-Hash(SNonce‖ANonce, rMSK)</code></td><td rowspan="2"><code>Truncate-128(Hash(EAP-Initiate/Reauth))</code></td></tr>
+        <tr><td>SK with PFS（5）</td><td><code>HMAC-Hash(SNonce‖ANonce, rMSK‖DHss)</code></td></tr>
+        <tr><td>PK（6）</td><td><code>HMAC-Hash(SNonce‖ANonce, DHss)</code></td><td><code>Truncate-128(Hash(gSTA‖gAP))</code></td></tr>
+        <tr><td>PMKSA 缓存</td><td>沿用缓存 PMK</td><td>沿用原 PMKID</td></tr>
+      </table>
+      <div class="note">Hash 由协商 AKM 决定（SHA-256 / SHA-384）。PMK 生成后删除 rMSK 与 DHss。</div>
+    </div>
+    <div class="card">
+      <h3>PTK 各字段长度与 KeyAuth</h3>
+      <table>
+        <tr><th>AKM</th><th>ICK</th><th>PTK-KEK</th><th>FILS-FT</th></tr>
+        <tr><td>00-0F-AC:14</td><td>256</td><td>256</td><td>—</td></tr>
+        <tr><td>00-0F-AC:15</td><td>384</td><td>512</td><td>—</td></tr>
+        <tr><td>00-0F-AC:16</td><td>256</td><td>256</td><td>256</td></tr>
+        <tr><td>00-0F-AC:17</td><td>384</td><td>512</td><td>384</td></tr>
+      </table>
+      <div class="note" style="margin-top:4px;">
+        <b>KeyAuth 请求方向：</b><code>HMAC-Hash(ICK, SNonce‖ANonce‖STA-MAC‖AP-BSSID[‖gSTA‖gAP])</code><br>
+        <b>响应方向：</b><code>HMAC-Hash(ICK, ANonce‖SNonce‖AP-BSSID‖STA-MAC[‖gAP‖gSTA])</code><br>
+        <b>PK 首次认证（无缓存）：</b>改为 <code>Sig-STA / Sig-AP</code> 数字签名。
+      </div>
+    </div>
+  </div>
+
+  <div class="corrections">
+    <h3>口径说明（以 IEEE 802.11-2024 §12.11 原文为准）</h3>
+    <ol>
+      <li><b>算法号：</b>FILS SK 无 PFS = <b>4</b>，SK with PFS = <b>5</b>，PK = <b>6</b>（§9.4.1.1）。<span class="dim">前文中的“ANA-8”并非 FILS 分配值。</span></li>
+      <li><b>完整性密钥名称：</b>FILS 使用 <b>ICK</b>（Integrity Check Key）计算 KeyAuth；部分资料写作 KCK。<span class="dim">PTK 中对应字段为 ICK / PTK-KEK / TK。</span></li>
+      <li><b>PMK 推导：</b>标准公式为 <b>HMAC-Hash(SNonce‖ANonce, …)</b>（§12.11.2.5.2），不是 KDF-384 的 “FILS PMKSA Derivation” 形式；PMKID 公式见上表。</li>
+      <li><b>PK 路径的证书位置：</b>Auth 帧只携带 <b>FFE = gSTA/gAP</b>；设备证书/公钥在<b>关联帧</b>的 FILS Public Key 元素中传输。首次 PK 的 KeyAuth 是<b>数字签名</b>，只有命中 PMKSA 缓存时才用 HMAC(ICK)。</li>
+      <li><b>TTP 与 AS：</b>标准正文多称 Authentication Server（AS）；TTP 是同一信任实体的架构称谓。AP↔TTP 的传输（RADIUS/Diameter）不在 802.11 范围内。</li>
+    </ol>
+  </div>
+
+  <div class="summary">
+    <div class="sum"><b>快速性来源 ①</b><span>认证帧本身承载密钥建立材料（DH 公钥或 Wrapped EAP-RP），两帧认证后即可产生 PMK。</span></div>
+    <div class="sum"><b>快速性来源 ②</b><span>密钥确认直接嵌入 (Re)Association Request/Response，不再单独运行 4 次 EAPOL 握手。</span></div>
+    <div class="sum"><b>快速性来源 ③</b><span>SK 的 TTP 交互发生在 AP↔TTP，不增加 STA 空中往返；PK 路径完全去除 TTP。</span></div>
+  </div>
+
+  <div class="card" style="margin-top:9px;">
+    <h3>四帧完成后的状态</h3>
+    <table class="state-table">
+      <tr><th style="width:15%">帧</th><th>完成后的双方状态</th></tr>
+      <tr><td>① Auth (Seq=1)</td><td>STA 发出 <span class="mono">SNonce</span>、<span class="mono">gSTA</span>（PK/PFS）、<span class="mono">FILS Session</span>；AP 完成群/公钥校验并生成 <span class="mono">ANonce</span>、<span class="mono">gAP</span>、<span class="mono">DHss</span>（如适用）</td></tr>
+      <tr><td>② Auth (Seq=2)</td><td>双方得到对端 nonce 与 DH 公钥，独立推导 <span class="mono">PMK / PMKID / PTK</span>（ICK、PTK-KEK、TK），并删除 <span class="mono">rMSK / DHss</span></td></tr>
+      <tr><td>③ (Re)Assoc Request</td><td>AP 用 PTK-KEK 解密并验证 KeyAuth，确认双方密钥一致；AP 侧安装 <span class="mono">PTKSA</span>，准备 Key Delivery</td></tr>
+      <tr><td>④ (Re)Assoc Response</td><td>STA 验证 AP 的 KeyAuth，安装 <span class="mono">PTKSA</span> 与 GTK（及 IGTK/BIGTK/WIGTK）；FILS 完成，可立即收发受保护数据</td></tr>
+    </table>
+  </div>
+
+  <div style="margin-top:10px; border-top:1px solid var(--line); padding-top:6px; color:var(--muted); font-size:9px; display:flex; justify-content:space-between;">
+    <span>依据：IEEE Std 802.11ai-2016（FILS 原始修正案）；IEEE Std 802.11-2024 §4.10.3.6、§9.4.1.1、§12.11</span>
+    <span>FILS 认证流程图 · 5 / 5</span>
+  </div>
+</section>
+
+</body>
+</html>

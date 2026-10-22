@@ -1,0 +1,80 @@
+schema_version: 1
+
+# Role-body structure: what to write when one participant has more than one way
+# to be entered.
+#
+# The framework renders one `let process<Role>` per principal, because a
+# principal is a party and its links, identity scope and world seat stay
+# together. That equation held for every protocol the
+# corpus had extracted (surveyed 2026-08-25: 104 principals.json, 2-3 parties
+# each, every one a single linear run) until an industrial document put two
+# independent exchanges at the same endpoint.
+#
+#   OAuth 2.0 draft-22   the authorization server answers three: the
+#       authorization endpoint (s4.1.1), the token endpoint with
+#       grant_type=authorization_code (s4.1.3), and the token endpoint with
+#       grant_type=refresh_token (s6). A refresh may arrive at any time after
+#       issuance, from a client instance other than the one that ran the grant.
+#       Upstream's own ProVerif model writes exactly this shape:
+#         let authserver() = ((authserver_AuthCode()) | (authserver_TokenCode())
+#                             | (authserver_TokenCodeRefresh())).
+#   IKEv2, TLS 1.3, EAP     CREATE_CHILD_SA, KeyUpdate and re-authentication
+#       have the same shape and have not been reached yet.
+#
+# What goes wrong without this entry is not a model that fails to typecheck. It
+# is a model that quietly answers a smaller question: the extraction that
+# prompted this card modelled the grant and dropped s6 entirely, and every
+# refresh goal would then have been injected into the grant exchange and come
+# back true (observed: OAuth-2.0-mac/OAUTHmac_full, 2026-08-25).
+
+# The sentence the lookup tool puts in front of the cards below.
+lead: |
+  This is the role-body shape for that situation; write it this way. Its closing paragraph says which situations it must not be used for.
+
+idioms:
+  - id: structure.independent_entries
+    version: 1
+    aliases:
+      - multiple entry points
+      - independent exchanges
+      - same endpoint different grant type
+      - re-authentication exchange
+      - rekey exchange
+      - refresh exchange
+      - separate sub-exchange
+      - one party several roles
+      - parallel subprocesses
+    positive:
+      - the document gives one party two or more exchanges it may be entered by independently
+      - a later exchange may start at any time after an earlier one and need not follow it in the same session
+      - the same endpoint is entered with different request types and the party branches on the type
+      - a rekey, refresh, re-authentication or resumption exchange is specified alongside the initial one
+      - the reference model writes this party as several parallel subprocesses
+    negative:
+      - the exchanges are strictly sequential steps of one run, where the later one can only follow the earlier in the same session
+      - the branching is an error path versus a success path of a single exchange
+      - the party chooses between mutually exclusive variants of one exchange, only one of which a run takes
+    prompt: |
+      Keep one `let process<Role>` for this party. Choose one signature that supplies every independent entry with the pre-run values the document gives this party, then write the body as the parallel composition of one subprocess per entry:
+
+      ```proverif
+      let process<Role>(<the party's required pre-run values>) =
+        (* @ROLE <Role> *)
+        (* @orrery-idiom structure.independent_entries/v1 entries=<name1>,<name2>,<name3> *)
+        (
+          ( (* @ENTRY <name1> *) in(...); ...; event reached_<Role>() )
+        | ( (* @ENTRY <name2> *) in(...); ...; event reached_<Role>() )
+        | ( (* @ENTRY <name3> *) in(...); ...; event reached_<Role>() )
+        )
+      ```
+
+      Four rules make this the right shape rather than a longer body:
+
+      1. **Every entry can be entered on its own**, needing nothing another entry bound. One the party answers opens with its own `in(...)`; one the party initiates opens with `new`/`out(...)`; one that consumes what another issued opens with a `get` on the table of rule 2. This is the test: if the second exchange can only happen after the first, in the same run, it is not an entry — it is a step, and belongs inside that other entry.
+      2. **Entries share only the role's parameters.** The signature is chosen once for the party, not separately per entry. A value one entry mints is not visible to another; where the document has one exchange consume what another issued, the carrier is a `table` the first inserts and the second reads, exactly as it would be between two parties.
+      3. **Entries that arrive on the same channel disambiguate on a field of the message**, not by ordering — the grant type, the message type, the exchange identifier the document names. Each entry pattern-matches its own constant.
+      4. **Each entry ends with its own `event reached_<Role>()`**, at the point where *that* entry's honest run has succeeded. One query covers the role, so it answers "at least one entry is reachable"; the events still have to be there, because the removal that produces `flow.pv` reads them.
+
+      Name the entries after what the document calls them, in the order the document introduces them.
+
+      Do not use this shape for the error path of one exchange, for mutually exclusive variants of one exchange, or for steps that are strictly sequential. Those stay one linear body.

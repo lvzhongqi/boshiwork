@@ -1,0 +1,30 @@
+# Line endings, decided here rather than left to whatever a reader's git is
+# configured with. Windows checks out with core.autocrlf=true by default, which
+# rewrites every line of every text file on the way to disk.
+#
+# The recorded runs are a record, not source. An events.jsonl whose lines gained
+# a carriage return is no longer the file the run wrote, and the artifact's whole
+# claim is that these are the bytes the experiments produced. The same goes for
+# the corpus: a ProVerif model is fed to a solver, and the reference JSON is
+# compared byte for byte against what a run emitted.
+*.jsonl -text
+*.json  -text
+*.pv    -text
+*.spthy -text
+*.yaml  -text
+*.yml   -text
+
+# Source and prose are ordinary text; a reader editing them on Windows should
+# get Windows endings and git should normalise on the way back in.
+*.py    text
+*.md    text
+*.js    text
+*.css   text
+*.html  text
+*.toml  text
+*.txt   text
+
+# Binary, and named so no heuristic has to guess.
+*.woff2 binary
+*.png   binary
+*.pdf   binary

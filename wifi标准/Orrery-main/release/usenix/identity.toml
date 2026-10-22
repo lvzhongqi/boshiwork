@@ -1,0 +1,29 @@
+# 身份词表 —— 两个发布路径共用的唯一一份。
+#
+# anonymous_release.py 用它做门禁（扫暂存区的内容和路径，命中即中止）；
+# open_to_thin.py 用它做产物出口审计（那棵 682 MB 的全量树发到公开链接上，
+# 没人会逐字看，出了事撤不回来，风险比匿名仓库更高）。
+#
+# 早先这两处各写各的，改了一边另一边不知道。放一份在这里，谁都别再抄。
+
+# 门禁词表（正则，大小写不敏感）。重写之后扫暂存区的内容和路径，命中即中止发布。
+# sk- 必须写成正则：纯子串会命中 asterisk-wrapped 和 config 里的 "sk-..." 占位符。
+# fy222 不写右边界：fy222fy 是 GitHub 用户名，加了 \b 就漏。
+# 那个账号的公开档案写着真实姓名，company 指向 TACSL，TACSL 的 org 页又写着
+# BUPT 和联系邮箱——两跳到底，所以这几个词一个都不能漏。
+sensitive = [
+  '\bfy222',
+  '\baiformal\b',
+  '\btacsl\b',
+  '\baifvp\b',
+  'ai[_-]?formal[_-]?verifier',
+  'aif[_-]?verifier',
+  'fenghaonan',
+  # 本地未公开的参考模型：提到它等于暴露对该实验室未公开文件的访问权。
+  'rnaka',
+  'qiuguoqing',
+  'lisiyuan',
+  '\b(haonan|xiaonan|yumeng|yueshuang|guoqing|jiabo|lihui|dawei)\b',
+  '\b(bupt|beijing)\b',
+  'sk-[A-Za-z0-9]{16,}',
+]

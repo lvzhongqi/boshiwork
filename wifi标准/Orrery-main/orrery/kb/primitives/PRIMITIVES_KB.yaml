@@ -1,0 +1,406 @@
+# Catalog of cryptographic primitives: the single source of truth for ProVerif
+# declarations plus the idiom for using them. The accessor lives in
+# modules/kbase/primitives; this file is only data.
+#
+# Each entry is one primitive, carrying its verbatim typed ProVerif declarations
+# (injected as they are, with no type inference by the engine) plus a delivery
+# label:
+#   - delivery: render   Self-explanatory primitives whose signature is their
+#                        usage (aenc/senc/sign/hash/aead/pk). Rendered into the
+#                        flow model's declaration block at start-up.
+#   - delivery: lookup   Protocol-shaping primitives with a heavy idiom (DH plus
+#                        its commutativity, HKDF, prf, mac, idI/idR). Not
+#                        pre-rendered: the model fetches them on demand through
+#                        lookup_function_signature, and a hit returns the typed
+#                        declarations plus the idiom. Not pre-rendering keeps the
+#                        declaration block of a non-DH protocol clean.
+#
+# Fixed shape or minimum shape: an entry's decls are a shape the model copies
+# unchanged whenever the primitive's semantics already fix the parameters. DH is
+# the group operation and nothing else, so exp(base, exponent) plus the
+# commutativity equation is the whole of it; mac, prf and idI/idR are the
+# same — one signature says it all, and their idiom teaches use, not shape.
+# HKDF is the exception, and the field to look at when adding a new entry is
+# whether one signature can carry the semantics. How many inputs a KDF takes is
+# part of a protocol's key schedule, not a property of the primitive: TLS 1.3
+# chains Derive-Secret, EDHOC carries a previous key and an algorithm id, X3DH
+# concatenates several DH secrets. An entry like that states the invariants (the
+# argument that must come first and its type, the result type) and offers its
+# decls as a minimum to extend — say so in the idiom, since decls alone cannot.
+#
+# Why the lookup layer has to be a library rather than a grep sub-agent: the JSON
+# shape a sub-agent returns cannot express DH's commutativity equation, and it
+# cannot carry ProVerif types (a register path flattens everything to bitstring).
+# DH's soundness lives in that equation, and HKDF's key return type has to survive.
+#
+# DH has three parts: (1) the primitive and its theory (the equation; names and
+# argument order are irrelevant to it), (2) the usage idiom (the key schedule,
+# delivered by this library's idiom field on lookup), and (3) the modelling level
+# (soundness vs completeness, an expert decision, outside this library's scope).
+# This library pins down (1) and the argument order.
+#
+# Field semantics — all of it static bundle metadata, never inferred by parsing
+# the text of a reduc:
+#   decls.const / fun / reduc / equation   verbatim declarations, trailing period
+#                                          included, rendered in the order
+#                                          const -> fun -> reduc -> equation
+#   types            non-built-in types the signature depends on (bitstring and
+#                    channel are built in and are not listed)
+#   requires         canonical names of prerequisite primitives, i.e. the ones a
+#                    reduc or equation here refers to
+#   aliases          the normalisation table for surface symbols in documents and
+#                    model output (globally unique, checked at load time)
+#   idiom            the usage rules delivered to the main model on lookup (may be
+#                    empty for the render layer)
+#   variants / oracle_decls   placeholders for cryptographic-variant assumptions,
+#                    currently all empty
+
+schema_version: 1
+
+primitives:
+  # ── render layer: self-explanatory primitives ─────────────────────────────
+  - name: aenc
+    delivery: render
+    decls:
+      fun:
+        - "fun aenc(bitstring, pkey): bitstring."
+      reduc:
+        - "reduc forall x: bitstring, y: skey; adec(aenc(x, pk(y)), y) = x."
+    types: [pkey, skey]
+    requires: [pk]          # the reduc uses pk(y)
+    aliases: [adec]
+    description: Asymmetric encryption and decryption — encrypt with the public key, decrypt with the private key.
+
+  - name: pk
+    delivery: render
+    decls:
+      fun:
+        - "fun pk(skey): pkey."
+    types: [skey, pkey]
+    description: Derive an encryption public key from its private key.
+
+  - name: spk
+    delivery: render
+    decls:
+      fun:
+        - "fun spk(sskey): spkey."
+    types: [sskey, spkey]
+    description: Derive a verification key from a signing key. Signature keys carry
+      their own pair of types, so a signing key cannot be used to decrypt and a
+      decryption key cannot verify — the swap fails the typecheck instead of
+      answering a different protocol.
+
+  - name: senc
+    delivery: render
+    decls:
+      fun:
+        - "fun senc(bitstring, key): bitstring."
+      reduc:
+        - "reduc forall x: bitstring, y: key; sdec(senc(x, y), y) = x."
+    types: [key]
+    aliases: [sdec]
+    description: Symmetric encryption and decryption.
+
+  - name: hash
+    delivery: render
+    decls:
+      fun:
+        - "fun hash(bitstring): bitstring."
+    aliases: [h]
+    description: Cryptographic hash.
+
+  - name: aeadEncrypt
+    delivery: render
+    decls:
+      fun:
+        - "fun aeadEncrypt(bitstring, key, bitstring): bitstring."
+      reduc:
+        - "reduc forall x: bitstring, y: key, aad: bitstring; aeadDecrypt(aeadEncrypt(x, y, aad), y, aad) = x."
+    types: [key]
+    aliases: [aeadDecrypt, aead]
+    description: Authenticated encryption with associated data (AEAD).
+
+  - name: sign
+    delivery: render
+    decls:
+      fun:
+        - "fun sign(bitstring, sskey): bitstring."
+      reduc:
+        - "reduc forall x: bitstring, y: sskey; verify(sign(x, y), spk(y)) = x."
+    types: [sskey, spkey]
+    requires: [spk]         # the reduc uses spk(y)
+    aliases: [verify]
+    description: Digital signature and verification.
+
+  # ── lookup layer: protocol-shaping primitives with a heavy idiom ───────────
+  - name: exp
+    delivery: lookup
+    decls:
+      const:
+        - "const g: G."
+      fun:
+        - "fun exp(G, exponent): G."
+      equation:
+        - "equation forall x: exponent, y: exponent; exp(exp(g, x), y) = exp(exp(g, y), x)."
+    # DH group operations use the dedicated types G (group element) and exponent,
+    # matching the expert reference models (the standard EDHOC / IKEv2 main.pv).
+    # This is the controlled exception to the type whitelist: G and exponent
+    # appear only on DH shares and exponents, with the idiom pinning down their
+    # use, and every other value stays bitstring.
+    types: [G, exponent]
+    aliases: [dh, ecdh, x25519, x448, scalarmult, scalar_mult, kex]
+    description: Diffie-Hellman / ECDH group operation, with the commutativity equation.
+    idiom: |-
+      DH/ECDH group operation: use exactly this idiom and ignore surface symbol
+      differences in the document.
+      **Dedicated types** (matching the expert reference models; this is the
+      controlled exception to the type whitelist and applies only to DH
+      shares and exponents — every other value stays bitstring):
+        - The group generator / base point is fixed as const g, already declared
+          as G by this entry. Do not declare g again in init_knowledge, and do not
+          pass it as a role parameter.
+        - Private exponent: new x: exponent;   (the exponent type is fixed)
+        - Public share: let X = exp(g, x) in — X has type G, and X is what is sent.
+        - **A share received from the peer must be annotated G**: when destructuring
+          the message write let (..., Y_recv: G, ...) = msg in, then compute the
+          shared secret as let sh = exp(Y_recv, x) in (sh has type G).
+        - Commutativity is guaranteed by the equation
+          exp(exp(g,x),y) = exp(exp(g,y),x), so both sides get the same sh. This is
+          exactly where cross-role DH reachability comes from: bind the arguments
+          wrongly and sh differs, the later receive becomes unreachable, and the
+          check reports it.
+        - Putting a G element into a message tuple or feeding it to hash is legal
+          (a tuple falls back to bitstring). Only exp's two arguments, and sh when
+          fed to HKDF, have to be G; every other field stays bitstring if that is
+          what it is.
+        - The function name is fixed as exp and the argument order as
+          exp(<base: G>, <exponent: exponent>). Do not rename it to ECDH or X25519,
+          and never fake DH with hash(...).
+
+  - name: xor
+    delivery: lookup
+    decls:
+      fun:
+        - "fun xor(bitstring, bitstring): bitstring."
+      equation:
+        - "equation forall x: bitstring, y: bitstring; xor(xor(x, y), y) = x."
+    aliases: [exclusive_or, eor]
+    description: Exclusive-or with the single cancellation equation the verification path needs (recover x from xor(x, y) knowing y).
+    idiom: |-
+      XOR as a concealment pad (5G-AKA's SQN xor AK in AUTN is the shape):
+      the holder of the pad recovers the value via the cancellation equation.
+      **Add only the equations the protocol's recovery steps actually use** —
+      the full xor theory (associativity + commutativity + nilpotence) blows
+      up ProVerif's completion and is a known non-termination source; a
+      reference model may carry one or two extra nilpotence variants, treat
+      those as writings of the same primitive, not as required theory. Never
+      use xor as an encryption stand-in for senc: it models a pad, and the
+      pad must itself be derived secret material (an AK from the key
+      schedule), not a long-term key.
+
+  - name: HKDF
+    delivery: lookup
+    decls:
+      fun:
+        - "fun HKDF(G, bitstring): key."
+    # The first argument is the DH shared secret sh, of type G (exp's output):
+    # this keeps it in step with exp and with the expert reference models. Hence
+    # the G type here and the requires on exp, which reuses its G/exponent
+    # declarations.
+    types: [key, G]
+    requires: [exp]
+    aliases: [hkdf, kdf, hkdf_expand, hkdf_extract, edhoc_kdf, prk]
+    description: Abstract typed key derivation from a DH shared secret.
+    idiom: |-
+      Key derivation from a DH shared secret. Unlike the other entries, **the
+      signature here is a minimum, not a fixed shape**: how many inputs a KDF
+      takes is part of the protocol's key schedule, not a property of the
+      primitive. Extend it where the document's schedule needs more, and keep
+      these three fixed whatever you write:
+        - the DH shared secret sh is the first argument and has type **G** (the
+          output of exp);
+        - the context / label / transcript is a bitstring — use a tuple for
+          several fields;
+        - the result has type key, which feeds straight into senc or aead.
+      The minimum shape, enough for a protocol that derives its keys from one DH
+      secret and a context:
+        fun HKDF(G, bitstring): key.
+      Two extensions the reference models use:
+        - **one key derived from another** (a key schedule, PSK chaining): the
+          previous key is an input, fun HKDF(G, bitstring, key): key.
+        - **a security goal that turns on the negotiated algorithm**: carry the
+          algorithm identifier as a further argument and add a reduc to read it
+          back out, reduc forall x: G, ctx: bitstring, k: key, alg: algorithmID;
+          getAlgorithm(HKDF(x, ctx, k, alg)) = alg.
+      Whatever the shape:
+        - A different context gives a different key:
+          let k_2: key = HKDF(sh, label_2) in
+        - For several session keys, call it several times with different contexts.
+          Do not fold several steps into one, and never invent a derived key with
+          new k: key — that loses the binding to the DH secret.
+
+  - name: prf
+    delivery: lookup
+    decls:
+      fun:
+        - "fun prf(bitstring, bitstring): bitstring."
+    aliases: [hmac, prfplus, prf_plus, mac_prf, kdf_prf]
+    description: Pseudorandom function / HMAC — takes arbitrary bytes and returns a bitstring, with no secrecy semantics (anyone who knows the inputs can compute it).
+    idiom: |-
+      PRF / HMAC: fun prf(bitstring, bitstring): bitstring.
+        - Both arguments must be bitstring. prf takes arbitrary bytes and ignores
+          semantic types, so do not pin the parameters to a concrete type such as
+          key or host.
+        - If the value you want to feed in has a distinct type (host, a group
+          element), look up the matching `<type>_to_bs` converter and reduce it
+          first, e.g. prf(k, host_to_bs(IDi)). Do not push a host in directly.
+        - If the "key" you want to feed in must be a bitstring, derive it with prf
+          itself (let SK = prf(seed, ctx) returns bitstring). Do not feed HKDF's
+          key into prf — HKDF's key is for senc and mac, and the types do not match.
+        - prf's output is a bitstring and can be fed into another prf.
+        - **If what you want is "the receiver checks the message was not altered"
+          (integrity / MAC / ICV / checksum), look up `mac`, not this.** prf is for
+          derivation and has no verification semantics of its own.
+
+  - name: mac
+    delivery: lookup
+    decls:
+      fun:
+        - "fun mac(bitstring, key): bitstring."
+    types: [key]
+    aliases: [MAC, integrity, integrity_check, integrity_protection, icv, checksum, mac_tag, authenticator]
+    description: Message authentication code / integrity check — one-way and irreversible; the tag does not carry the message, and verification is by **recomputing and comparing**.
+    idiom: |-
+      MAC / integrity check: fun mac(bitstring, key): bitstring.
+        - **One-way, with no destructor**: the tag does not carry the message and
+          the message cannot be recovered from the tag. Do not write anything like
+          `checkmac(tag, k)` that retrieves the plaintext — that is not what a MAC
+          means.
+        - The message and the tag **travel separately**:
+          `out(ch, (m, mac(m, k)))`, and the receiver takes both and then verifies.
+        - **Verification is recompute-and-compare**:
+          `if tag = mac(<the same fields as the sender used>, k) then`.
+          The recomputed input must be **exactly** what the sender computed the MAC
+          over — the same fields in the same order — which also forces you to be
+          explicit about which fields the MAC actually covers.
+        - **Encrypt-then-MAC**: when the document says a payload is "encrypted
+          **and** authenticated", integrity-protected, or "Encrypted and
+          Authenticated", compute the MAC over the **ciphertext**:
+              let ct = senc(<plaintext tuple>, k_e) in
+              out(ch, (ct, mac(ct, k_a)));
+              (* receiver *)
+              in(ch, (ct: bitstring, tag: bitstring));
+              if tag = mac(ct, k_a) then
+              let (<fields...>) = sdec(ct, k_e) in
+          The encryption key k_e and the integrity key k_a are **two different
+          keys** (protocols usually derive them separately, and often one set per
+          direction). Do not mix them and do not use only one.
+        - If the document says it uses **AEAD, a single authenticated-encryption
+          algorithm** giving confidentiality and integrity together, look up
+          `aeadEncrypt` rather than hand-assembling senc + mac.
+
+  - name: idI
+    delivery: lookup
+    decls:
+      fun:
+        - "fun idI(spkey): bitstring [private]."
+    types: [spkey]
+    description: The initiator's credential identity marker, derived deterministically from a public key.
+    idiom: |-
+      Credential identity marker: fun idI(pkey): bitstring [private].
+        let id_i: bitstring = idI(pk_i) in — the identity marker is derived
+        deterministically from the peer's or one's own public key.
+
+  - name: idR
+    delivery: lookup
+    decls:
+      fun:
+        - "fun idR(spkey): bitstring [private]."
+    types: [spkey]
+    description: The responder's credential identity marker, derived deterministically from a public key.
+    idiom: |-
+      Credential identity marker: fun idR(pkey): bitstring [private].
+        let id_r: bitstring = idR(pk_r) in — the identity marker is derived
+        deterministically from the peer's or one's own public key.
+
+  # ── Initial-knowledge derivations ──────────────────────────────────────────
+  # The three constructors below can realise a semantic `derived_from` edge
+  # in principals.json rather than by the model looking them up: the relation
+  # names the primitive, and the framework renders the `let` into the fixed main
+  # process. They live here for the same reason every other primitive does —
+  # so a declaration has exactly one home and cannot drift from a second copy.
+  # (`dh_public` reaches `exp` above by the same route.)
+
+  - name: p_of
+    delivery: lookup
+    decls:
+      fun:
+        - "fun p_of(nsk): npk."
+    types: [nsk, npk]
+    description: The public half of an abstract non-interactive key-agreement keypair, a one-way image of the private half.
+    idiom: |-
+      Abstract NIKE public-key derivation: fun p_of(nsk): npk.
+        let PA = p_of(hA) in — use this for a document-level relation such as
+        PA = F(hA, G) when the document does not fix a concrete DH/ECDH group
+        encoding. This entry declares the initial public image only. For the
+        run-time application of F, look up `nike_apply` and use its reviewed
+        equation. Use `exp` instead only when the document explicitly specifies
+        DH/ECDH exponentiation or scalar multiplication.
+
+  - name: nike_apply
+    delivery: lookup
+    decls:
+      fun:
+        - "fun nike_shared(nsk, npk): nshared."
+        - "fun nike_token(nsk, npk): ntoken."
+        - "fun nike_blinded_A(nsk, nsk, npk): nshared."
+        - "fun nike_blinded_B(nsk, ntoken): nshared."
+      equation:
+        - "equation forall x: nsk, y: nsk; nike_shared(x, p_of(y)) = nike_shared(y, p_of(x))."
+        - "equation forall r: nsk, h: nsk, e: nsk; nike_blinded_A(r, h, p_of(e)) = nike_blinded_B(e, nike_token(r, p_of(h)))."
+    types: [nsk, npk, ntoken, nshared]
+    requires: [p_of]
+    aliases: [nike, nike_shared, key_agreement_function]
+    description: Typed run-time encodings of abstract non-interactive key agreement, including the blinded three-factor pattern used by ISO 11770-3 mechanism 14.
+    idiom: |-
+      Abstract NIKE operations corresponding to F: S1 x S2 -> S2. Keep the
+      domains distinct and write `set ignoreTypes = false.` in the model; with
+      type erasure, replicated roles can feed unrelated messages back into the
+      NIKE rules and ProVerif saturation does not terminate.
+
+      For ordinary two-factor agreement:
+        let shared: nshared = nike_shared(own_private, peer_public) in
+
+      For the blinded three-factor shape used by ISO 11770-3 mechanism 14:
+        let KTA1: ntoken = nike_token(rA, PA) in
+        let shared_A: nshared = nike_blinded_A(rA, hA, KTB1_recv) in
+        let shared_B: nshared = nike_blinded_B(rB, KTA1_recv) in
+
+      The distinct `npk`, `ntoken`, and `nshared` result types are semantic:
+      a public key, a transmitted token, and a shared secret are different
+      document objects. Do not collapse them to one recursive result type and
+      do not add another F/exp theory beside this entry.
+
+  - name: J
+    delivery: lookup
+    decls:
+      fun:
+        - "fun J(password): verifier."
+    types: [password, verifier]
+    description: The verifier a server stores for a password, a one-way image the password itself is not recoverable from.
+    idiom: |-
+      Password verifier: fun J(password): verifier.
+        let v = J(pw) in — the server stores v, never pw. The one-way direction
+      is the point: an attacker holding the verifier still has to guess the
+      password, which is what a guessing-resistance goal is about.
+
+  - name: public_parameter
+    delivery: lookup
+    decls:
+      fun:
+        - "fun public_parameter(bitstring): bitstring."
+    description: The public parameter a zero-knowledge prover publishes for its secret.
+    idiom: |-
+      Zero-knowledge public parameter: fun public_parameter(bitstring): bitstring.
+        let P = public_parameter(s) in — the prover publishes P and keeps s.
+      Both sides stay bitstring: the entry fixes the relation, not a group.

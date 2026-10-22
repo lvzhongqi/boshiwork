@@ -1,0 +1,342 @@
+# 匿名评审版：匿名 + 最小可运行集。
+#
+# 原来这里写着「前端和跑批器不外发」，两半都不成立了：experiments/batch/ 是重跑的
+# 必要件，现在发；前端从来就没被挡住过——orrery/web/ 在包里面，只要发 orrery/
+# 就跟着走（17 个文件，含 vendor 的 vue / pico.css / 两份 woff2）。要挡它得往
+# exclude_paths 里加 "orrery/web"，那是另一个决定，不是这行注释能替你做的。
+
+dest = "/Users/fy222/Documents/lab/aiformal/github/Anonymous-Orrery"
+
+# 从 src 拷哪些顶层条目。没列到的一律不发——包括 my_work_space/、output/、
+# a_work_space/、.agent_memory/、CLAUDE.md。新增顶层目录要外发时在这里加一行。
+copy = [
+  "orrery",
+
+  # 重跑需要的那个 orrery 之外的顶层包：experiments/batches.py 是实验定义、
+  # experiments/protocols.yaml 是协议目录，experiments/batch/ 是读它们的跑批器，
+  # experiments/oneshot/ 是 baseline 的实现。四者一体，原先 batch 单独叫
+  # benchmark/ 待在顶层，是两行白名单。
+  "experiments",
+
+  # 实验产物：release/usenix/open_to_thin.py 写出来的瘦身树（25M，568 个 run）。
+  # 白名单路径不存在是硬错误，所以三段流水线没跑完就 dry-run，会停在拷贝这一步。
+  # 隐私和版权都在上一段（第 02 步）处理干净了——凭据、账号名、home 路径、
+  # 受版权的规范正文都不在里面，门禁只是第二道。
+  # 全量那棵（a_experiments_open/，682M）不进仓库，走匿名 OSS bucket。
+  "runs",
+
+  "pyproject.toml",
+  # README.md 不从源拷：Orrery 的那份讲的是一个 VerdictBench/ 不存在、runs/ 被
+  # gitignore 的仓库，没法在不对 Orrery 说假话的前提下描述工件。工件的根 README
+  # 由下面的 overlay 提供。
+  # README 唯一引用的那份。experiments/ 自己那份跟着 experiments 树走。
+  "config.example.yaml",
+]
+
+# 顶层 copy 的路径级排除（相对 src 根，命中它自己和它底下的一切）。
+# 这里列的都是 copy 进来的树里混着的、gitignore 掉的本机文件——git 不发它们，
+# 但拷贝走的是文件系统，不写在这里就会跟着进暂存区。
+exclude_paths = [
+  # 跑批器的活凭据（mode 600），里面还有 /home/<account>/... 的服务器路径。
+  # 门禁能拦住 sk- 开头的那种，但拦不住 Gemini 的 AIza 前缀——不能指望门禁兜底。
+  # 审稿人要跑，第一次跑批时它会自己从 experiments/config.example.yaml 拷一份出来。
+  "experiments/config.yaml",
+  # oneshot 基线在本机跑出来的草稿（1.7M），不是论文数据；论文数据在 runs/baseline。
+  "experiments/oneshot/runs",
+
+  # 969 行的网关实测笔记：哪家中转站改写请求参数、哪家的 /v1/messages 行为不对。
+  # 这是运维知识，不是工件材料；而且 Class 2 那节逐个点名了区域性 API 中转商
+  # （bltcy / api.bltcy.ai、zhizengzeng / api.zzz-api.top，还标了 overseas 与
+  # mainland 两个端点），是个弱地域线索。代码不 import 它，删掉只少一篇文档。
+  "orrery/infra/llm/README.md",
+]
+
+# 旧的 "tools" 已从 copy 里删掉：源仓库里 tools/ 早已不存在（git ls-files tools 为 0），
+# 留着就是每次发布都硬错误。它原本承载的那句承诺（Open Science 附录里的
+# "the prompt templates of every LLM stage"）不受影响——50 份 *.sys.md / *.user.md
+# 就在 orrery/ 包内（nodes/*/prompts/、pipeline/evaluation/prompts/、expert/prompts/），
+# 随包发布；oneshot 基线的两份在 experiments/oneshot/prompts/。中文版由 common.toml
+# 的 *_zh.sys.md / *_zh.user.md 挡掉。
+
+# 目标仓库自有、不归本次同步管辖的路径（锚定到仓库根，末尾 / 表示整棵子树）。
+#
+# 空的:目标仓库是纯发布产物,同步过来是什么样就是什么样,不留任何自有文件。
+# `.git/` 由代码无条件保护,不需要在这里写。
+#
+# 早先这里有 configs/、outputs/、run_*.py、.idea/、.gitignore ——那是把目标同时
+# 当成工作区的后果:configs/base.yaml 里带着真的 API key 和本机绝对路径,却因为
+# 在 protect 里而永远不进暂存区,门禁也就永远扫不到它(词表里 sk-[A-Za-z0-9]{16,}
+# 那条正是为它写的)。不外泄只靠 .gitignore 一行。
+#
+# 所以不要在目标 checkout 里跑管道——跑就会重新长出这些东西。要跑在源仓库的
+# 工作区里跑；下面那份发出去的 .gitignore 是兜底,不是许可。
+#
+# 目标仓库里没有任何这份配置管不到的文件。
+#
+# `.gitignore` 曾经在这里：它是目标仓库自有的，protect 让 sync 既不写它也不删它
+# （不保护就会被当成「暂存区里没有的文件」删掉）。代价是它成了发布脚本永远够不到
+# 的一份文件——手写一次，之后没有任何检查看过它，而它里面那行不带锚点的
+# `config.yaml` 把 454 份 run 自己的配置快照全挡在了仓库外面，每次发布还都报成功。
+#
+# 现在它由 overlay 发出去（`artifact/gitignore` -> `.gitignore`），于是它在暂存区
+# 里，sync 不会删它，protect 也就不需要了。要改它就改 release/usenix/artifact/，
+# 那里有版本控制，改了有 commit。
+protect = []
+
+# 协议语料库。copy 里的路径相对语料库根，任意深度，整目录拷走。
+#
+# 这份清单由 `anonymous_release.py scan <语料库>` 扫出来：判据是「自己有
+# claims/claims.json」，和论文的 \libUnits、experiments/reproduce.py 完全一致。
+# 半成品没有 claims，因此进不来。子协议布局下拷贝根取版本层，
+# 因为 source/ 和 annotations/ 共享在那一层，只拷 subprotocols/<sub>/ 会把输入丢掉。
+#
+# 白名单而不是排除表：语料库还在天天长，黑名单漏一条就是半成品进了已投稿的匿名
+# 工件，撤不回来；白名单漏一条只是少个文件，dry-run 就能看见。
+#
+# **但达标不再是唯一判据。** 这份清单现在等于论文的 sync_data.py::FAMILIES 减去
+# sync_data.py::EXCLUDED——工件只发论文报告过的协议，101 个单元。语料里另外那些
+# 达标却没进论文的（rfc/EAP-AKA-prime、informal/Bluetooth、3gpp/AKMA、
+# rfc/EDHOC/draft-08/subprotocols/asymmetric）不发：审稿人手上的每个单元都应该
+# 能在论文的表里找到对应行，多出来的只会引出「这个为什么没报」的问题。
+# 论文那张表改了，这里跟着改；`release.py scan` 仍然可以用来确认新族是否达标。
+#
+# 子协议布局下拷贝根取版本层，因为 source/ 和 annotations/ 共享在那一层，
+# 只拷 subprotocols/<sub>/ 会把输入丢掉。EDHOC draft-12 就是这样：论文报的是
+# subprotocols/dh，拷贝根写 draft-12。
+#
+# 拷贝根整目录拷走，所以 rfc/TLS13/draft20/cases/default（挂在 draft20 下的一份
+# 上游 Tamarin 模型，自己没有 claims）会跟着 draft20 一起发——父目录已经过审，
+# 不是半成品。它的 proofs/ 由下面的 exclude 挡掉，模型本体留着。
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 以下原本在 common.toml 里。那份文件存在的唯一理由是「多 profile 共用」，
+# 而 profile 这个概念已经删掉了——只有一份匿名评审版，从来没有第二个选项。
+# 两个文件永远一起加载、顺序固定、没有第三个消费者，那就是一个文件。
+# 身份词表另外单列在 identity.toml，因为它还有第二个消费者（第 03 步）。
+# ═══════════════════════════════════════════════════════════════════════════
+
+# 迁移源。
+#
+# 包名已随论文统一为 orrery（仓库 github.com/ai-formal-verifier/Orrery，私有）。
+# 旧名 aif_verifier / AIFVerifier 不再出现在源里，因此下面把它们和组织名一起
+# 写进门禁词表：它们不是要替换的字符串，而是回归时该拦下的信号。
+# src 不再写在这里：这份工具住在 Orrery 内，源就是 release/usenix/ 的上上层，
+# 由 load_config 从 __file__ 推出来。想覆盖的话在这里写一行 src = "..." 即可。
+
+# 拷贝时一律跳过的垃圾。按名字匹配（支持 * 通配），任意层级都生效。
+exclude = [
+  ".git",
+  ".idea",
+  ".claude",
+  ".DS_Store",
+  "__pycache__",
+  "*.pyc",
+  ".pytest_cache",
+  ".ruff_cache",
+  "*.egg-info",
+
+  # 中文提示词不属于匿名发布工件；名称匹配在任意目录层级生效。
+  #
+  # 写成 *_zh.* 而不是列 .sys.md / .user.md 两种后缀：expert/prompts/overview_zh.md
+  # 就是从那份清单里漏出去的——它是同一类东西（渲染进 user 消息的 Jinja 模板），
+  # 只是没走 .sys/.user 的命名。同 ISO 那条 withhold 一个道理，按格式列清单，
+  # 列的是今天存在的格式。源里 53 份 _zh 文件全是提示词，语料库里一份都没有。
+  "*_zh.*",
+
+  # 原始文档一律不发（要求：只同步 md）。按名字匹配，任意层级生效，所以语料
+  # 将来在别处冒出的 pdf 也已经挡住了。
+  "*.pdf",
+
+  # 各仓库自己的元文件，不该跟着内容一起外发。
+  # .gitignore 尤其要拦：ProtocolLib 的那份带 **/pdf/、IKEV2/* 等规则，一旦
+  # 落到目标的 dataset/ 下就会就地生效，把语料文件挡在提交之外。
+  "CLAUDE.md",
+  "AGENTS.md",
+  ".gitignore",
+  ".gitattributes",
+]
+
+# 发布层自己写的文档，落到目标仓库的指定位置。copy 是 src/rel -> dst/rel，改不了
+# 名字也放不进语料内部，所以单列一条。这些文字讲的是「这次发布扣了什么、为什么」，
+# 那是发布决策的产物，Orrery 和 VerdictBench 的 README 都不该替它说。
+[[overlay]]
+from = "artifact/README.md"
+to = "README.md"
+
+[[overlay]]
+from = "artifact/VerdictBench-README.md"
+to = "VerdictBench/README.md"
+
+# 源文件名不带点：`release/usenix/artifact/.gitignore` 在 Orrery 仓库里会是一份
+# 真的 gitignore，管着它自己所在的目录。
+[[overlay]]
+from = "artifact/gitignore"
+to = ".gitignore"
+
+[[lib]]
+src = "/Users/fy222/Documents/lab/aiformal/github/VerdictBench"
+dest = "VerdictBench"
+copy = [
+    "3gpp/5G-AKA/TS33.501-v15.0.0",# 1 个单元
+    "ISO/11770-2-symmetric-techniques",# 13 个单元
+    "ISO/11770-3-asymmetric-techniques",# 24 个单元
+    "ISO/11770-4-weak-secrets",# 6 个单元
+    "ISO/11770-7-cross-domain-key-exchange",# 3 个单元
+    "ISO/9798-2-symmetric-encipherment",# 8 个单元
+    "ISO/9798-3-digital-signature",# 10 个单元
+    "ISO/9798-4-cryptographic-check",# 4 个单元
+    "ISO/9798-5-zero-knowledge",# 3 个单元
+    "ISO/9798-6-manual-data-transfer",# 11 个单元
+    "academic/Denning-Sacco",# 1 个单元
+    "academic/Kao-Chow",# 1 个单元
+    "academic/NSPK",# 1 个单元
+    "academic/NSSK",# 1 个单元
+    "academic/Neuman-Stubblebine",# 1 个单元
+    "academic/Otway-Rees",# 1 个单元
+    "academic/Yahalom",# 1 个单元
+    "academic/wide-mouth-frog",# 1 个单元
+    "informal/FIDO/UAF",# 1 个单元
+    "informal/Signal/PQXDH/revision2",# 1 个单元
+    "rfc/EDHOC/draft-08",# 1 个单元（asymmetric 见 exclude）
+    "rfc/EDHOC/draft-12",# 1 个单元 —— 论文报的 EDHOC-12 (static DH)，先前漏发
+    "rfc/IKEV2",# 1 个单元
+    "rfc/OAuth-2.0/draft22",# 1 个单元
+    "rfc/TLS13/draft18",# 1 个单元
+    "rfc/TLS13/draft20",# 1 个单元
+]
+# 父目录已经进了白名单、但自己不该发的子树。
+exclude = [
+    # 论文 EXCLUDED 的第四条：另外两个 EDHOC 分析已经覆盖了这个协议，而它在
+    # 每个 verdict 上都把验证器预算耗尽了。父目录 draft-08 已进白名单，所以
+    # 只能在这里把它挑出来。
+    "rfc/EDHOC/draft-08/subprotocols/asymmetric",
+
+    # Tamarin / SAPIC 整棵树。这条管线只跑 ProVerif，orrery / experiments
+    # 里没有一行代码读 .spthy，所以它们对工件是纯重量：证明对象
+    # 84.58 MB，模型本体再 1.03 MB。
+    #
+    # 没有单元会因此失去形式化证据——10 个 tamarin 目录里 9 个、3 个 sapic 全部，
+    # 同级都有 proverif/。唯一整体消失的是 rfc/TLS13/draft20/cases/default，
+    # 那个目录 100% 是 tamarin（自己没有 claims，靠 draft20 搭车进来的上游模型）；
+    # draft20 单元本体有自己的 formal/proverif/，不受影响。
+    #
+    # 会留下的文件里曾有两批指向这两棵树：5 份 md（5G-AKA 的 AKA/README.md 与其
+    # proverif/README.md、TLS13 draft20 的 proverif/README.md、academic/NSPK/README.md、
+    # EDHOC draft-12 的 PROVENANCE.md），以及 6 份 formal/proverif/*.pv 的 PROVENANCE
+    # 头里的 `../tamarin/X.spthy` / `../sapic/X.spthy`（Denning-Sacco ×3、Kao-Chow、
+    # wide-mouth-frog、Neuman-Stubblebine ×2）。两批都已改掉：上游模型仍然写清楚是哪一份，
+    # 但只写文件名，不写相对路径。**查的时候别只 grep md** —— 第二批就是这么漏掉的。
+    "*/formal/tamarin",
+    "*/formal/sapic",
+]
+
+# 有版权的原始文档：under 命中的目录底下，除 keep 列出的文件名外一律不拷。
+#
+# ISO/IEC 标准是 BSI 付费文档，语料里这几份还是「Committee member copy: Do not
+# reproduce」的委员会副本——文档自己写着禁止再分发。那行水印本身也是身份线索：
+# 能拿到委员会副本的组屈指可数，评审期它比姓名更能定位作者。`source/main/*.md`
+# 是全文逐条转写，跟 PDF 同一性质，所以按格式列清单没有意义。
+#
+# 因此这里是**默认扣下、白名单放行**：pdf / md / doc / docx 固然挡住，日后语料里
+# 冒出 .rtf、.html、从文档里抽出来的 images/，不改规则也已经挡住了。README 留着，
+# 版权说明写在那里。
+#
+# 扣下的只是输入文档。annotations / principals / claims / results / formal 照发，
+# 那些是自己的产物——ProVerif 模型加假设加 verdict 才是「分析做过」的证据。
+# ISO 的理由最硬，所以规则从它长出来，但现在对每个单元一视同仁：`*/source`
+# 底下只放行文档正文本身（`*.md`）和 README。多条 withhold 是**最严的赢**——
+# 下面 ISO 那条 keep 只有 README.md，不会被这条放宽。
+#
+# keep 列的就是 loader 的 `_SUPPORTED_EXTS`（modules/document/loader.py:52）里的
+# 文本格式。**不能只留 *.md**：TLS13 draft18/draft20、OAuth-2.0 draft22、
+# EDHOC draft-08/draft-12 这五个族的主文档是 `.txt`（draft-tls13-20.txt 之类），
+# 只留 md 会让 `_find_main_doc` 抛 RuntimeError，五个族当场不可用。
+#
+# refs 同样一份不少。判据不是「缺了还跑不跑得动」——`_find_ref_docs` 目录不存在
+# 时返回空列表，不报错——而是「重跑出来的东西和 runs/ 里记录的是不是同一回事」。
+# 被引文档是产生那批 run 的输入的一部分，少一份，重跑读到的文档集就变了，
+# 那不叫复现。
+#
+# 挡住的是非文本：图片、pdf（common.toml 全局挡）、3GPP 的 `33501-f00.doc`
+# （3.62 MB，同目录有转写好的 33501-f00.md，loader 取的就是后者）。
+[[lib.withhold]]
+under = "*/source"
+keep = ["README.md", "*.md", "*.txt"]
+
+# 受限出版方三家，同一条规矩：正文一律不放行，只留 README。三条分开写而不是
+# 合成一条，是因为理由不同、将来撤销的条件也不同——哪天拿到某一家的书面许可，
+# 删掉的是那一条，不是三家一起松。判据查的是文档自己，不是转述：
+#
+# - ISO/IEC：BSI 付费文档，语料里那几份还是「Committee member copy: Do not
+#   reproduce」的委员会副本。水印本身还是身份线索——能拿到委员会副本的组屈指可数。
+# - 3GPP：`33501-f00.doc` 版权页原文「No part may be reproduced except as
+#   authorized by written permission. The copyright and the foregoing restriction
+#   extend to reproduction in all media.」规范可以自由下载，但自由下载不等于可以
+#   再分发，这句禁的正是 reproduction。**而且转写稿把这段声明整个丢了**
+#   （textutil 从 Foreword 起截），发出去就是剥掉版权声明的正文，比带着声明发更糟。
+# - FIDO Alliance：`fido-uaf-protocol.md:35` 只有「Copyright © 2013-2020 FIDO
+#   Alliance All Rights Reserved.」，主文档加 5 份 refs 全文没有任何再分发或制作
+#   衍生作品的授权；语料里那份 Markdown 是从官方 HTML 转来的，本身就是衍生作品。
+#
+# 这三家正是 `latest_3_to_remove_sensitive_open.py::RESTRICTED` 的三家。**两条发布
+# 路径此前对同一份文档给了相反的答案**：runs 树里 3GPP / FIDO 的句子被逐句换成占位，
+# 语料这边却整份发出去，因为上面那条 `*/source` 的 `keep = ["*.md"]` 顺手放行了它们
+# ——那条本来只是为了让 TLS13 / OAuth / EDHOC 五个族的 `.txt` 主文档能发（不发它们
+# `_find_main_doc` 直接抛错）。多条 withhold 是最严的赢，所以下面三条不会被它放宽。
+#
+# 只扣输入文档。annotations / claims / flow / formal / results 照发——那些是自己的
+# 产物，ProVerif 模型加假设加 verdict 才是「分析做过」的证据。代价是这三家的单元在
+# 工件里不能端到端重跑（`_find_main_doc` 找不到 `source/main/`），这一条已知并接受，
+# 处理在 TODO.md「104 个选中协议，工件里只有 15 个跑得起来」。
+#
+# keep 只留 README.md 而不是写一条「挡 *.md」：本文件通篇是默认扣下、白名单放行，
+# 反过来写成黑名单，日后语料里冒出 .rtf / .html / 抽出来的 images/ 就又漏了。
+# 今天这三家 source/ 底下除 README 外正好只有 .md（.doc / .pdf / 图片已被上面那条和
+# 全局 exclude 挡掉），所以效果就是「只扣 md」。
+[[lib.withhold]]
+under = "ISO/*/source"
+keep = ["README.md"]
+
+[[lib.withhold]]
+under = "3gpp/*/source"
+keep = ["README.md"]
+
+[[lib.withhold]]
+under = "informal/FIDO/*/source"
+keep = ["README.md"]
+
+# 正文替换：命中的文件正文换成扣留说明，YAML frontmatter 留着。和 withhold 的
+# 分工是「这份东西还有没有别的用处」——文档正文没有，整份不拷；下面这些有，
+# 删了会让重跑和阅读都少一句话，所以留壳换瓤。
+#
+# `subprotocol.md` 是语料自己写的「这个子协议建模哪一支」，
+# `loader.py::_read_subprotocol_md` 读它的正文注进每个抽取节点的提示词。它躲开了
+# 上面全部三条 withhold，因为那三条都锚在 `*/source` 上，而它在
+# `subprotocols/<机制>/` 底下——ISO 正文就是这么整段走出去的。
+#
+# 26 份 ISO subprotocol.md 里 24 份是 91 字节的一句话，只有 9798-2 的
+# `mechanism-2-no-identifier` 和 `mechanism-4-no-identifier` 各 1.8 KB：为了讲清
+# 「可选的 I_B 省略这一支」，它们把 §6.1.2 / §6.2.2 整段作为 Markdown 引用块抄了
+# 进来，还夹着几处行内引语。规则写成 `*-no-identifier` 而不是点名两个目录，是因为
+# 判据是「这一支需要引条款才能说清」，将来再出一个同类的会自动落进来；真要多出一个
+# 不引条款的 `-no-identifier`，代价只是它也拿到一份说明，不是漏发。
+[[lib.replace]]
+under = "ISO/*/subprotocols/*-no-identifier"
+match = "subprotocol.md"
+why = """ISO/IEC 9798 and 11770 are sold, and their terms forbid redistributing
+the documents or a normalised copy of them; a block quotation of a clause is a
+copy of that clause."""
+
+# results/ 只发两份判定文件。cases_results.json 看着最该删（1.19 MB，语料里
+# 最大的一类 JSON），但 nodes/cross_check/node.py 直接读它当 ground truth，
+# 而 cross_check 是管线的最后一个节点——删了每次重跑都在最后一步崩。
+[[lib.withhold]]
+under = "*/results"
+keep = ["results.json", "cases_results.json"]
+
+# 目标仓库的提交身份。不设置的话 git 会取全局身份，提交里就会出现真实姓名和
+# 邮箱——文件内容擦得再干净，git log 一行就漏了。
+[git]
+name = "Anonymous"
+email = "anonymous@example.com"

@@ -1,0 +1,58 @@
+{
+  "vocab_version": "2.2.0",
+  "scenarios": [
+    {
+      "name": "baseline",
+      "conditions": []
+    },
+    {
+      "name": "peer_key_attacker_supplied",
+      "conditions": [
+        {
+          "id": "admission_peer_auth",
+          "subtype": "open"
+        }
+      ]
+    },
+    {
+      "name": "shared_key_leaked",
+      "conditions": [
+        {
+          "id": "ltk_reveal_kab",
+          "subtype": "disclosed"
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "property": "secrecy_i_a",
+      "scenarios": [
+        "baseline",
+        "peer_key_attacker_supplied"
+      ]
+    },
+    {
+      "property": "secrecy_i_b",
+      "scenarios": [
+        "baseline",
+        "peer_key_attacker_supplied"
+      ]
+    },
+    {
+      "property": "auth_a_to_b",
+      "scenarios": [
+        "baseline",
+        "peer_key_attacker_supplied"
+      ]
+    },
+    {
+      "property": "auth_b_to_a",
+      "scenarios": [
+        "baseline",
+        "peer_key_attacker_supplied",
+        "shared_key_leaked"
+      ]
+    }
+  ]
+}

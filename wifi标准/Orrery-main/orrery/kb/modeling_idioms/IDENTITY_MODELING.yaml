@@ -1,0 +1,86 @@
+schema_version: 1
+
+# The sentence the lookup tool puts in front of the cards below.
+lead: |
+  These candidates are mutually exclusive: choose exactly one for one identity-binding scope and do not mix their encodings.
+
+idioms:
+  - id: identity.authenticated_key_binding
+    version: 1
+    machinery: registry
+    validator: identity_registry_v1
+    aliases:
+      - authenticated public key
+      - identity public key binding
+      - public key of a named principal
+      - pk_a pk_b
+    positive:
+      - a public key or long-term key is named as belonging to an identity
+      - the document assumes the binding but does not describe how it is established
+      - no ca validation directory protocol or pre-provisioning mechanism is specified
+    negative:
+      - the document explicitly describes an online key directory
+      - the peer credential is explicitly fixed before the session
+      - the protocol validates a certificate chain
+    prompt: |
+      Model the omitted deployment mechanism as one closed authoritative identity-to-key relation. Use one table keyed first by identity, insert only the named honest bindings in the main process, and let a role get the key by the identity whose key the protocol notation asks for. A role retrieves its own long-term credential by its own identity; when a network-supplied selector (a key identifier, a hint) picks the credential, the row carries the owner identity and the role's get pins that column to its own, so the selector chooses among the credentials this role holds, never across the whole table. This table is an abstract relation, not an invented CA, directory protocol, or extra message exchange. Keep the fixed role signatures unchanged. Add no public registration intake. Write this marker near the declaration, replacing `<scope>` with this mechanism's identity scope: `(* @orrery-idiom identity.authenticated_key_binding/v1 scope=<scope> *)`.
+
+  - id: identity.key_registry
+    version: 1
+    machinery: registry
+    validator: identity_registry_v1
+    aliases:
+      - identity registry
+      - public key directory
+      - registered peer
+      - runtime key lookup
+    positive:
+      - a received identity dynamically selects an authentication key
+      - multiple registered legitimate peers may be selected at runtime
+      - the document describes registration directory lookup or authoritative resolution
+      - an online authority receives a requested identity during the protocol and returns its binding, even when that response is signed
+    negative:
+      - one peer key is fixed before the session
+      - an opaque credential identifier only confirms a pre-provisioned key
+      - certificate-chain verification is protocol-visible
+    prompt: |
+      Model the described directory as one closed identity-keyed table. Put every long-term field belonging to one identity in the same row. Insert only honest rows in the main process. After a role learns the relevant identity and before first credential use, get the row using that identity. A role retrieves its own long-term credential by its own identity; when a network-supplied selector (a key identifier, a hint) picks the credential, the row carries the owner identity and the role's get pins that column to its own, so the selector chooses among the credentials this role holds, never across the whole table. If the online authority signs its answer, also model that signature and its verification; the online identity lookup still makes this a key registry, not a certificate mechanism. Keep fixed role signatures unchanged. Do not add a public registration process; admission.open does that downstream. Write this marker near the declaration, replacing `<scope>` with this registry's identity scope: `(* @orrery-idiom identity.key_registry/v1 scope=<scope> *)`.
+
+  - id: identity.private_provisioning
+    version: 1
+    machinery: private_provisioning
+    validator: identity_private_provisioning_v1
+    aliases:
+      - pre-provisioned credential
+      - preconfigured peer key
+      - opaque credential identifier
+      - id_cred
+    positive:
+      - the peer key or credential is fixed before the session
+      - an opaque credential identifier refers to an already provisioned key
+      - no runtime identity directory lookup occurs
+    negative:
+      - a received identity chooses among multiple registered peer keys
+      - the protocol validates an issuer signature or certificate chain
+    prompt: |
+      Keep the provisioned own and peer credentials as the fixed role parameters. Represent a compact credential identifier by a private constructor over the provisioned public credential, and compare the received identifier with that constructor before using the key. Do not add a table, CA process, directory lookup, or public provisioning channel. Write this marker near the identifier declaration, replacing `<scope>` with this provisioned identity scope: `(* @orrery-idiom identity.private_provisioning/v1 scope=<scope> *)`.
+
+  - id: identity.signed_certificate
+    version: 1
+    machinery: certificate
+    validator: identity_signed_certificate_v1
+    aliases:
+      - certificate chain validation
+      - ca signature verification
+      - issuer certificate
+      - x509 certificate
+      - ca ca_alias_weight_sentinel
+    positive:
+      - the protocol visibly verifies an issuer signature or certificate chain
+      - identity and public key are extracted from a validated certificate
+    negative:
+      - ca is only deployment background and validation is abstracted away
+      - the peer key is already provisioned
+      - an online authority receives an identity lookup during the protocol and constructs the signed answer from its registry
+    prompt: |
+      Model certificate construction and validation because they are protocol-visible here. A certificate binds identity and public key under the authority signing key; a role must validate it with the fixed trust anchor before extracting and using that pair. Keep the trust anchor as a fixed role parameter. Do not replace validation with a table and do not add public certificate issuance unless the document explicitly includes it. Write this marker near the certificate declarations, replacing `<scope>` with this certificate trust scope: `(* @orrery-idiom identity.signed_certificate/v1 scope=<scope> *)`.

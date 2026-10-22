@@ -1,0 +1,4 @@
+# See references.yaml for what the three files are. This protocol is not a
+# bundle, so no section is scoped to a sub-protocol.
+schema_version: 4
+subprotocols: {}

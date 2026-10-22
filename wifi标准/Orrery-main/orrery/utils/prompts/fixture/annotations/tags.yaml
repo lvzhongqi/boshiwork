@@ -1,0 +1,18 @@
+# See references.yaml for what the three files are. One entry per section of
+# source/main/TAP.md.
+schema_version: 4
+tags:
+  '1':
+    tags: [definition]
+  '2':
+    tags: [definition]
+  '3':
+    tags: [definition]
+  '4':
+    tags: [flow]
+  '5':
+    tags: [assumption]
+  '6':
+    tags: [security]
+  '7':
+    tags: [definition]

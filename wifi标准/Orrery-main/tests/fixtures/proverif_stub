@@ -1,0 +1,4 @@
+#!/bin/sh
+# A stand-in for the ProVerif binary. It answers -help the way ProVerif does,
+# which is all a run checks before it starts, and is never asked to solve.
+echo "Proverif 2.05 (test stand-in). Cryptographic protocol verifier"

@@ -1,0 +1,485 @@
+Process 0 (that is, the initial process):
+{1}new skA: skey;
+{2}let pkA: pkey = pk(skA) in
+{3}out(c, pkA);
+{4}new skB: skey;
+{5}let pkB: pkey = pk(skB) in
+{6}out(c, pkB);
+(
+    {7}!
+    {8}let idAself: host = idA in
+    {9}let skA_1: skey = skA in
+    {10}let idBpeer: host = idB in
+    {11}in(c, pkX: pkey);
+    {12}event beginBparam(pkX);
+    {13}new Na: bitstring;
+    {14}out(c, aenc((Na,idAself),pkX));
+    {15}in(c, m: bitstring);
+    {16}let (=Na,NX: bitstring) = adec(m,skA_1) in
+    {17}out(c, aenc(NX,pkX));
+    {18}if (pkX = pkB) then
+    {19}event endAparam(pk(skA_1));
+    {20}out(c, senc(secretANa,Na));
+    {21}out(c, senc(secretANb,NX))
+) | (
+    {22}!
+    {23}let idBself: host = idB in
+    {24}let skB_1: skey = skB in
+    {25}let idApeer: host = idA in
+    {26}in(c, m_1: bitstring);
+    {27}let (NY: bitstring,idY: host) = adec(m_1,skB_1) in
+    {28}event beginAparam(pkA);
+    {29}new Nb: bitstring;
+    {30}out(c, aenc((NY,Nb),pkA));
+    {31}in(c, m3: bitstring);
+    {32}if (Nb = adec(m3,skB_1)) then
+    {33}if (idY = idApeer) then
+    {34}event endBparam(pk(skB_1));
+    {35}out(c, senc(secretBNa,NY));
+    {36}out(c, senc(secretBNb,Nb))
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new skA: skey;
+{2}let pkA: pkey = pk(skA) in
+{3}out(c, pkA);
+{4}new skB: skey;
+{5}let pkB: pkey = pk(skB) in
+{6}out(c, pkB);
+(
+    {7}!
+    {11}in(c, pkX: pkey);
+    {12}event beginBparam(pkX);
+    {13}new Na: bitstring;
+    {8}let idAself: host = idA in
+    {14}out(c, aenc((Na,idAself),pkX));
+    {15}in(c, m: bitstring);
+    {9}let skA_1: skey = skA in
+    {16}let (=Na,NX: bitstring) = adec(m,skA_1) in
+    {17}out(c, aenc(NX,pkX));
+    {18}if (pkX = pkB) then
+    {19}event endAparam(pk(skA_1));
+    {20}out(c, senc(secretANa,Na));
+    {21}out(c, senc(secretANb,NX))
+) | (
+    {22}!
+    {26}in(c, m_1: bitstring);
+    {24}let skB_1: skey = skB in
+    {27}let (NY: bitstring,idY: host) = adec(m_1,skB_1) in
+    {28}event beginAparam(pkA);
+    {29}new Nb: bitstring;
+    {30}out(c, aenc((NY,Nb),pkA));
+    {31}in(c, m3: bitstring);
+    {32}if (Nb = adec(m3,skB_1)) then
+    {25}let idApeer: host = idA in
+    {33}if (idY = idApeer) then
+    {34}event endBparam(pk(skB_1));
+    {35}out(c, senc(secretBNa,NY));
+    {36}out(c, senc(secretBNb,Nb))
+)
+
+-- Query not attacker(secretANa[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretANa[])
+RESULT not attacker(secretANa[]) is true.
+-- Query not attacker(secretANb[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretANb[])
+RESULT not attacker(secretANb[]) is true.
+-- Query not attacker(secretBNa[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretBNa[])
+goal reachable: attacker(secretBNa[])
+
+Derivation:
+Abbreviations:
+Na_1 = Na[pkX = pk(y),!1 = @sid]
+Nb_1 = Nb[m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+
+1. The attacker has some term y.
+attacker(y).
+
+2. By 1, the attacker may know y.
+Using the function pk the attacker may obtain pk(y).
+attacker(pk(y)).
+
+3. The message pk(y) that the attacker may have by 2 may be received at input {11}.
+So the message aenc((Na_1,idA[]),pk(y)) may be sent to the attacker at output {14}.
+attacker(aenc((Na_1,idA[]),pk(y))).
+
+4. By 3, the attacker may know aenc((Na_1,idA[]),pk(y)).
+By 1, the attacker may know y.
+Using the function adec the attacker may obtain (Na_1,idA[]).
+attacker((Na_1,idA[])).
+
+5. By 4, the attacker may know (Na_1,idA[]).
+Using the function 1-proj-2-tuple the attacker may obtain Na_1.
+attacker(Na_1).
+
+6. The message pk(skB[]) may be sent to the attacker at output {6}.
+attacker(pk(skB[])).
+
+7. By 4, the attacker may know (Na_1,idA[]).
+By 6, the attacker may know pk(skB[]).
+Using the function aenc the attacker may obtain aenc((Na_1,idA[]),pk(skB[])).
+attacker(aenc((Na_1,idA[]),pk(skB[]))).
+
+8. The message aenc((Na_1,idA[]),pk(skB[])) that the attacker may have by 7 may be received at input {26}.
+So the message aenc((Na_1,Nb_1),pk(skA[])) may be sent to the attacker at output {30}.
+attacker(aenc((Na_1,Nb_1),pk(skA[]))).
+
+9. The message pk(y) that the attacker may have by 2 may be received at input {11}.
+The message aenc((Na_1,Nb_1),pk(skA[])) that the attacker may have by 8 may be received at input {15}.
+So the message aenc(Nb_1,pk(y)) may be sent to the attacker at output {17}.
+attacker(aenc(Nb_1,pk(y))).
+
+10. By 9, the attacker may know aenc(Nb_1,pk(y)).
+By 1, the attacker may know y.
+Using the function adec the attacker may obtain Nb_1.
+attacker(Nb_1).
+
+11. By 10, the attacker may know Nb_1.
+By 6, the attacker may know pk(skB[]).
+Using the function aenc the attacker may obtain aenc(Nb_1,pk(skB[])).
+attacker(aenc(Nb_1,pk(skB[]))).
+
+12. The message aenc((Na_1,idA[]),pk(skB[])) that the attacker may have by 7 may be received at input {26}.
+The message aenc(Nb_1,pk(skB[])) that the attacker may have by 11 may be received at input {31}.
+So the message senc(secretBNa[],Na_1) may be sent to the attacker at output {35}.
+attacker(senc(secretBNa[],Na_1)).
+
+13. By 12, the attacker may know senc(secretBNa[],Na_1).
+By 5, the attacker may know Na_1.
+Using the function sdec the attacker may obtain secretBNa[].
+attacker(secretBNa[]).
+
+14. By 13, attacker(secretBNa[]).
+The goal is reached, represented in the following fact:
+attacker(secretBNa[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skA: skey creating skA_2 at {1}
+
+out(c, ~M) with ~M = pk(skA_2) at {3}
+
+new skB: skey creating skB_2 at {4}
+
+out(c, ~M_1) with ~M_1 = pk(skB_2) at {6}
+
+in(c, pk(a)) at {11} in copy a_1
+
+event beginBparam(pk(a)) at {12} in copy a_1
+
+new Na: bitstring creating Na_2 at {13} in copy a_1
+
+out(c, ~M_2) with ~M_2 = aenc((Na_2,idA),pk(a)) at {14} in copy a_1
+
+in(c, aenc((1-proj-2-tuple(adec(~M_2,a)),idA),~M_1)) with aenc((1-proj-2-tuple(adec(~M_2,a)),idA),~M_1) = aenc((Na_2,idA),pk(skB_2)) at {26} in copy a_2
+
+event beginAparam(pk(skA_2)) at {28} in copy a_2
+
+new Nb: bitstring creating Nb_2 at {29} in copy a_2
+
+out(c, ~M_3) with ~M_3 = aenc((Na_2,Nb_2),pk(skA_2)) at {30} in copy a_2
+
+in(c, ~M_3) with ~M_3 = aenc((Na_2,Nb_2),pk(skA_2)) at {15} in copy a_1
+
+out(c, ~M_4) with ~M_4 = aenc(Nb_2,pk(a)) at {17} in copy a_1
+
+in(c, aenc(adec(~M_4,a),~M_1)) with aenc(adec(~M_4,a),~M_1) = aenc(Nb_2,pk(skB_2)) at {31} in copy a_2
+
+event endBparam(pk(skB_2)) at {34} in copy a_2
+
+out(c, ~M_5) with ~M_5 = senc(secretBNa,Na_2) at {35} in copy a_2
+
+out(c, ~M_6) with ~M_6 = senc(secretBNb,Nb_2) at {36} in copy a_2
+
+The attacker has the message sdec(~M_5,1-proj-2-tuple(adec(~M_2,a))) = secretBNa.
+A trace has been found.
+RESULT not attacker(secretBNa[]) is false.
+-- Query not attacker(secretBNb[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(secretBNb[])
+goal reachable: attacker(secretBNb[])
+
+Derivation:
+Abbreviations:
+Na_1 = Na[pkX = pk(y),!1 = @sid]
+Nb_1 = Nb[m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+
+1. The attacker has some term y.
+attacker(y).
+
+2. By 1, the attacker may know y.
+Using the function pk the attacker may obtain pk(y).
+attacker(pk(y)).
+
+3. The message pk(skB[]) may be sent to the attacker at output {6}.
+attacker(pk(skB[])).
+
+4. The attacker initially knows idA[].
+attacker(idA[]).
+
+5. The message pk(y) that the attacker may have by 2 may be received at input {11}.
+So the message aenc((Na_1,idA[]),pk(y)) may be sent to the attacker at output {14}.
+attacker(aenc((Na_1,idA[]),pk(y))).
+
+6. By 5, the attacker may know aenc((Na_1,idA[]),pk(y)).
+By 1, the attacker may know y.
+Using the function adec the attacker may obtain (Na_1,idA[]).
+attacker((Na_1,idA[])).
+
+7. By 6, the attacker may know (Na_1,idA[]).
+Using the function 1-proj-2-tuple the attacker may obtain Na_1.
+attacker(Na_1).
+
+8. By 7, the attacker may know Na_1.
+By 4, the attacker may know idA[].
+Using the function 2-tuple the attacker may obtain (Na_1,idA[]).
+attacker((Na_1,idA[])).
+
+9. By 8, the attacker may know (Na_1,idA[]).
+By 3, the attacker may know pk(skB[]).
+Using the function aenc the attacker may obtain aenc((Na_1,idA[]),pk(skB[])).
+attacker(aenc((Na_1,idA[]),pk(skB[]))).
+
+10. The message aenc((Na_1,idA[]),pk(skB[])) that the attacker may have by 9 may be received at input {26}.
+So the message aenc((Na_1,Nb_1),pk(skA[])) may be sent to the attacker at output {30}.
+attacker(aenc((Na_1,Nb_1),pk(skA[]))).
+
+11. The message pk(y) that the attacker may have by 2 may be received at input {11}.
+The message aenc((Na_1,Nb_1),pk(skA[])) that the attacker may have by 10 may be received at input {15}.
+So the message aenc(Nb_1,pk(y)) may be sent to the attacker at output {17}.
+attacker(aenc(Nb_1,pk(y))).
+
+12. By 11, the attacker may know aenc(Nb_1,pk(y)).
+By 1, the attacker may know y.
+Using the function adec the attacker may obtain Nb_1.
+attacker(Nb_1).
+
+13. By 12, the attacker may know Nb_1.
+By 3, the attacker may know pk(skB[]).
+Using the function aenc the attacker may obtain aenc(Nb_1,pk(skB[])).
+attacker(aenc(Nb_1,pk(skB[]))).
+
+14. The message aenc((Na_1,idA[]),pk(skB[])) that the attacker may have by 9 may be received at input {26}.
+The message aenc(Nb_1,pk(skB[])) that the attacker may have by 13 may be received at input {31}.
+So the message senc(secretBNb[],Nb_1) may be sent to the attacker at output {36}.
+attacker(senc(secretBNb[],Nb_1)).
+
+15. By 14, the attacker may know senc(secretBNb[],Nb_1).
+By 12, the attacker may know Nb_1.
+Using the function sdec the attacker may obtain secretBNb[].
+attacker(secretBNb[]).
+
+16. By 15, attacker(secretBNb[]).
+The goal is reached, represented in the following fact:
+attacker(secretBNb[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skA: skey creating skA_2 at {1}
+
+out(c, ~M) with ~M = pk(skA_2) at {3}
+
+new skB: skey creating skB_2 at {4}
+
+out(c, ~M_1) with ~M_1 = pk(skB_2) at {6}
+
+in(c, pk(a)) at {11} in copy a_1
+
+event beginBparam(pk(a)) at {12} in copy a_1
+
+new Na: bitstring creating Na_2 at {13} in copy a_1
+
+out(c, ~M_2) with ~M_2 = aenc((Na_2,idA),pk(a)) at {14} in copy a_1
+
+in(c, aenc((1-proj-2-tuple(adec(~M_2,a)),idA),~M_1)) with aenc((1-proj-2-tuple(adec(~M_2,a)),idA),~M_1) = aenc((Na_2,idA),pk(skB_2)) at {26} in copy a_2
+
+event beginAparam(pk(skA_2)) at {28} in copy a_2
+
+new Nb: bitstring creating Nb_2 at {29} in copy a_2
+
+out(c, ~M_3) with ~M_3 = aenc((Na_2,Nb_2),pk(skA_2)) at {30} in copy a_2
+
+in(c, ~M_3) with ~M_3 = aenc((Na_2,Nb_2),pk(skA_2)) at {15} in copy a_1
+
+out(c, ~M_4) with ~M_4 = aenc(Nb_2,pk(a)) at {17} in copy a_1
+
+in(c, aenc(adec(~M_4,a),~M_1)) with aenc(adec(~M_4,a),~M_1) = aenc(Nb_2,pk(skB_2)) at {31} in copy a_2
+
+event endBparam(pk(skB_2)) at {34} in copy a_2
+
+out(c, ~M_5) with ~M_5 = senc(secretBNa,Na_2) at {35} in copy a_2
+
+out(c, ~M_6) with ~M_6 = senc(secretBNb,Nb_2) at {36} in copy a_2
+
+The attacker has the message sdec(~M_6,adec(~M_4,a)) = secretBNb.
+A trace has been found.
+RESULT not attacker(secretBNb[]) is false.
+-- Query inj-event(endAparam(x)) ==> inj-event(beginAparam(x)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(endAparam(x)) ==> inj-event(beginAparam(x))
+goal reachable: b-inj-event(beginAparam(pk(skA[])),@occ28_1) -> inj-event(endAparam(pk(skA[])),@occ19_1)
+The hypothesis occurs strictly before the conclusion.
+Abbreviations:
+Na_1 = Na[pkX = pk(skB[]),!1 = @sid]
+Nb_1 = Nb[m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+@occ19_1 = @occ19[m = aenc((Na_1,Nb_1),pk(skA[])),pkX = pk(skB[]),!1 = @sid]
+@occ28_1 = @occ28[m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+RESULT inj-event(endAparam(x)) ==> inj-event(beginAparam(x)) is true.
+-- Query inj-event(endBparam(x)) ==> inj-event(beginBparam(x)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(endBparam(x)) ==> inj-event(beginBparam(x))
+goal reachable: b-event(@p_act(@occ15_1,aenc((Na_1,Nb_1),pk(skA[])))) && b-inj-event(beginBparam(pk(y)),@occ12_1) && attacker(y) -> inj-event(endBparam(pk(skB[])),@occ34_1)
+Abbreviations:
+Na_1 = Na[pkX = pk(y),!1 = @sid]
+Nb_1 = Nb[m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+@occ34_1 = @occ34[m3 = aenc(Nb_1,pk(skB[])),m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+@occ15_1 = @occ15[!1 = @sid]
+@occ12_1 = @occ12[pkX = pk(y),!1 = @sid]
+
+Derivation:
+Abbreviations:
+Na_1 = Na[pkX = pk(y),!1 = @sid]
+Nb_1 = Nb[m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+@occ34_1 = @occ34[m3 = aenc(Nb_1,pk(skB[])),m_1 = aenc((Na_1,idA[]),pk(skB[])),!1 = @sid_1]
+@occ15_1 = @occ15[!1 = @sid]
+@occ12_1 = @occ12[pkX = pk(y),!1 = @sid]
+
+1. The message pk(skB[]) may be sent to the attacker at output {6}.
+attacker(pk(skB[])).
+
+2. The attacker initially knows idA[].
+attacker(idA[]).
+
+3. We assume as hypothesis that
+attacker(y).
+
+4. By 3, the attacker may know y.
+Using the function pk the attacker may obtain pk(y).
+attacker(pk(y)).
+
+5. The message pk(y) that the attacker may have by 4 may be received at input {11}.
+The event beginBparam(pk(y)) (with occurrence name @occ12_1) may be executed at {12}.
+So the message aenc((Na_1,idA[]),pk(y)) may be sent to the attacker at output {14}.
+attacker(aenc((Na_1,idA[]),pk(y))).
+
+6. By 5, the attacker may know aenc((Na_1,idA[]),pk(y)).
+By 3, the attacker may know y.
+Using the function adec the attacker may obtain (Na_1,idA[]).
+attacker((Na_1,idA[])).
+
+7. By 6, the attacker may know (Na_1,idA[]).
+Using the function 1-proj-2-tuple the attacker may obtain Na_1.
+attacker(Na_1).
+
+8. By 7, the attacker may know Na_1.
+By 2, the attacker may know idA[].
+Using the function 2-tuple the attacker may obtain (Na_1,idA[]).
+attacker((Na_1,idA[])).
+
+9. By 8, the attacker may know (Na_1,idA[]).
+By 1, the attacker may know pk(skB[]).
+Using the function aenc the attacker may obtain aenc((Na_1,idA[]),pk(skB[])).
+attacker(aenc((Na_1,idA[]),pk(skB[]))).
+
+10. The message aenc((Na_1,idA[]),pk(skB[])) that the attacker may have by 9 may be received at input {26}.
+So the message aenc((Na_1,Nb_1),pk(skA[])) may be sent to the attacker at output {30}.
+attacker(aenc((Na_1,Nb_1),pk(skA[]))).
+
+11. The message pk(y) that the attacker may have by 4 may be received at input {11}.
+The event beginBparam(pk(y)) (with occurrence name @occ12_1) may be executed at {12}.
+The event @p_act(@occ15_1,aenc((Na_1,Nb_1),pk(skA[]))) records how variables are instantiated at {15}.
+The message aenc((Na_1,Nb_1),pk(skA[])) that the attacker may have by 10 may be received at input {15}.
+So the message aenc(Nb_1,pk(y)) may be sent to the attacker at output {17}.
+attacker(aenc(Nb_1,pk(y))).
+
+12. By 11, the attacker may know aenc(Nb_1,pk(y)).
+By 3, the attacker may know y.
+Using the function adec the attacker may obtain Nb_1.
+attacker(Nb_1).
+
+13. By 12, the attacker may know Nb_1.
+By 1, the attacker may know pk(skB[]).
+Using the function aenc the attacker may obtain aenc(Nb_1,pk(skB[])).
+attacker(aenc(Nb_1,pk(skB[]))).
+
+14. The message aenc((Na_1,idA[]),pk(skB[])) that the attacker may have by 9 may be received at input {26}.
+The message aenc(Nb_1,pk(skB[])) that the attacker may have by 13 may be received at input {31}.
+So event endBparam(pk(skB[])) may be executed at {34} in session @sid_1.
+inj-event(endBparam(pk(skB[])),@occ34_1).
+
+15. By 14, inj-event(endBparam(pk(skB[])),@occ34_1).
+The goal is reached, represented in the following fact:
+inj-event(endBparam(pk(skB[])),@occ34_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skA: skey creating skA_2 at {1}
+
+out(c, ~M) with ~M = pk(skA_2) at {3}
+
+new skB: skey creating skB_2 at {4}
+
+out(c, ~M_1) with ~M_1 = pk(skB_2) at {6}
+
+in(c, pk(a)) at {11} in copy a_1
+
+event beginBparam(pk(a)) at {12} in copy a_1
+
+new Na: bitstring creating Na_2 at {13} in copy a_1
+
+out(c, ~M_2) with ~M_2 = aenc((Na_2,idA),pk(a)) at {14} in copy a_1
+
+in(c, aenc((1-proj-2-tuple(adec(~M_2,a)),idA),~M_1)) with aenc((1-proj-2-tuple(adec(~M_2,a)),idA),~M_1) = aenc((Na_2,idA),pk(skB_2)) at {26} in copy a_2
+
+event beginAparam(pk(skA_2)) at {28} in copy a_2
+
+new Nb: bitstring creating Nb_2 at {29} in copy a_2
+
+out(c, ~M_3) with ~M_3 = aenc((Na_2,Nb_2),pk(skA_2)) at {30} in copy a_2
+
+in(c, ~M_3) with ~M_3 = aenc((Na_2,Nb_2),pk(skA_2)) at {15} in copy a_1
+
+out(c, ~M_4) with ~M_4 = aenc(Nb_2,pk(a)) at {17} in copy a_1
+
+in(c, aenc(adec(~M_4,a),~M_1)) with aenc(adec(~M_4,a),~M_1) = aenc(Nb_2,pk(skB_2)) at {31} in copy a_2
+
+event endBparam(pk(skB_2)) at {34} in copy a_2 (goal)
+
+The event endBparam(pk(skB_2)) is executed at {34} in copy a_2.
+A trace has been found.
+RESULT inj-event(endBparam(x)) ==> inj-event(beginBparam(x)) is false.
+RESULT (even event(endBparam(x)) ==> event(beginBparam(x)) is false.)
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker(secretANa[]) is true.
+
+Query not attacker(secretANb[]) is true.
+
+Query not attacker(secretBNa[]) is false.
+
+Query not attacker(secretBNb[]) is false.
+
+Query inj-event(endAparam(x)) ==> inj-event(beginAparam(x)) is true.
+
+Query inj-event(endBparam(x)) ==> inj-event(beginBparam(x)) is false.
+
+--------------------------------------------------------------
+

@@ -1,0 +1,27 @@
+# Runtime output and local configuration; not part of the artefact.
+#
+# Every path is anchored with a leading `/` or is a directory name. A bare
+# `config.yaml` reads as "any file with that name at any depth", which is not
+# what this file means: 454 of the published runs carry their own `config.yaml`
+# — the record of what that run was configured to do, and the only place the
+# artefact states the model, the prompt language and the solver budget the
+# batch ran under. An unanchored rule silently kept every one of them out of
+# the repository while the release itself reported success.
+
+# The two configurations a person fills in. Both hold an API key.
+/config.yaml
+/experiments/config.yaml
+
+# Where the pipeline writes when someone runs it here.
+/reproduced/
+/a_runs/
+/a_batches/
+/work_results/
+
+# Editor and interpreter leavings.
+__pycache__/
+*.pyc
+*.egg-info/
+.idea/
+.pytest_cache/
+.DS_Store

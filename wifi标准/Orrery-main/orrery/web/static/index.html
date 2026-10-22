@@ -1,0 +1,19 @@
+<!doctype html>
+<!-- data-theme is stated rather than left to the OS: Pico picks its palette from
+     this attribute, and app.css is dark-first. -->
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orrery console</title>
+<link rel="stylesheet" href="/static/vendor/pico.min.css">
+<link rel="stylesheet" href="/static/app.css">
+<script type="importmap">
+{"imports": {"vue": "/static/vendor/vue.esm-browser.prod.js"}}
+</script>
+</head>
+<body>
+<div id="app"></div>
+<script type="module" src="/static/js/main.js"></script>
+</body>
+</html>

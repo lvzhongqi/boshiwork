@@ -1,0 +1,1767 @@
+/* The console's visual system: three ladders — type, space, depth — and every
+ * value below comes from one of them. Pico supplies the reset, the form
+ * controls and <details>, with its own variables retuned to these ladders.
+ */
+
+/* Inter for the interface, JetBrains Mono for exact strings. Both vendored, so
+   nothing reaches the network; CJK falls through to the platform's own face. */
+@font-face {
+  font-family: "InterVar";
+  src: url("/static/vendor/fonts/inter.woff2") format("woff2");
+  font-weight: 100 900; font-display: swap;
+}
+@font-face {
+  font-family: "JetBrainsMonoVar";
+  src: url("/static/vendor/fonts/jetbrains-mono.woff2") format("woff2");
+  font-weight: 100 800; font-display: swap;
+}
+
+:root,
+:root:not([data-theme="light"]) {
+  /* type ladder — px, so it cannot drift with nesting */
+  --t-xs: 11px;      /* eyebrows, legends */
+  --t-sm: 12.5px;    /* dense data: feed, chips, table heads */
+  --t-md: 13.5px;    /* secondary UI text */
+  --t-base: 14.5px;  /* body, controls, chat */
+  --t-lg: 16px;      /* panel titles */
+  --t-xl: 20px;      /* the run's name */
+
+  /* space ladder */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 22px; --s-6: 30px;
+  --r-sm: 5px; --r-md: 8px; --r-lg: 12px;
+
+  /* depth: four grounds */
+  --bg: #0A0C10;
+  --panel: #111419;
+  --raised: #171B22;
+  --hi: #1E2430;
+  --line: #262C36;
+  --line-soft: #1B212A;
+
+  /* The page's one drop shadow, kept in the palette so the light theme can
+     redefine it. */
+  --shadow: 0 12px 34px rgba(0, 0, 0, .5);
+  /* Everything the first visit is not talking about. Not an ink and not a
+     ground: it is laid over both. */
+  --scrim: rgba(4, 6, 10, .66);
+
+  /* ink: a wide gap between the three, so hierarchy reads at a glance */
+  --ink: #F3F5F8;
+  --ink-2: #A6AEBB;
+  --ink-3: #6A737F;
+
+  /* interactive, and in progress — nothing else wears this */
+  --accent: #2DD4BF;
+  --accent-soft: #0E3B37;
+  --accent-line: #1E6B63;
+
+  /* An assumption a world declares for itself: neither a verdict nor a progress
+     state, so it gets a hue of its own. */
+  --on: #C4B5FD;
+  --on-soft: #2E2650;
+
+  /* Health: did this machinery work. Red and amber mean something went wrong,
+     and they are spent on that alone. */
+  --v-ok: #4ADE80;
+  --v-warn: #FBBF24;
+  --v-bad: #F87171;
+  /* A verdict of `false`: an answer, not a fault, so it sits off the
+     traffic-light scale entirely. */
+  --v-neg: #A78BFA;
+  /* A false cell whose attack was reproduced: the false verdict's own hue,
+     solid, and the ink that reads on it (7:1). */
+  /* The attacker in a replayed attack. A hue of its own, on neither scale: it
+     is not a verdict and not a fault. */
+  --atk: #FB923C;
+  --atk-soft: #3B2413;
+
+  --sans: "InterVar", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --mono: "JetBrainsMonoVar", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --pico-font-family: var(--sans);
+  --pico-font-family-monospace: var(--mono);
+  --pico-font-size: var(--t-base);
+  --pico-line-height: 1.55;
+  --pico-background-color: var(--bg);
+  --pico-color: var(--ink);
+  --pico-muted-color: var(--ink-2);
+  --pico-muted-border-color: var(--line);
+  --pico-primary: var(--accent);
+  --pico-primary-hover: #5EEAD4;
+  --pico-primary-background: var(--accent);
+  --pico-primary-hover-background: #5EEAD4;
+  --pico-primary-inverse: #04211E;
+  --pico-primary-border: var(--accent);
+  --pico-form-element-background-color: var(--raised);
+  --pico-form-element-border-color: var(--line);
+  --pico-form-element-active-border-color: var(--accent-line);
+  --pico-form-element-focus-color: var(--accent-line);
+  --pico-form-element-color: var(--ink);
+  --pico-form-element-placeholder-color: var(--ink-3);
+  /* Interaction states pulled onto our own ladder, so focus changes the border
+     and never the ground. Unset, Pico paints them from its own palette. */
+  --pico-form-element-active-background-color: var(--raised);
+  --pico-form-element-selected-background-color: var(--hi);
+  --pico-dropdown-hover-background-color: var(--hi);
+  --pico-code-background-color: var(--raised);
+  --pico-code-color: var(--ink-2);
+  --pico-card-background-color: var(--panel);
+  --pico-card-sectioning-background-color: var(--raised);
+  --pico-border-radius: var(--r-sm);
+  --pico-spacing: var(--s-4);
+  --pico-typography-spacing-vertical: var(--s-3);
+  --pico-block-spacing-vertical: var(--s-3);
+}
+
+/* The light half of the switch on <html>. Both palettes hang off the same
+   attribute, so Pico and this file always agree on the theme. */
+:root[data-theme="light"] {
+  --bg: #F2F4F7; --panel: #FFFFFF; --raised: #F7F9FB; --hi: #EEF1F5;
+  --line: #DFE4EA; --line-soft: #EAEEF2;
+  --ink: #0F1319; --ink-2: #4A5462; --ink-3: #7C8593;
+  --accent: #0D9488; --accent-soft: #E0F5F2; --accent-line: #7CCFC6;
+  --on: #6D28D9; --on-soft: #EDE7FD;
+  --v-ok: #15803D; --v-warn: #A16207; --v-bad: #B91C1C; --v-neg: #6D28D9;
+  --atk: #C2410C; --atk-soft: #FFEDD5;
+  --shadow: 0 12px 30px rgba(15, 19, 25, .16);
+  --scrim: rgba(15, 19, 25, .34);
+  --pico-primary-inverse: #FFFFFF;
+}
+
+* { scrollbar-color: var(--line) transparent; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+body {
+  background: var(--bg); color: var(--ink); padding: 0;
+  font-family: var(--sans); font-size: var(--t-base);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+
+.mono { font-family: var(--mono); }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.dim { color: var(--ink-3); }
+
+/* One heading treatment for every panel, so the page keeps a single rhythm. */
+.head { display: flex; align-items: baseline; gap: var(--s-2); margin: 0 0 var(--s-3); }
+.head h2 {
+  font-size: var(--t-lg); font-weight: 600; margin: 0;
+  letter-spacing: -.01em; color: var(--ink);
+}
+.head .sub { font-size: var(--t-md); color: var(--ink-3); }
+.head .grow { flex: 1; }
+/* Which directory the table under it is reading. Right-aligned and quiet. */
+.wr { display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+      min-width: 0; font-size: var(--t-sm); }
+/* Shrinks only when the head runs out of room; a fixed ch cap would clip a
+   path that had space, and the tail is what carries the directory. */
+.wr > * { max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+          white-space: nowrap; }
+.wr .mono { color: var(--ink-2); }
+/* How much of the run agrees with the ground truth, in the heading's spare
+   half. */
+.tally {
+  font-family: var(--mono); font-size: var(--t-sm); font-weight: 600;
+  padding: 2px 10px; border-radius: 20px; border: 1px solid currentColor;
+}
+.tally.ok { color: var(--v-ok); }
+.tally.bad { color: var(--v-warn); }
+
+/* ── shell ───────────────────────────────────────────────────────────── */
+.shell {
+  width: calc(100% - var(--s-4)); margin: var(--s-2) auto;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--r-lg); overflow: hidden;
+  min-height: calc(100vh - var(--s-4));
+  display: flex; flex-direction: column;
+}
+/* With room the console is exactly one viewport and its panes scroll inside it;
+   below the breakpoint the columns stack and the page itself scrolls. */
+@media (min-width: 1151px) {
+  .shell { height: calc(100vh - var(--s-4)); }
+  main.body { overflow: hidden; }
+}
+.topbar {
+  display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap;
+  padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--line);
+  background: linear-gradient(var(--raised), var(--panel));
+}
+.topbar .grow { flex: 1; }
+/* Sets the cursor outright rather than leaning on the default link cursor,
+   which another rule can claim. */
+.topbar a.back { text-decoration: none; color: var(--ink-3);
+                 font-size: var(--t-lg); cursor: pointer; }
+.topbar a.back:hover { color: var(--ink); }
+.runname { font-size: var(--t-xl); font-weight: 650; letter-spacing: -.02em; }
+.brand { font-size: var(--t-lg); font-weight: 650; letter-spacing: -.01em; }
+main.body { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: var(--s-4); }
+
+/* ── panels ──────────────────────────────────────────────────────────── */
+.panel {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: var(--s-4); margin: 0;
+}
+.cols {
+  display: grid; grid-template-columns: minmax(0, 1fr) clamp(22rem, 22vw, 36rem);
+  gap: var(--s-4); flex: 1; min-height: 0;
+}
+@media (max-width: 1150px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.stack { display: flex; flex-direction: column; gap: var(--s-4); min-height: 0; }
+
+/* The left column scrolls, the right one does not. The shell is one viewport,
+   so a panel that grows has to scroll inside its own column or be clipped by
+   main.body. The side column's chat log scrolls on its own. */
+.main-col { overflow-y: auto; overscroll-behavior: contain; padding-right: var(--s-1); }
+.side-col { overflow: hidden; }
+/* Folded, the Expert column is a tab on the edge: the run's own panels are
+   what a reader came for, and asking is the rarer errand. */
+.cols.folded { grid-template-columns: minmax(0, 1fr) 2rem; }
+.expert-tab {
+  width: 2rem; height: 100%; padding: var(--s-3) 0; display: flex;
+  flex-direction: column; align-items: center; gap: var(--s-2);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-sm);
+  color: var(--ink-2); cursor: pointer;
+}
+.expert-tab:hover { background: var(--raised); color: var(--ink); }
+.expert-tab .word { writing-mode: vertical-rl; font-size: var(--t-sm); letter-spacing: .04em; }
+.expert-tab .chev { font-size: var(--t-lg); line-height: 1; }
+@media (max-width: 1150px) {
+  .cols.folded { grid-template-columns: minmax(0, 1fr); }
+  .expert-tab { width: 100%; height: auto; flex-direction: row; justify-content: center; }
+  .expert-tab .word { writing-mode: horizontal-tb; }
+}
+
+/* ── status ──────────────────────────────────────────────────────────── */
+.pill {
+  display: inline-flex; align-items: center; gap: var(--s-1);
+  padding: 3px 10px; border-radius: 20px; font-size: var(--t-sm);
+  font-weight: 550; border: 1px solid currentColor; white-space: nowrap;
+}
+.pill.ok { color: var(--v-ok); }
+.pill.bad { color: var(--v-bad); }
+.pill.warn { color: var(--v-warn); }
+.pill.run { color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.run .dot { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .pill.run .dot { animation: none; } }
+
+/* Language: two segments, the current one lit. Set once and left alone. */
+.langtoggle { display: inline-flex; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.langtoggle button {
+  width: auto; margin: 0; padding: 3px 12px; font-size: var(--t-sm);
+  background: transparent; border: 0; color: var(--ink-3); border-radius: 0;
+}
+.langtoggle button:hover { color: var(--ink); background: var(--hi); }
+.langtoggle button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* The mode switch, shaped like the language switch beside it: both are states
+   of the whole console rather than actions on a run. */
+.modetoggle { display: inline-flex; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.modetoggle button {
+  width: auto; margin: 0; padding: 3px 12px; font-size: var(--t-sm);
+  background: transparent; border: 0; color: var(--ink-3); border-radius: 0;
+}
+.modetoggle button:hover { color: var(--ink); background: var(--hi); }
+.modetoggle button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* Read-only while the console is playing back: dimmed and inert rather than
+   hidden, so a run's configuration stays readable. */
+.ro { opacity: .5; pointer-events: none; }
+
+button.tiny { width: auto; margin: 0; padding: 5px 14px; font-size: var(--t-md); font-weight: 550; }
+button.ghost { background: transparent; border-color: var(--line); color: var(--ink-2); }
+button.ghost:hover { background: var(--hi); color: var(--ink); }
+button.danger { background: transparent; border-color: var(--v-bad); color: var(--v-bad); }
+button.danger:hover { background: color-mix(in srgb, var(--v-bad) 18%, transparent); }
+
+/* ── node strip ──────────────────────────────────────────────────────── */
+/* Density follows the strip's own width, not the viewport, since the side
+   column decides how much room it gets. Nothing disappears at either density;
+   past the readable minimums the strip scrolls sideways. */
+.pipeline-panel { container-type: inline-size; }
+
+/* The strip is a graph: columns are the dependency order and cells sharing a
+   column ran in parallel. Track counts arrive as an inline style from
+   store.pipelineLayout, since the shape belongs to the run; explicit tracks are
+   what let a forked column line up with the solo ones beside it. A dozen columns
+   do not fit a narrow window, so the strip scrolls rather than squeezing. */
+.pipe { --pipe-col: 9rem; --pipe-col-gap: var(--s-2);
+        --pipe-step-pad: var(--s-2); --pipe-step-type: var(--t-sm);
+        display: grid; gap: var(--s-1) var(--pipe-col-gap);
+        overflow-x: auto; overscroll-behavior-inline: contain;
+        scrollbar-gutter: stable; scrollbar-color: var(--ink-3) var(--raised);
+        padding-bottom: var(--s-2);
+        /* Cells keep their own height and sit centred; stretching them to the
+           tallest track makes a solo step look as though its height meant
+           something. */
+        align-items: center; }
+.pipe::-webkit-scrollbar { height: var(--s-2); }
+.pipe::-webkit-scrollbar-track { background: var(--raised); border-radius: var(--r-sm); }
+.pipe::-webkit-scrollbar-thumb { background: var(--ink-3); border-radius: var(--r-sm); }
+
+/* Whitespace goes first; type drops a rung only at phone-sized component
+   widths. Every badge and control stays present at both densities. */
+@container (max-width: 1000px) {
+  .pipe { --pipe-col: 7.5rem; --pipe-col-gap: var(--s-1);
+          --pipe-step-pad: var(--s-1); }
+  .step { flex-wrap: wrap; justify-content: center; }
+  .pipeline-panel .step .label { flex: 1 0 100%; }
+}
+@container (max-width: 700px) {
+  .pipe { --pipe-col: 6.5rem; --pipe-step-type: var(--t-xs); }
+}
+/* The connector into a cell's left edge, drawn in the column gap: it says
+   something feeds this. Which step does is in the cell's hover text. */
+.step.joined { position: relative; }
+.step.joined::before {
+  content: ''; position: absolute; right: 100%; top: 50%;
+  width: var(--pipe-col-gap); border-top: 1px solid var(--line);
+}
+/* One of a pair: the accent edge says the two belong together, and the tighter
+   padding keeps the stack from out-growing the single cells beside it. */
+.step.forked { border-left-width: 2px; border-left-color: var(--accent-line);
+               padding-block: calc(var(--s-2) * 0.6); }
+.step {
+  min-width: 0;
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: var(--pipe-step-pad); background: var(--raised);
+  font-family: var(--mono); font-size: var(--pipe-step-type); line-height: 1.3;
+  color: var(--ink-2); display: flex; align-items: center; gap: var(--s-1);
+}
+/* One short word on one line, ellipsised if it still does not fit. The node
+   declares the short name itself (nodes/base.py `short`), so the strip needs no
+   alias table. */
+.step .label {
+  flex: 1; min-width: 0; align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+/* A measured or reworked step carries more badges than one row holds: the node
+   name takes the first row and the badges wrap together underneath. */
+.step:has(.score, .inside) { flex-wrap: wrap; justify-content: center; }
+.step:has(.score, .inside) .label { flex: 1 0 100%; }
+/* The controls never give way to the label beside them. */
+.step .retry, .step .mark, .step .inside, .step .score { flex: 0 0 auto; }
+.step .mark { font-size: var(--t-md); }
+/* How much of the corpus this step's product matched. A measurement, not a
+   status, so a finished step can score badly; only the shortfall is tinted. */
+.step .score {
+  font: 500 var(--t-xs)/1 var(--mono); color: var(--ink-3);
+  padding: 0 .25rem; border: 1px solid var(--line); border-radius: var(--r-sm);
+}
+.step .score.bad { color: var(--v-warn);
+  border-color: color-mix(in srgb, var(--v-warn) 40%, var(--line)); }
+.step .score.alignment { color: var(--accent); }
+.step.ok .mark { color: var(--v-ok); }
+.step.running {
+  color: var(--accent); border-color: var(--accent-line);
+  background: var(--accent-soft); font-weight: 550;
+}
+/* The page's only animation, and it means "now": tint plus dot, since either
+   alone is missable across a twelve-cell strip. box-shadow stays untouched
+   because `.step.sel` owns that channel. */
+@keyframes step-running-tint {
+  50% { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+}
+@keyframes step-running-dot {
+  50% { opacity: .25; }
+}
+.step.running { animation: step-running-tint 1.6s ease-in-out infinite; }
+.step.running .mark { animation: step-running-dot 1.6s ease-in-out infinite; }
+/* With reduced motion the strip falls back to its static state. */
+@media (prefers-reduced-motion: reduce) {
+  .step.running, .step.running .mark { animation: none; }
+}
+.step.failed { color: var(--v-bad); border-color: color-mix(in srgb, var(--v-bad) 50%, var(--line)); }
+.step.check_failed { color: var(--v-warn); border-color: color-mix(in srgb, var(--v-warn) 50%, var(--line)); }
+.step.pending { color: var(--ink-3); background: transparent; border-style: dashed; }
+/* A step that was handed its artifact: dimmed because it cannot be re-run, but
+   still clickable. The status colours are left alone — this says where the file
+   came from, not how the step ended. */
+.step.pinned { opacity: .55; }
+.step.pinned .label { text-decoration: underline dotted var(--ink-3); text-underline-offset: 3px; }
+/* Every cell opens its own inside, so every cell is a control. Selection is
+   marked at the foot, since colour already carries how the step ended. */
+.step { cursor: pointer; }
+.step.sel { border-color: var(--accent-line); box-shadow: inset 0 -2px 0 var(--accent); }
+
+/* A step that ran once per scenario, drawn as a stack: after build_root the run
+   fans out and every scenario gets its own model and solver call. The layers are
+   two rules outside the cell's edges, not stacked boxes — real copies would need
+   a negative z-index and vanish behind the panel's own background. */
+.step.fanned { position: relative; margin: 6px 0; }
+.step .fanlayers {
+  position: absolute; left: 4px; right: 4px; top: -6px; bottom: -6px;
+  pointer-events: none;
+}
+.step .fanlayers::before, .step .fanlayers::after {
+  content: ''; position: absolute; left: 0; right: 0;
+  border-top: 1px solid var(--line);
+}
+.step .fanlayers::before { top: 0; }
+.step .fanlayers::after { bottom: 0; }
+/* How many ways it fanned out: the stack says more than one, this says how
+   many. */
+.step .fanout {
+  font-size: var(--t-xs); color: var(--ink-3); font-weight: 600;
+  flex: none; letter-spacing: .02em;
+}
+
+/* ── the selected step, opened ────────────────────────────────────────────
+   A panel in the scrolling column, above the results. It carries a session
+   timeline of unbounded height, so it has to live where the scrolling is. */
+.opened .head .sub { font-family: var(--mono); }
+/* The chooser side: scenario names, progress, verdicts, and the sessions nested
+   under them. 33rem where there is room, 42% of the box where there is not, so
+   the timeline beside it keeps the larger half. Capping this track rather than
+   flooring the other one, because two minmax minimums in a row are both resolved
+   against content before the flexible track gets its say. */
+.opened .detail { grid-template-columns: minmax(0, min(33rem, 42%)) minmax(0, 1fr);
+                  grid-template-rows: minmax(0, 1fr); }
+.opened .detail.solo { grid-template-columns: minmax(0, 1fr); }
+/* Stacked, so both rows have to be declared: with one track the chooser takes
+   the whole height and the timeline lands in an implicit auto row that
+   overflows the panel. */
+@media (max-width: 1100px) {
+  .opened .detail { grid-template-columns: 1fr;
+                    grid-template-rows: minmax(6rem, auto) minmax(0, 1fr); }
+}
+/* Lanes in a column, not across the page. Everything beside the name is fixed
+   and narrow: the name is what a reader recognises a row by. */
+.opened .lane { grid-template-columns: minmax(0, 1fr) 3.5rem 5.25rem auto;
+                gap: var(--s-2); }
+/* A step with no sessions gets the whole width, so its report and products are
+   held to a list width instead of stretching across it. */
+.opened .detail.solo .nodelog { max-width: 46rem; }
+.opened .lane .stat { white-space: nowrap; font-size: var(--t-xs); }
+/* The goals one inject row answered, listed under it. Indented and quieter,
+   because they are what that session produced rather than siblings of it. */
+.units .goalrow { cursor: default; padding-left: var(--s-3); gap: var(--s-2);
+                  font-size: var(--t-xs); color: var(--ink-3); }
+.units .goalrow:hover { background: transparent; }
+.units .goalrow .mark { flex: 0 0 auto; width: 1em; text-align: center; }
+.units .goalrow .mark.ok { color: var(--v-ok); }
+.units .goalrow .mark.bad { color: var(--v-bad); }
+.units .goalrow .stat { flex: 0 0 auto; white-space: nowrap; }
+.opened .lanes { max-height: none; }
+/* The opened step scrolls rather than growing without bound: a session timeline
+   with repair rounds and streamed replies has no limit. `max-height` as a
+   percentage holds the panel inside its column while letting a short step stay
+   short, and stopping a few rem short keeps a strip of the results panel in
+   view. Scroll chaining stays on here so the page keeps moving at the bottom,
+   while `.lanes` keeps `contain` because it is a chooser. Each pane scrolls on
+   its own, so a long timeline never pushes its own chooser off the top. */
+.opened { max-height: calc(100% - 3.5rem); flex: 0 0 auto; min-height: 0;
+          display: flex; flex-direction: column; }
+.opened .detail { flex: 1; min-height: 0; }
+.opened .detail > div { min-height: 0; overflow: auto; }
+
+/* ── the execution timeline ──────────────────────────────────────────── */
+/* What the run actually did, when that is not simply the node table. Absent on
+   a straight run, so its presence is itself the signal. */
+.tline { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line-soft); }
+.tline .thead {
+  display: flex; align-items: baseline; gap: var(--s-2);
+  margin-bottom: var(--s-2); font-size: var(--t-xs);
+}
+.tline .why { color: var(--v-warn); font-family: var(--mono); }
+.trow { display: flex; flex-wrap: wrap; gap: var(--s-1); align-items: center; }
+.tcell {
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-2);
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 3px 7px; text-decoration: none; white-space: nowrap;
+}
+.tcell:hover { border-color: var(--accent-line); color: var(--ink); }
+/* No longer the answer. Struck rather than hidden: it is still on disk and
+   still worth opening. */
+.tcell.stale { color: var(--ink-3); border-color: var(--line-soft); text-decoration: line-through; }
+.tcell.on { border-color: var(--accent); color: var(--accent); }
+/* The ↩ between two executions: this one replaced the one before it. Its class
+   is distinct from the header's back link, which sets a cursor of its own. */
+.wentback { color: var(--v-warn); font-size: var(--t-sm); margin: 0 2px; cursor: help; }
+.tgen { display: inline-flex; align-items: baseline; gap: var(--s-1); }
+/* Narrow on purpose: the row is name-then-pin, and at panel width the pin ends
+   up a screen away from the file it belongs to. */
+.tfiles { margin-top: var(--s-2); padding-left: var(--s-2); max-width: 26rem; }
+
+/* A step whose subtree was re-worked. The step kept its own directory, so
+   nothing else on its row would say so. */
+.step .inside { font-size: var(--t-xs); font-family: var(--mono); color: var(--v-warn);
+                margin-left: auto; padding-right: var(--s-1); cursor: help; }
+
+/* ── results matrix ──────────────────────────────────────────────────── */
+/* A big protocol is a dozen scenarios by a dozen properties: the panel grows to
+   the matrix's full height and only the width scrolls. */
+.matrixwrap {
+  overflow-x: auto; overflow-y: hidden;
+  max-height: none; border-radius: var(--r-sm);
+}
+table.matrix { font-size: var(--t-md); margin: 0; width: auto; min-width: 100%; }
+/* The scenarios are the only elastic columns; --colw is their share of what the
+   fixed ones left, computed in main.js::fitColumns. Below the floor they stop
+   shrinking and the box scrolls. */
+table.matrix th.sc, table.matrix td.sc { min-width: var(--colw, 7rem); }
+/* The name wraps rather than being cut. A block inside the cell, because
+   max-width on a th is ignored under table-layout: auto. Breaks land on the
+   <wbr>s the template emits; `anywhere` is the fallback for a longer run. */
+.colname {
+  display: block; white-space: normal; overflow-wrap: anywhere;
+  line-height: 1.3; max-width: calc(var(--colw, 7rem) - var(--s-3) * 2);
+}
+table.matrix thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--panel); box-shadow: inset 0 -1px 0 var(--line);
+}
+/* The pinned column: the property's name. */
+table.matrix th:first-child, table.matrix td:first-child {
+  position: sticky; left: 0; z-index: 1; background: var(--panel);
+  box-shadow: inset -1px 0 0 var(--line);
+}
+table.matrix thead th:first-child { z-index: 3; }
+table.matrix tbody tr:hover td { background: var(--raised); }
+table.matrix th, table.matrix td {
+  padding: var(--s-2) var(--s-3); text-align: center;
+  border-bottom: 1px solid var(--line-soft);
+}
+table.matrix thead th {
+  color: var(--ink-3); font-weight: 500; font-size: var(--t-sm);
+  font-family: var(--mono); white-space: nowrap; vertical-align: bottom;
+}
+/* the scenario headers are the ones that wrap; the rest are single words */
+table.matrix thead th.sc { white-space: normal; }
+table.matrix th:first-child, table.matrix td:first-child {
+  text-align: left; font-family: var(--mono); color: var(--ink);
+  width: 1%; white-space: nowrap; padding-right: var(--s-5);
+}
+table.matrix tbody tr:hover { background: var(--raised); }
+table.matrix /* a cell with an answer opens that answer's whole file; the hover
+   outline is the affordance */
+td.cell { cursor: pointer; transition: box-shadow .12s; }
+td.cell:hover { box-shadow: inset 0 0 0 1px var(--accent-line); }
+.v { font-family: var(--mono); font-weight: 700; font-size: var(--t-base); }
+/* The four answers a goal can come back with. Only `true` is green; the other
+   three are not degrees of failure and take colours off that scale. */
+.v.true { color: var(--v-ok); }
+.v.false { color: var(--v-neg); }
+.v.unknown { color: var(--ink-2); }
+.v.none { color: var(--ink-3); }
+/* ── the assumption side ─────────────────────────────────────────────── */
+/* What every world carries, in two tiers side by side, built by two different
+   steps. The fixed tier is a band rather than rows, because its value would
+   otherwise repeat across every column, and its ground stays neutral so it does
+   not read as one of the states the table distinguishes. */
+.carried {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--s-3); margin: 0 0 var(--s-3);
+}
+@media (max-width: 900px) { .carried { grid-template-columns: 1fr; } }
+.fixedband {
+  border: 1px solid var(--line); background: var(--raised);
+  border-radius: var(--r-sm); margin: 0; padding: var(--s-2) var(--s-3);
+}
+/* The count as a chip, so it does not read as part of the heading beside it. */
+.fixedband summary .n {
+  margin-left: var(--s-2); font-family: var(--mono);
+  font-size: var(--t-xs); padding: 1px 6px; border-radius: 10px;
+  background: var(--hi); cursor: help;
+}
+.fixedband summary { cursor: pointer; color: var(--ink-2); font-size: var(--t-md); }
+.fixedband summary .dim { margin-left: var(--s-2); }
+.fixedlist {
+  display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4);
+  margin-top: var(--s-2); font-family: var(--mono); font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+/* The break between the table's two halves: assumptions above, goals below. */
+tr.side td {
+  background: var(--hi); color: var(--ink); font-weight: 600;
+  font-size: var(--t-md); text-align: left;
+  padding: var(--s-2) var(--s-3);
+  border-top: 2px solid var(--line); border-bottom: 1px solid var(--line);
+}
+tr.side .dim { margin-left: var(--s-2); font-weight: 400; }
+/* The kind a goal id does not say: injective and non-injective agreement read
+   alike as identifiers and are different questions. */
+.kind {
+  margin-left: var(--s-2); font-family: var(--sans); font-size: var(--t-xs);
+  color: var(--ink-3); border: 1px solid var(--line);
+  border-radius: var(--r-sm); padding: 1px 6px; white-space: nowrap;
+}
+/* The axis is the KB's concept and the dimension is this protocol's instance of
+   it, so the axis is a heading over its own rows rather than a column. */
+tr.axis td {
+  background: var(--raised); padding: var(--s-1) var(--s-3);
+  font-size: var(--t-xs); text-align: left; border-bottom: 0;
+}
+tr.axis .dim { margin-left: var(--s-3); }
+table.matrix td.dimname { color: var(--ink-2) !important; font-size: var(--t-sm); }
+table.matrix td.val {
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-3);
+  vertical-align: middle;
+}
+/* The value this world declared for itself, and the only tinted ground in the
+   assumption block: untinted means the world never mentioned that dimension and
+   the flow model's own state stands. */
+table.matrix td.val.declared { color: var(--on); background: var(--on-soft); }
+/* Rows are sorted by coverage, so the columns a block never asked about form a
+   single rectangle rather than a placeholder per cell. */
+table.matrix td.unasked {
+  background: var(--raised); color: var(--ink-3); font-size: var(--t-xs);
+  text-align: center; vertical-align: middle;
+}
+tbody.goals + tbody.goals tr:first-child td { border-top: 1px solid var(--line); }
+
+/* Two questions, two columns: does G hold, and were we right about it. */
+.concl { border-left: 1px solid var(--line); }
+/* The comparison lives in the cell's ground: green agrees with the ground
+   truth, red disagrees, untinted had nothing to compare against. Red is the
+   stronger tint, because a disagreement is what is worth finding. The selector
+   is specific enough to beat the row-hover rule, which is (0,2,4). */
+table.matrix tbody td.cell.miss {
+  background: color-mix(in srgb, var(--v-bad) 17%, transparent);
+}
+table.matrix tbody td.cell.hit {
+  background: color-mix(in srgb, var(--v-ok) 9%, transparent);
+}
+.ne { font-family: var(--mono); color: var(--ink-3); font-size: var(--t-sm); margin: 0 3px; }
+/* The expected answer keeps its own verdict colour: it is an answer, not a
+   warning. */
+.v.want { font-size: var(--t-md); }
+/* The row's own count is about correctness, not verdicts: hits across worlds
+   add up, whereas verdicts across worlds are mutually exclusive. */
+td.concl.off { color: var(--v-bad); }
+.note { font-size: var(--t-md); color: var(--ink-3); margin: var(--s-3) 0 0; }
+
+/* ── a false cell's attack reproduction ──────────────────────────────────
+   Shape and colour together (the glyph from main.js::REPRO_GLYPH). An edge
+   rather than a ground: the ground already says whether the cell agrees with
+   the corpus, which is the louder question, and a solid replacing it both
+   hid that and outshouted the disagreements. In progress is the interactive
+   hue, as everywhere on the page. */
+.rpmark { margin-left: var(--s-1); font-size: var(--t-xs); font-family: var(--sans); }
+table.matrix tbody td.cell.rp-done { box-shadow: inset 3px 0 0 var(--v-neg); }
+table.matrix tbody td.cell.rp-done .rpmark { color: var(--v-neg); }
+/* Asked for after the run: a dot beside the edge. */
+table.matrix tbody td.cell.rp-manual { position: relative; }
+table.matrix tbody td.cell.rp-manual::after {
+  content: ''; position: absolute; top: 5px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--v-neg);
+}
+table.matrix tbody td.cell.rp-queued { outline: 1px dashed var(--accent-line); outline-offset: -3px; }
+table.matrix tbody td.cell.rp-running {
+  outline: 2px dashed var(--accent); outline-offset: -3px;
+  animation: rp-breathe 1.6s ease-in-out infinite;
+}
+td.cell.rp-queued .rpmark, td.cell.rp-running .rpmark { color: var(--accent); }
+td.cell.rp-running .rpmark { display: inline-block; animation: rp-spin 1.2s linear infinite; }
+@keyframes rp-breathe { 50% { background: color-mix(in srgb, var(--accent) 20%, transparent); } }
+@keyframes rp-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  table.matrix tbody td.cell.rp-running, td.cell.rp-running .rpmark { animation: none; }
+}
+/* Could not be reproduced: a warning corner, the ground left as it was. */
+table.matrix tbody td.cell.rp-failed { position: relative; }
+table.matrix tbody td.cell.rp-failed::before {
+  content: ''; position: absolute; top: 0; right: 0;
+  border-style: solid; border-width: 0 10px 10px 0;
+  border-color: transparent var(--v-warn) transparent transparent;
+}
+td.cell.rp-failed .rpmark { color: var(--v-warn); font-weight: 700; }
+/* Picked for the next request: the interactive hue, drawn over whatever the
+   cell already shows. While selecting, a waiting cell says it can be picked. */
+table.matrix tbody td.cell.rp-sel { outline: 2px solid var(--accent); outline-offset: -3px; }
+td.cell.rp-sel .rpmark { color: var(--accent); }
+table.matrix tbody td.cell.rp-pickable:hover {
+  box-shadow: inset 0 0 0 2px var(--accent-line);
+}
+
+/* ── lanes ───────────────────────────────────────────────────────────── */
+.lane {
+  display: grid; grid-template-columns: 16rem minmax(0, 1fr) 8rem auto;
+  gap: var(--s-3); align-items: center;
+}
+/* Ten lanes fit; past that the box scrolls rather than the panel growing —
+   the phase headings above stay in view either way. */
+.lanes { max-height: 22rem; overflow-y: auto; overscroll-behavior: contain; }
+.lane { padding: var(--s-2); border-radius: var(--r-sm); cursor: pointer; }
+.lane:hover { background: var(--raised); }
+.lane.open { background: var(--raised); box-shadow: inset 2px 0 0 var(--accent); }
+.lane .name {
+  font-family: var(--mono); font-size: var(--t-md);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lane.open .name { color: var(--accent); }
+/* segmented by phase, so "how far" and "which stage" read in one glance */
+.track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; height: 8px; }
+.track i { display: block; border-radius: 2px; background: var(--line-soft); }
+.track i.done { background: var(--v-ok); opacity: .8; }
+.track i.now { background: var(--accent); }
+.track i.queued {
+  background: repeating-linear-gradient(90deg, var(--line) 0 3px, transparent 3px 7px);
+}
+.lane .stat { font-size: var(--t-sm); font-family: var(--mono); color: var(--ink-2); }
+/* The lane's verdict carried by its own number: whole is green, short is red,
+   and a working lane stays neutral. The open lane keeps the accent. */
+.lane .stat.ok { color: var(--v-ok); }
+.lane .stat.bad { color: var(--v-bad); }
+.lane.open .stat, .lane.open .stat.ok, .lane.open .stat.bad { color: var(--accent); }
+.chip {
+  font-family: var(--mono); font-size: var(--t-sm); font-weight: 600;
+  border: 1px solid var(--line); border-radius: var(--r-sm); padding: 2px 0;
+  text-align: center; color: var(--ink-3);
+}
+
+/* ── unit detail ─────────────────────────────────────────────────────── */
+.detail {
+  display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: var(--s-4);
+  margin: var(--s-3) 0 0; padding: var(--s-3);
+  background: var(--raised); border: 1px solid var(--line); border-radius: var(--r-md);
+}
+@media (max-width: 900px) { .detail { grid-template-columns: 1fr; } }
+.units { list-style: none; padding: 0; margin: 0; font-size: var(--t-sm); }
+.units li {
+  padding: var(--s-1) var(--s-2); border-radius: var(--r-sm); cursor: pointer;
+  font-family: var(--mono); color: var(--ink-2); overflow-wrap: anywhere;
+  margin-bottom: 2px;
+}
+.units li.sel { background: var(--accent-soft); color: var(--accent); font-weight: 550; }
+.units li:hover:not(.sel) { background: var(--hi); color: var(--ink); }
+/* A session sits beside its own retry, so the row is a line and not a label. */
+.units li { display: flex; align-items: center; gap: var(--s-2); }
+.units li .grow { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+/* Under the scenario they belong to: an apply point is inside a scenario, and
+   the indent is what says so. */
+.units.nested { margin: 2px 0 var(--s-2) var(--s-4); }
+.units.nested li { font-size: var(--t-xs); }
+.units.nested li.muted { cursor: default; }
+.row {
+  /* the key column fits the longest label ("framework") without wrapping */
+  display: grid; grid-template-columns: 14px 4.9rem minmax(0, 1fr) auto;
+  gap: var(--s-2); align-items: baseline; padding: 2px 0;
+}
+.row .k { font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-3); }
+.row .glyph { text-align: center; font-size: var(--t-xs); color: var(--ink-3); }
+.row.framework .glyph, .row.framework .k { color: var(--accent); }
+.row.bad .glyph, .row.bad .k { color: var(--v-warn); }
+.row .open { cursor: pointer; font-size: var(--t-md); color: var(--accent); text-decoration: none; }
+.row details summary { cursor: pointer; color: var(--v-warn); font-size: var(--t-md); }
+.row details ul { margin: var(--s-1) 0 0; padding-left: var(--s-3); color: var(--ink-2); }
+/* ── the session timeline ────────────────────────────────────────────── */
+/* One line per thing that happened, in order. A prompt and a reply carry a
+   whole text behind them and open in place; everything else is already said in
+   full on the line. */
+.timeline { display: flex; flex-direction: column; }
+.tl {
+  /* The label column has a floor and the column beside it gives way: an `auto`
+     track will not go below its own min-content, so a long finding would
+     squeeze the label to one character wide. */
+  display: grid; grid-template-columns: 16px minmax(10rem, 1fr) minmax(0, auto);
+  gap: var(--s-2); align-items: baseline;
+  padding: var(--s-1) var(--s-2); border-bottom: 1px solid var(--line-soft);
+  font-size: var(--t-md);
+}
+.tl:hover { background: var(--panel); }
+.tl .glyph { text-align: center; font-size: var(--t-xs); color: var(--ink-3); }
+.tl .tlmain { color: var(--ink); overflow-wrap: anywhere; }
+/* So it wraps inside its column rather than setting the column's width. */
+.tl .dim { min-width: 0; overflow-wrap: anywhere; }
+.tl a.tlmain { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--line); }
+.tl a.tlmain:hover { color: var(--accent); border-bottom-color: var(--accent-line); }
+/* Red is left to the one thing on this timeline that is machinery: a tool call
+   that came back failed. A check saying no is amber — see .tl .tlmain.warn. */
+.tl .dim.bad { color: var(--v-bad); }
+.tl .tlmain.warn { color: var(--v-warn); }
+/* Colour says who; the shape says what. The model's two acts — answering and
+   calling a tool — share the accent because they are the same actor. */
+.tl.prompt .glyph { color: var(--ink-2); }
+.tl.framework .glyph { color: var(--accent); }
+.tl.solve .glyph { color: var(--v-ok); }
+.tl.reply .glyph, .tl.tool .glyph { color: var(--accent); }
+/* And how it went, where there is such a thing. */
+.tl .glyph.ok { color: var(--v-ok); }
+.tl .glyph.bad { color: var(--v-bad); }
+/* Passed by rule, verified by nothing — a typecheck that timed out. Neither
+   green nor red, because it is neither. */
+.tl .glyph.warn { color: var(--v-warn); }
+/* A named check is a step inside the round, not a step of its own: indented
+   under the line that started it, and quieter than it. */
+.tl.check { padding-left: var(--s-4); border-bottom-color: transparent; }
+.tl.check .tlmain { font-size: var(--t-sm); color: var(--ink-2); }
+.tl.check .tlmain.warn { color: var(--v-warn); }
+
+/* Why a check said no: full width under the label, one entry per finding.
+   Amber, because a check refusing is the repair loop working, not a fault. */
+.findings-why {
+  grid-column: 2 / -1; list-style: none; margin: var(--s-1) 0 0; padding: 0;
+  font-size: var(--t-sm);
+}
+.findings-why li {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s-2);
+  align-items: baseline; padding: 2px 0;
+}
+.findings-why .fcell {
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--v-warn);
+  border: 1px solid color-mix(in srgb, var(--v-warn) 40%, var(--line));
+  border-radius: var(--r-sm); padding: 0 var(--s-1); white-space: nowrap;
+}
+.findings-why .fwhy { color: var(--ink-2); overflow-wrap: anywhere; }
+/* The two texts a reply is made of, kept apart: thinking is the model working,
+   the answer is what it submitted. */
+.tl pre {
+  grid-column: 2 / -1; white-space: pre-wrap; word-break: break-word;
+  margin: var(--s-1) 0 var(--s-2); font-size: var(--t-sm); line-height: 1.65;
+  color: var(--ink-2); border-left: 2px solid var(--line);
+  padding-left: var(--s-2); max-height: 22rem; overflow: auto;
+}
+.tl pre.think { color: var(--ink-3); font-style: italic; border-left-color: var(--line-soft); }
+.tl.reply pre:not(.body) { border-left-color: var(--accent); }
+
+.live pre {
+  white-space: pre-wrap; margin: var(--s-1) 0 0; font-size: var(--t-sm);
+  border-left: 2px solid var(--accent); padding-left: var(--s-2); color: var(--ink-2);
+}
+
+/* ── feed ────────────────────────────────────────────────────────────── */
+/* The feed grows for as long as the run does, so it scrolls inside a box of its
+   own. `flex: 0 0 auto` leaves the height to the cap below. */
+.feedwrap { display: flex; flex-direction: column; flex: 0 0 auto; }
+.filters { display: flex; gap: var(--s-1); flex-wrap: wrap; margin-bottom: var(--s-2); }
+.filters button {
+  padding: 3px 12px; font-size: var(--t-sm); margin: 0; width: auto;
+  background: transparent; border-color: var(--line); color: var(--ink-3);
+  border-radius: 20px;
+}
+.filters button.on {
+  background: var(--accent-soft); border-color: var(--accent-line);
+  color: var(--accent); font-weight: 550;
+}
+.feed {
+  height: 24rem; overflow-y: auto; overscroll-behavior: contain;
+  font-size: var(--t-sm); font-family: var(--mono); line-height: 1.8;
+  background: var(--raised); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: var(--s-2) var(--s-3);
+}
+.feed div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The line that says what is above it. Sticky, because the moment a reader
+   scrolls up to look for the start of the run is the moment it is the answer. */
+.feed .earlier {
+  position: sticky; top: calc(var(--s-2) * -1); margin: 0 0 var(--s-2);
+  padding: var(--s-1) 0; background: var(--raised); z-index: 1;
+}
+.feed .earlier a { color: var(--accent); text-decoration: none;
+                   border-bottom: 1px dotted var(--accent-line); }
+.feed .ts { color: var(--ink-3); }
+.feed .at {
+  display: inline-block; width: 21rem; padding: 0 var(--s-3); color: var(--ink-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom;
+}
+.feed .body { color: var(--ink-2); }
+/* The words a reader scans for, coloured in place, on the same split as the
+   verdict colours: `false` is an answer, `failed` is a fault. */
+.feed em.false { color: var(--v-neg); font-style: normal; font-weight: 600; }
+.feed em.fault { color: var(--v-bad); font-style: normal; font-weight: 600; }
+.feed em.warn { color: var(--v-warn); font-style: normal; font-weight: 600; }
+.feed em.true { color: var(--v-ok); font-style: normal; font-weight: 600; }
+
+/* ── expert ──────────────────────────────────────────────────────────── */
+.expert { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+.chatlog {
+  flex: 1; min-height: 8rem; overflow-y: auto;
+  display: flex; flex-direction: column; gap: var(--s-2); padding-right: var(--s-1);
+}
+.msg {
+  padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
+  font-size: var(--t-base); line-height: 1.6; max-width: 92%;
+}
+.msg.me { background: var(--hi); align-self: flex-end; }
+.msg.it { border: 1px solid var(--line); align-self: flex-start; color: var(--ink-2); }
+.msg.live { border-color: var(--accent-line); border-style: dashed; }
+.msg pre { white-space: pre-wrap; margin: 0; font-family: inherit; font-size: inherit; }
+.cost { font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-3); align-self: flex-start; }
+.empty { font-size: var(--t-md); color: var(--ink-3); line-height: 1.7; }
+
+article.pending {
+  border: 1px solid var(--accent-line); background: var(--accent-soft);
+  border-radius: var(--r-md); padding: var(--s-3); margin: 0 0 var(--s-3);
+}
+article.pending .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+article.pending button { margin: 0; padding: 5px; font-size: var(--t-md); width: 100%; }
+
+.composer { margin-top: var(--s-3); }
+.composer textarea { margin: 0; resize: vertical; font-size: var(--t-base); }
+.composer .send {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-2); margin-top: var(--s-2);
+}
+.composer .hint { font-size: var(--t-xs); color: var(--ink-3); font-family: var(--mono); }
+
+.banner {
+  border: 1px solid color-mix(in srgb, var(--v-warn) 50%, transparent);
+  border-radius: var(--r-md); padding: var(--s-2) var(--s-3);
+  font-size: var(--t-md); color: var(--v-warn); margin-bottom: var(--s-4);
+}
+
+/* file viewer */
+dialog article { max-width: 74rem; width: 92vw; background: var(--panel); }
+dialog header strong { font-family: var(--mono); font-size: var(--t-md); }
+dialog pre {
+  max-height: 62vh; overflow: auto; font-size: var(--t-sm); line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word; background: var(--raised);
+}
+
+/* run list */
+table.runs { font-size: var(--t-base); }
+/* Dense on purpose: this list is scanned, not read, and the whole point of
+   the fold above is to get more of it on one screen. */
+table.runs td, table.runs th {
+  border-bottom: 1px solid var(--line-soft); padding: var(--s-2) var(--s-3);
+}
+table.runs thead th {
+  color: var(--ink-3); font-weight: 500; font-size: var(--t-sm); font-family: var(--mono);
+}
+table.runs tbody tr:hover { background: var(--raised); }
+table.runs a { text-decoration: none; font-weight: 550; }
+/* Grouped by protocol, the way the run tree on disk is. The group row carries
+   what a collapsed protocol still has to say — how many, anything running,
+   anything unread, when the newest started — and its runs are a click under. */
+table.runs tr.grp { cursor: pointer; }
+table.runs tr.grp > td { font-weight: 600; color: var(--ink); }
+table.runs tr.grp .caret { display: inline-block; width: 1.1em; color: var(--ink-3); }
+table.runs tr.grp.open .caret { color: var(--accent); }
+/* The child rows read as belonging to the row above: indented, and the protocol
+   column dimmed because the group already said it. */
+table.runs tr.sub > td { border-bottom-color: transparent; }
+table.runs tr.sub:last-of-type > td { border-bottom-color: var(--line-soft); }
+table.runs td.indent { padding-left: calc(var(--s-3) + 1.4em); }
+/* A standard, one level above its mechanisms — four fifths of this corpus is
+   ISO mechanisms. Ruled off rather than tinted, because fill colour in this
+   table is already spent on the row states. */
+table.runs tr.grp.std > td { border-top: 1px solid var(--line-soft); }
+table.runs tr.grp.std > td:first-child { color: var(--ink); letter-spacing: .02em; }
+/* A protocol that sits inside a standard, indented to say so. One that is
+   nobody's mechanism keeps the outer margin. */
+table.runs tr.grp.instd > td:first-child { padding-left: calc(var(--s-3) + 1.4em); }
+table.runs tr.sub.instd td.indent { padding-left: calc(var(--s-3) + 2.8em); }
+
+/* ── the launcher rail ───────────────────────────────────────────────── */
+/* Both sections are resident: starting a run does not hide the run list, which
+   is where the new run appears. */
+.rail .panel { padding: 0; }
+.rail summary {
+  cursor: pointer; padding: var(--s-3) var(--s-4);
+  display: flex; align-items: baseline; gap: var(--s-2);
+}
+.rail summary .ttl { font-size: var(--t-lg); font-weight: 600; }
+.rail details[open] summary { border-bottom: 1px solid var(--line); }
+.rail .launch { border-color: var(--accent-line); }
+.rail .launch summary .ttl { color: var(--accent); }
+.rail .fld {
+  display: block; padding: var(--s-2) var(--s-4) 0;
+  font-size: var(--t-sm); color: var(--ink-3);
+}
+.rail .fld input, .rail .fld select {
+  margin: 3px 0 0; padding: 5px 8px; font-size: var(--t-sm); height: auto;
+}
+.rail .fld input.need { border-color: var(--v-warn); }
+/* The same choices on the run page, read-only: which artifacts the run wrote
+   itself, which came from the corpus (struck through), and where it stopped. */
+.panel .head .ranrange {
+  margin-left: auto; display: flex; gap: var(--s-2);
+  font: 500 var(--t-xs)/1 var(--mono); color: var(--ink-3);
+}
+.panel .head .ranrange span { text-decoration: line-through; }
+.panel .head .ranrange span.on { text-decoration: none; color: var(--ink-2); }
+.panel .head .ranrange span.here { color: var(--accent); text-decoration: none; }
+
+/* Where each artifact comes from: a row per artifact, its name on the left and
+   two named buttons on the right, since both answers are real choices. */
+.rail .picks { padding: var(--s-2) var(--s-4) 0; }
+.rail .pick {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s-2); padding: 2px 0;
+  font-size: var(--t-sm); color: var(--ink-3);
+}
+.rail .pick .plabel { font-family: var(--mono); font-size: var(--t-xs); }
+.rail .pick .pchoice { display: flex; gap: 2px; }
+.rail .pick .pchoice button {
+  margin: 0; padding: 2px 7px; width: auto; height: auto;
+  font: 500 var(--t-xs)/1.5 var(--mono);
+  color: var(--ink-3); background: transparent;
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+}
+.rail .pick .pchoice button.on {
+  color: var(--accent); border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+.rail .pick .pchoice.wide button { padding: 2px 5px; }
+
+.rail .row2 { display: flex; gap: var(--s-2); align-items: stretch; }
+.rail .row2 input { flex: 1; }
+.rail .row2 button { margin: 3px 0 0; white-space: nowrap; }
+.rail .sm { font-size: var(--t-xs); }
+.rail .err { color: var(--v-bad); font-size: var(--t-sm); padding: var(--s-2) var(--s-4) 0; margin: 0; }
+.rail .dim.sm, .rail p.sm { padding: var(--s-1) var(--s-4) 0; margin: 0; }
+.rail .flt { margin: var(--s-2) var(--s-4); width: calc(100% - var(--s-4) * 2); padding: 5px 8px; font-size: var(--t-sm); height: auto; }
+.rail .sep { height: 1px; background: var(--line); margin: var(--s-3) 0 0; }
+/* Bounded, because a corpus holds a hundred of these and the runs are what the
+   page is for. */
+.plist { max-height: 15rem; overflow-y: auto; border-top: 1px solid var(--line-soft); }
+/* Playing back, the config below is folded and read-only, so this list takes
+   what is spare. The subtraction reserves the rest of the rail — the root field
+   and its notes above, the protocol name and start button below — which a flat
+   fraction of the viewport would ignore and push the start button off a laptop
+   screen. The 15rem floor keeps this from asking for less than the plain mode
+   gets. A maximum rather than a height, so a five-row list is five rows tall. */
+.rail.recorded .plist { max-height: max(15rem, min(100vh - 28rem, 30rem)); }
+.prow {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 var(--s-2); padding: var(--s-2) var(--s-4); cursor: pointer;
+  border-bottom: 1px solid var(--line-soft);
+}
+.prow:hover { background: var(--raised); }
+.prow.on { background: var(--accent-soft); }
+.prow .nm { font-size: var(--t-sm); color: var(--ink); }
+.prow.on .nm { color: var(--accent); }
+/* The corpus path under the name, clipped to one line. */
+.prow .pth { grid-column: 1; font-size: var(--t-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow .tags { grid-row: 1 / span 2; align-self: center; font-size: var(--t-xs); display: flex; gap: var(--s-1); }
+.prow .tags .gt { color: var(--v-ok); }
+/* A standard, as a row that opens into its mechanisms — the same fold the run
+   list uses. The caret sits in the row's own left padding, outside the grid, so
+   every name lines up at one left edge whether its row opens or not. */
+.prow.phead { position: relative; }
+/* Sized to be read next to a 14px name rather than to be hunted for. */
+.prow.phead .caret {
+  position: absolute; left: 2px; top: var(--s-2);
+  color: var(--ink-3); font-size: var(--t-sm); line-height: 1.35;
+}
+.prow.phead.open .caret { color: var(--accent); }
+.prow.phead .nm { font-weight: 600; }
+/* A mechanism inside an open standard, indented to say whose it is. It carries
+   no path of its own: the standard on the line above is the path. */
+.prow.sub { padding-left: calc(var(--s-4) + 1.4em); }
+/* ── the two ways in, and the browser behind the second ─────────────────── */
+/* Same shape as the mode and language toggles in the top bar: two buttons, one
+   lit. */
+.srcmode { display: flex; gap: 2px; padding: var(--s-3) var(--s-4) 0; }
+.srcmode button {
+  flex: 1; margin: 0; padding: 4px 10px; font-size: var(--t-sm);
+  background: var(--raised); color: var(--ink-2);
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+}
+.srcmode button.on {
+  background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line);
+}
+.bcrumb {
+  display: flex; align-items: baseline; gap: var(--s-3);
+  padding: var(--s-2) var(--s-4); font-size: var(--t-sm);
+  border-top: 1px solid var(--line-soft);
+}
+.bcrumb .grow { flex: 1; }
+/* Bounded and scrolling like the protocol list: a directory has no upper bound
+   and this sits in a column that has to stay above the fold. */
+.blist { max-height: 17rem; overflow-y: auto; border-top: 1px solid var(--line-soft); }
+.brow {
+  display: flex; align-items: baseline; gap: var(--s-2);
+  padding: var(--s-2) var(--s-4); cursor: pointer;
+  border-bottom: 1px solid var(--line-soft);
+}
+.brow:hover { background: var(--raised); }
+.brow.on { background: var(--accent-soft); }
+.brow .nm { font-size: var(--t-base); color: var(--ink); flex: 1; min-width: 0;
+            overflow-wrap: anywhere; }
+.brow.on .nm { color: var(--accent); }
+.brow .caret { color: var(--ink-3); font-size: var(--t-sm); }
+/* A document is a leaf, so it has no caret; the indent keeps the names in one
+   column instead of the files hanging left of the folders. */
+.brow.doc { padding-left: calc(var(--s-4) + 1.1em); }
+.brow .gt { font-size: var(--t-xs); color: var(--v-ok); }
+.brow .num { font-size: var(--t-xs); }
+.brow .pin { font-size: var(--t-xs); }
+
+.pad { padding: var(--s-3) var(--s-4); }
+.rail button.go {
+  width: calc(100% - var(--s-4) * 2); margin: var(--s-3) var(--s-4);
+  padding: 7px; font-size: var(--t-base); font-weight: 550;
+}
+/* config */
+.rail .grp {
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-3);
+  background: var(--raised); padding: var(--s-1) var(--s-4);
+}
+.knob {
+  display: grid; grid-template-columns: minmax(0, 1fr) 9rem; gap: var(--s-2);
+  align-items: center; padding: 2px var(--s-4); font-size: var(--t-sm);
+}
+.knob .kp { color: var(--ink-2); overflow-wrap: anywhere; }
+.knob span.kv { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.knob input.kv { margin: 0; padding: 2px 6px; height: auto; font-size: var(--t-sm); text-align: right; }
+/* A quiet note under a group of knobs. */
+.rail .note2 { padding: var(--s-3) var(--s-4); color: var(--ink-3); }
+
+/* The rail sits left of the run list: what a reader acts with on the left,
+   what they read on the right. Only the order changes. */
+.cols.leftrail { grid-template-columns: clamp(24rem, 26vw, 34rem) minmax(0, 1fr); }
+.cols.leftrail .side-col { order: -1; }
+/* Both columns scroll on their own; the rail's stack of settings easily runs
+   past the fold. */
+.cols.leftrail .side-col { overflow-y: auto; overscroll-behavior: contain; }
+@media (max-width: 1150px) { .cols.leftrail .side-col { order: 0; } }
+
+/* Size overrides, so the rail reads at the same step as the rest of the page. */
+.rail .fld { font-size: var(--t-md); }
+.rail .fld input, .rail .fld select, .rail .flt { font-size: var(--t-base); padding: 6px 9px; }
+.rail .sm, .rail .dim.sm, .rail p.sm { font-size: var(--t-sm); }
+.prow .nm { font-size: var(--t-base); }
+.prow .pth, .prow .tags { font-size: var(--t-sm); }
+.rail .grp { font-size: var(--t-sm); }
+.knob { font-size: var(--t-md); grid-template-columns: minmax(0, 1fr) 11rem; padding: 3px var(--s-4); }
+.knob input.kv, .knob select.kv { font-size: var(--t-md); padding: 3px 7px; }
+.knob span.kv { font-size: var(--t-md); }
+/* A name the corpus did not declare — read off the path and worth checking. */
+.prow .nm.guessed { color: var(--v-warn); }
+.prow .nm.guessed::after { content: " ~"; opacity: .7; }
+table.runs { font-size: var(--t-base); }
+table.runs td, table.runs th { padding: var(--s-2) var(--s-3); }
+
+/* The tags column has to be named: with only a row span the browser auto-placed
+   it into the first cell and pushed the protocol's name to the right. */
+.prow .nm { grid-column: 1; grid-row: 1; }
+.prow .pth { grid-column: 1; grid-row: 2; }
+.prow .tags { grid-column: 2; grid-row: 1 / span 2; }
+
+/* What one run of this protocol costs: how many models it builds, how much
+   document it reads, whether it can be scored. Dim, because they qualify a
+   choice rather than being what a reader picks by. */
+.prow .tags .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* A box being written into is shorter than one being read; v-stick keeps the
+   newest line against its floor. */
+.tl pre.live { max-height: 9rem; }
+.msg.live pre.live { max-height: 14rem; overflow: auto; }
+
+/* Thinking, folded. The summary is the whole control — a line of quiet text
+   that counts up while the model works, and opens the reasoning when clicked. */
+.msg .fold > summary {
+  cursor: pointer; list-style: none; font-size: var(--t-xs);
+  font-family: var(--mono); color: var(--ink-3);
+}
+.msg .fold > summary::-webkit-details-marker { display: none; }
+.msg .fold > summary::before { content: '▸ '; }
+.msg .fold[open] > summary::before { content: '▾ '; }
+.msg .fold > summary:hover { color: var(--ink-2); }
+.msg pre.think {
+  color: var(--ink-3); font-style: italic; border-left-color: var(--line-soft);
+}
+
+/* The live backend's own slot, marked once above its four rows: without it the
+   block reads as four more llm settings rather than as this backend's. */
+.grp.sub { font-weight: 400; text-transform: none; opacity: .75; }
+/* A row mid-save: quiet, only enough that a value in flight does not look
+   settled. */
+.knob.busy .kv { opacity: .5; }
+
+/* A knob label that carries an explanation; the underline is what advertises
+   the tooltip. */
+.knob .kp.tip {
+  text-decoration: underline dotted var(--line);
+  text-underline-offset: 3px; cursor: help;
+}
+
+/* Four separate facts about a protocol, ruled apart so the two numbers do not
+   read as one quantity. */
+.prow .tags { gap: 0; }
+.prow .tags > * { padding: 0 var(--s-2); }
+.prow .tags > * + * { border-left: 1px solid var(--line); }
+.prow .tags > *:last-child { padding-right: 0; }
+.prow .tags > *:first-child { padding-left: 0; }
+
+/* ── the cell inspector ──────────────────────────────────────────────────
+   A verdict is the run's product; a disagreement is the case worth opening.
+   Everything below exists so that opening one does not mean reading a log. */
+
+/* Three readings, three colours: a modelling gap is ours to fix, a genuine
+   attack may mean the corpus is wrong, undecided is neither. */
+.reading {
+  font-family: var(--mono); font-size: var(--t-xs); font-weight: 600;
+  padding: 1px 6px; border-radius: 10px; white-space: nowrap;
+  border: 1px solid currentColor;
+}
+.reading.modelling_gap { color: var(--v-warn); }
+.reading.genuine_attack { color: var(--on); }
+.reading.undecided { color: var(--ink-3); }
+
+td.cell { cursor: pointer; }
+td.cell .reading { margin-left: var(--s-1); padding: 0 4px; border: 0; }
+
+/* The documented attack behind a cell's false, named by the corpus. Solid
+   rather than tinted, because it has to read on both the miss and hit cell
+   grounds without being taken for either. */
+.attackmark {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: var(--s-1); padding: 1px 6px; border-radius: 10px;
+  background: var(--ink); color: var(--bg);
+  font-size: var(--t-xs); font-weight: 700; white-space: nowrap;
+  vertical-align: middle;
+}
+/* The corpus supplies a short form for this spot; the cap is the backstop for
+   an entry without one, which would otherwise push the verdicts out of the
+   cell. */
+.attackmark .an {
+  font-family: var(--mono); font-weight: 600;
+  max-width: 20ch; overflow: hidden; text-overflow: ellipsis;
+}
+/* A left rule on the cell itself, so the mark is findable by scanning the
+   column edge rather than by reading every cell's contents. */
+table.matrix tbody td.cell.attacked { box-shadow: inset 3px 0 0 0 var(--ink); }
+/* The rule and the hover outline are both box-shadows, so the hover state has
+   to redraw the pair or lose the outline. */
+table.matrix tbody td.cell.attacked:hover {
+  box-shadow: inset 3px 0 0 0 var(--ink), inset 0 0 0 1px var(--accent-line);
+}
+
+.ins-attack {
+  margin-top: var(--s-3); padding: var(--s-3);
+  border: 1px solid var(--line-soft); border-left: 3px solid var(--ink);
+  border-radius: var(--r-sm);
+}
+.ins-attack .ins-h { display: flex; align-items: center; gap: var(--s-2); }
+.ins-attack .ins-ah { color: var(--ink-3); font-size: var(--t-sm); }
+.ins-attack .ins-why.gap { color: var(--v-warn); }
+
+/* Where the open cell's reproduction stands. The rule on the left carries the
+   same hue as the cell. */
+.ins-repro {
+  margin-top: var(--s-3); padding: var(--s-2) var(--s-3);
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2);
+  border: 1px solid var(--line-soft); border-left: 3px solid var(--line);
+  border-radius: var(--r-sm);
+}
+.ins-repro .ins-why { margin: 0; flex: 1 1 20rem; }
+.ins-repro.rp-done { border-left-color: var(--v-neg); }
+.ins-repro.rp-done .rpmark { color: var(--v-neg); }
+.ins-repro.rp-queued, .ins-repro.rp-running { border-left-color: var(--accent); }
+.ins-repro.rp-queued .rpmark, .ins-repro.rp-running .rpmark { color: var(--accent); }
+.ins-repro.rp-failed { border-left-color: var(--v-warn); }
+.ins-repro.rp-failed .rpmark { color: var(--v-warn); }
+
+/* review_traces' own product: one row per finding, the paragraph clipped to a
+   line, the whole of it one click away. */
+.findings { margin-top: var(--s-3); border-top: 1px solid var(--line-soft);
+            padding-top: var(--s-3); }
+.fhead { font-size: var(--t-md); color: var(--ink-2); margin-bottom: var(--s-2); }
+.fhead .dim { margin-left: var(--s-2); font-size: var(--t-sm); }
+/* Flex, not a fixed grid: the responsible-step cell is absent on a
+   genuine_attack, and a fixed column count would put the paragraph in the wrong
+   track and stop it clipping. */
+.frow {
+  display: flex; align-items: baseline; gap: var(--s-2);
+  padding: var(--s-2) var(--s-1);
+  border-bottom: 1px solid var(--line-soft); font-size: var(--t-sm);
+  text-decoration: none; color: inherit;
+}
+.frow > * { flex: none; }
+.frow .fwhy { flex: 1; min-width: 0; }
+.frow:hover { background: var(--raised); }
+.frow .fgoal { color: var(--ink); }
+.frow .fwhy { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* The inspector sits in the column, not over it: the expert is one panel to the
+   right and asking about a cell while looking at it is the whole point. */
+.inspector {
+  margin-top: var(--s-3); border: 1px solid var(--accent-line);
+  border-radius: var(--r-md); background: var(--panel); overflow: hidden;
+}
+.ins-top {
+  display: flex; align-items: baseline; gap: var(--s-2); flex-wrap: wrap;
+  padding: var(--s-3); background: var(--raised);
+  border-bottom: 1px solid var(--line);
+}
+.ins-top .grow { flex: 1; }
+.ins-top .closex { text-decoration: none; font-size: var(--t-lg); }
+.inspector > *:not(.ins-top) { margin-left: var(--s-3); margin-right: var(--s-3); }
+
+/* The construction chain, with the blamed step wearing the reading's warning
+   colour so it joins up with the diagnosis beside it. */
+.ins-stages { display: flex; align-items: baseline; gap: var(--s-1);
+              flex-wrap: wrap; margin-top: var(--s-3); }
+.ins-stages .ins-label { width: auto; margin-right: var(--s-1); }
+.chip.on { border-color: var(--accent); color: var(--ink); background: var(--accent-soft); }
+.chip.blamed { border-color: var(--v-warn); color: var(--v-warn); }
+.chip.on.blamed { background: var(--raised); }
+
+/* Two panes, each scrolling on its own. Not synchronised: past a few dozen
+   lines the two models no longer correspond row for row, and a scroll that
+   pretends they do moves the pane the reader is not looking at. */
+.ins-diff { margin-top: var(--s-2); border: 1px solid var(--line);
+            border-radius: var(--r-sm); overflow: hidden; }
+/* On the panes' own grid, with the padding inside each cell, so a name lines up
+   with the file it heads. */
+.ins-diffhead {
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: var(--raised); border-bottom: 1px solid var(--line);
+  font-size: var(--t-sm);
+}
+.ins-diffhead > span { padding: var(--s-2) var(--s-3); min-width: 0;
+                       display: flex; align-items: baseline; gap: var(--s-2); }
+.ins-diff .pad { padding: var(--s-3); margin: 0; }
+/* Which corpus file the right pane shows. Quiet: it is a label that happens to
+   be changeable, not a control the panel is about. */
+.refpick {
+  margin: 0; padding: 0 var(--s-1); width: auto; height: auto;
+  font-size: var(--t-xs); background: none; border: 0;
+  color: var(--ink-3); cursor: pointer;
+}
+.legend { display: flex; align-items: center; gap: var(--s-1);
+          margin-left: auto; font-size: var(--t-xs); color: var(--ink-3); }
+.legend .key { width: 9px; height: 9px; border-radius: 2px;
+               display: inline-block; margin-left: var(--s-2); }
+
+.panes { display: grid; grid-template-columns: 1fr 1fr; }
+/* No background of its own: every shade below means one specific thing. */
+.pane { max-height: 52vh; overflow: auto; padding: var(--s-2) 0;
+        border-right: 1px solid var(--line); }
+.pane:last-child { border-right: 0; }
+.ln { display: flex; align-items: baseline; padding: 0 var(--s-2);
+      font-family: var(--mono); font-size: var(--t-sm); line-height: 1.55; }
+.ln .lno { width: 3ch; flex: none; text-align: right; color: var(--ink-3);
+           opacity: .5; user-select: none; }
+.ln .sgn { width: 2ch; flex: none; text-align: center; font-weight: 600;
+           user-select: none; color: var(--ink-3); }
+.ln code { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* What the open step did: taken out on the left, put in on the right. */
+.ln.del { background: rgba(148, 163, 184, .16); }
+.ln.add { background: rgba(74, 222, 128, .14); }
+.ln.del .sgn { color: var(--ink-2); }
+.ln.add .sgn { color: var(--v-ok); }
+.legend .key.add { background: rgba(74, 222, 128, .35); }
+/* What this scenario's apply rewrote, carried into every later pane. A second
+   colour, because the inject tab shows both at once. */
+.ln.ap-add { background: rgba(196, 181, 253, .18); }
+.ln.ap-add .sgn { color: var(--on); }
+.legend .key.ap-add { background: rgba(196, 181, 253, .45); }
+/* A line the diagnosis quotes verbatim. A rule, not a background: the shades
+   above already mean something, and a third would make all three ambiguous. */
+.ln.q { box-shadow: inset 2px 0 0 var(--accent); }
+
+/* ProVerif, coloured. The base is the ordinary reading colour, since code is
+   the content here; comments go the other way. */
+.pane code { color: var(--ink-2); }
+.pv-k { color: var(--accent); font-weight: 550; }   /* reserved words */
+.pv-t { color: var(--on); }                          /* built-in types, true/false */
+.pv-a { color: var(--v-warn); }                      /* [private] and friends */
+.pv-s { color: var(--v-ok); }                        /* strings */
+.pv-n { color: var(--on); }                          /* numbers */
+.pv-p { color: var(--ink-3); }                       /* punctuation, operators */
+.pv-c { color: var(--ink-3); opacity: .62; font-style: italic; }   /* comments */
+
+
+/* The diagnosis carries the reading's colour on its edge: it is the one thing
+   in this panel a reader should land on first. */
+.ins-finding {
+  margin: var(--s-3) 0; padding: var(--s-3); border-radius: var(--r-sm);
+  background: var(--raised); border-left: 3px solid var(--line);
+}
+.ins-finding.modelling_gap { border-left-color: var(--v-warn); }
+.ins-finding.genuine_attack { border-left-color: var(--on); }
+.ins-h { display: flex; align-items: baseline; gap: var(--s-2);
+         flex-wrap: wrap; font-size: var(--t-md); color: var(--ink-2); }
+.ins-why { margin: var(--s-2) 0 0; line-height: 1.65; color: var(--ink); }
+.ins-quotes {
+  margin: var(--s-3) 0 0; display: grid;
+  grid-template-columns: auto minmax(0, 1fr); gap: var(--s-1) var(--s-3);
+  font-size: var(--t-sm);
+}
+.ins-quotes dt { color: var(--ink-3); }
+.ins-quotes dd { margin: 0; color: var(--ink-2); overflow-wrap: anywhere; }
+.ins-none { color: var(--ink-3); margin: var(--s-3) 0; }
+
+/* Ours and the corpus's, in two columns — the same split the panel is about,
+   made visible before either side is opened. */
+.ins-files { display: grid; grid-template-columns: 1fr auto; gap: var(--s-4);
+             margin: var(--s-3) 0 var(--s-2); align-items: start; }
+@media (max-width: 800px) { .ins-files { grid-template-columns: 1fr; } }
+.ins-col { display: flex; flex-wrap: wrap; gap: var(--s-1); align-items: baseline; }
+.ins-label { width: 100%; font-size: var(--t-xs); color: var(--ink-3);
+             text-transform: uppercase; letter-spacing: .04em; }
+.chip {
+  font-size: var(--t-sm); padding: 2px 9px; border-radius: 12px;
+  background: var(--hi); border: 1px solid var(--line);
+  color: var(--ink-2); text-decoration: none;
+}
+.chip:hover { border-color: var(--accent-line); color: var(--ink); }
+.chip.corpus { border-style: dashed; }
+
+.ins-pane { margin-top: var(--s-3); border: 1px solid var(--line);
+            border-radius: var(--r-sm); overflow: hidden; }
+.ins-panehead {
+  display: flex; align-items: baseline; gap: var(--s-2);
+  padding: var(--s-2) var(--s-3); background: var(--raised);
+  border-bottom: 1px solid var(--line); font-size: var(--t-sm);
+}
+.ins-panehead a { margin-left: auto; text-decoration: none; font-size: var(--t-base); }
+.ins-pane pre {
+  margin: 0; max-height: 42vh; overflow: auto; padding: var(--s-3);
+  font-size: var(--t-sm); background: var(--panel);
+}
+
+/* Re-entering the run here. Only drawn on a run that stopped, so it can afford
+   to be loud. */
+.step .retry, .lane .retry, .units li .retry {
+  font-size: var(--t-xs); font-family: var(--mono); text-decoration: none;
+  color: var(--accent); border: 1px solid var(--accent-line);
+  border-radius: var(--r-sm); padding: 1px 6px; white-space: nowrap;
+}
+.step .retry:hover, .lane .retry:hover, .units li .retry:hover { background: var(--accent-soft); }
+.step .retry.busy, .lane .retry.busy, .units li .retry.busy {
+  color: var(--ink-3); border-color: var(--line);
+}
+
+/* Attaching one of the run's files to the next question. Drawn wherever a
+   product is, and quiet until hovered — a step can have a dozen of them. */
+.pin {
+  margin-left: var(--s-1); font-family: var(--mono); font-size: var(--t-sm);
+  line-height: 1; text-decoration: none; color: var(--ink-3);
+  border: 1px solid var(--line); border-radius: var(--r-sm); padding: 0 5px;
+}
+.pin:hover { color: var(--accent); border-color: var(--accent-line); }
+/* Already on the question. Green rather than accent: it says a state, not an
+   invitation, and the accent is what the page uses for "click me". */
+.pin.on { color: var(--v-ok); border-color: color-mix(in srgb, var(--v-ok) 55%, transparent); }
+/* The ceiling is reached. Shown rather than removed, with the reason on hover:
+   a plus that vanishes leaves a reader wondering which files can be attached. */
+.pin.full { opacity: .35; cursor: not-allowed; }
+.pin.full:hover { color: var(--ink-3); border-color: var(--line); }
+
+/* A product and its two actions, kept together so the row wraps between
+   products rather than between a name and its own plus. */
+.nodelog li.product { grid-template-columns: 14px minmax(0, 1fr) auto; }
+
+/* What is riding with the next message, above the composer rather than inside
+   it, so attachments can be seen and dropped separately from the text. */
+.attached {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1);
+  padding: var(--s-2) var(--s-3) 0;
+}
+.attached .chip { border-style: dashed; }
+.attached .chip:hover { border-color: var(--v-bad); color: var(--v-bad); }
+
+
+/* The delete control. Quiet until armed: it is the only thing in the console
+   that destroys anything, in one column of a dense table. */
+td.del { text-align: right; white-space: nowrap; }
+td.del a { text-decoration: none; }
+td.del a:hover { color: var(--v-bad); }
+td.del button { width: auto; margin: 0 var(--s-2) 0 0; padding: 3px 10px; }
+
+/* A run nobody has read yet, quiet beside the status pill. */
+.unread {
+  margin-left: var(--s-2); font-size: var(--t-xs); color: var(--accent);
+  border: 1px solid var(--accent-line); border-radius: 10px; padding: 1px 7px;
+  cursor: help;
+}
+
+/* Why a run stopped, at the top of the page: it is the one question a reader
+   who opens a failed run is asking. */
+.failbanner {
+  margin: 0 0 var(--s-3); border: 1px solid var(--v-bad);
+  border-radius: var(--r-md); background: var(--panel); overflow: hidden;
+}
+.fbhead {
+  display: flex; align-items: baseline; gap: var(--s-2);
+  padding: var(--s-2) var(--s-3); background: var(--raised);
+  border-bottom: 1px solid var(--line);
+}
+.fbhead .grow { flex: 1; }
+.fbhead .step-link { color: var(--ink); text-decoration: none;
+                     border-bottom: 1px dotted var(--line); }
+/* The branch inside the step. Reads as an address rather than as prose, and
+   wraps rather than pushing the header's right-hand link off the row. */
+.fbwhere {
+  font-size: var(--t-sm); color: var(--ink-2);
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: var(--r-sm); padding: 0 var(--s-1);
+  overflow-wrap: anywhere;
+}
+.fbwhy {
+  margin: 0; padding: var(--s-3); font-size: var(--t-sm);
+  white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink-2);
+  max-height: 12rem; overflow: auto;
+}
+
+
+/* A step with no session: one column, because there is no unit list to put
+   beside the detail — what the step reported and what it left is the detail. */
+.detail.solo { grid-template-columns: minmax(0, 1fr); }
+.nodelog { list-style: none; padding: 0; margin: 0; font-size: var(--t-md); }
+.nodelog li {
+  display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: var(--s-2);
+  align-items: baseline; padding: 2px 0; overflow-wrap: anywhere;
+}
+.nodelog .glyph { text-align: center; font-size: var(--t-xs); color: var(--ink-3); }
+.nodelog li.finished .glyph { color: var(--v-ok); }
+
+/* ── the first visit ───────────────────────────────────────────────────── */
+/* A coach mark points at something already on the page and is drawn over it:
+   two of the four anchors sit in scrolling boxes that would clip a nested
+   bubble. Transparent to the mouse apart from the bubble itself, so the click
+   the mark is asking for still lands. */
+.coach { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.coach:not(.on) { visibility: hidden; }
+/* The accent, not a verdict colour: a mark is "look here", the same family as
+   everything else interactive on this page. */
+.coach .ring {
+  position: fixed; border-radius: var(--r-sm);
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: coach-in .18s ease-out;
+}
+/* The page, minus the one control being asked for. A shadow spread out of the
+   ring rather than a pane with a hole cut in it: the anchor keeps its own
+   painting, and the mouse still reaches it through a mark that takes no
+   clicks. */
+.coach .ring.lit {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent),
+              0 0 0 100vmax var(--scrim);
+}
+/* A still outline reads as a border belonging to the thing; one that keeps
+   breathing outwards reads as a finger pointing at it. Spread rather than
+   scale, so a wide row and a small button pulse by the same number of pixels. */
+.coach .glow {
+  position: fixed; border-radius: var(--r-sm);
+  animation: coach-pulse 1.9s ease-out infinite;
+}
+@keyframes coach-pulse {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent) }
+  to   { box-shadow: 0 0 0 13px color-mix(in srgb, var(--accent) 0%, transparent) }
+}
+/* Said in words, at the thing. The bubble is prose, and prose a page away from
+   what it describes is not an instruction. */
+.coach .cue {
+  position: fixed;
+  padding: 2px var(--s-2); border-radius: 999px;
+  background: var(--accent); color: var(--bg);
+  font-size: var(--t-xs); font-weight: 600; letter-spacing: .02em;
+  white-space: nowrap; box-shadow: var(--shadow);
+}
+.coach .bub {
+  position: fixed; top: 0; left: 0; pointer-events: auto; cursor: pointer;
+  width: min(21rem, calc(100vw - 2rem));
+  padding: var(--s-3) var(--s-4);
+  background: var(--hi); border: 1px solid var(--accent-line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  animation: coach-in .18s ease-out;
+}
+/* The bubble's own point, aimed down the edge that faces the anchor: a square
+   turned 45°, showing the two borders whose shared corner ends up outermost. */
+.coach .bub .nib {
+  position: absolute; width: 10px; height: 10px;
+  background: var(--hi); border: 1px solid var(--accent-line);
+  transform: rotate(45deg);
+}
+.coach .bub.to-left .nib  { left: -6px; margin-top: -5px; border-width: 0 0 1px 1px; }
+.coach .bub.to-right .nib { right: -6px; margin-top: -5px; border-width: 1px 1px 0 0; }
+.coach .bub.to-up .nib    { top: -6px; margin-left: -5px; border-width: 1px 0 0 1px; }
+.coach .bub strong { display: block; font-size: var(--t-base); color: var(--ink); }
+.coach .bub p {
+  margin: var(--s-1) 0 var(--s-2); font-size: var(--t-md);
+  color: var(--ink-2); line-height: 1.55;
+}
+.coach .bub .hint { font-size: var(--t-xs); color: var(--ink-3); }
+@keyframes coach-in { from { opacity: 0 } to { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  .coach .ring, .coach .bub { animation: none; }
+  /* Held at the pulse's opening frame rather than dropped: without it the
+     emphasis goes with the motion. */
+  .coach .glow {
+    animation: none;
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+}
+
+/* ── asking for cells ────────────────────────────────────────────────── */
+.rp-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+}
+.rp-note { flex: 1 1 18rem; font-size: var(--t-sm); color: var(--ink); }
+.rp-pick { cursor: pointer; }
+.rp-pick input { margin: 0; }
+.rp-outside button { margin-left: var(--s-2); }
+
+/* ── the attack panel ────────────────────────────────────────────────────
+   Under the results: what the reproduced cells come down to, one row per
+   reproduced cell with its player, then the cells with nothing to play and
+   why. */
+.attacks .err { color: var(--v-bad); font-size: var(--t-sm); margin: 0 0 var(--s-2); }
+.rp-summary {
+  margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3);
+  background: var(--raised); border-left: 3px solid var(--v-neg);
+  border-radius: var(--r-sm);
+}
+.rp-h { font-weight: 600; font-size: var(--t-md); color: var(--ink); }
+.rp-text { margin: var(--s-1) 0; line-height: 1.65; }
+/* What a model quoted from the script, the trace or the model. */
+.rp-text code, .rp-say code {
+  padding: 0 4px; font-size: .92em; color: var(--ink); background: var(--hi);
+}
+.rp-group { margin-top: var(--s-2); padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+.rp-group .chip { margin: 0 var(--s-1) var(--s-1) 0; }
+.rp-item { margin-top: var(--s-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
+.rp-ihead {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-2);
+  padding: var(--s-2) var(--s-3); color: var(--ink); text-decoration: none;
+}
+/* A long goal name is the row's own business: it wraps rather than pushing
+   the step count out of the card. */
+.rp-ihead .mono { overflow-wrap: anywhere; min-width: 0; }
+.rp-ihead:hover { background: var(--raised); }
+.rp-ihead .rpmark { color: var(--v-neg); margin-left: 0; }
+.rp-item.open > .rp-ihead { border-bottom: 1px solid var(--line-soft); }
+.rp-ihead .grow, .rp-itools .grow { flex: 1; }
+.rp-tag {
+  font-size: var(--t-xs); color: var(--ink-2); white-space: nowrap;
+  border: 1px solid var(--line); border-radius: 10px; padding: 0 6px;
+}
+.rp-itools {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-3);
+  padding: var(--s-2) var(--s-3);
+}
+.rp-list { margin-top: var(--s-4); }
+.rp-lh { font-size: var(--t-md); color: var(--ink-2); margin-bottom: var(--s-1); }
+details.rp-list > summary.rp-lh { cursor: pointer; }
+.rp-li {
+  display: flex; align-items: baseline; gap: var(--s-2);
+  padding: var(--s-1) var(--s-2); font-size: var(--t-sm);
+}
+.rp-li.wrap { flex-wrap: wrap; }
+.rp-li .v { font-size: var(--t-sm); }
+.rp-li .rpmark { margin-left: 0; }
+.rp-li .rpmark.rp-queued, .rp-li .rpmark.rp-running { color: var(--accent); }
+.rp-li .rpmark.rp-failed { color: var(--v-warn); font-weight: 700; }
+/* The reason is the line's point, so it gets the reading colour and the whole
+   width. */
+.rp-why { flex: 1 0 100%; padding-left: var(--s-5); color: var(--ink); line-height: 1.55; }
+
+/* ── the player ──────────────────────────────────────────────────────── */
+.rp-player { padding: 0 var(--s-3) var(--s-3); }
+.rp-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1); margin-bottom: var(--s-2); }
+.rp-controls button.tiny { padding: 3px 10px; min-width: 2.25rem; }
+.rp-count { margin-left: var(--s-2); font-size: var(--t-sm); color: var(--ink-2); min-width: 4.5rem; }
+.rp-count.broken { color: var(--v-neg); font-weight: 600; }
+.rp-controls .grow { flex: 1; }
+.rp-legend { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); font-size: var(--t-xs); color: var(--ink-3); }
+.rp-legend i {
+  display: inline-block; width: 20px; margin-right: var(--s-1); vertical-align: middle;
+  border-top: 1.5px solid var(--ink-3);
+}
+.rp-legend i.relay { border-top-style: dashed; }
+.rp-legend i.inject { border-top-color: var(--atk); }
+.rp-legend i.forge { border-top: 3px solid var(--atk); }
+.rp-legend i.private { border-top-style: dotted; border-top-width: 2px; }
+/* The chart scrolls inside its box both ways; the box keeps the page's height
+   in check however long the attack is. */
+.rp-stage {
+  max-height: 30rem; overflow: auto; overscroll-behavior: contain;
+  background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+}
+.rp-svg { display: block; margin: 0 auto; }
+.rp-lane rect { fill: var(--raised); stroke: var(--line); }
+.rp-lane.atk rect { fill: var(--atk-soft); stroke: var(--atk); }
+.rp-lname { font: 600 var(--t-md) var(--mono); fill: var(--ink); }
+.rp-lrole { font: var(--t-xs) var(--mono); fill: var(--ink-3); }
+.rp-life { stroke: var(--line); stroke-dasharray: 3 4; }
+.rp-lane.atk .rp-life { stroke: var(--atk); stroke-opacity: .5; }
+/* What came before the current step stays, quieter. */
+.rp-step { opacity: .42; }
+.rp-step.now { opacity: 1; }
+.rp-n { font: var(--t-xs) var(--sans); fill: var(--ink-3); }
+.rp-line { fill: none; stroke: var(--ink-3); stroke-width: 1.3; }
+.rp-step.relay .rp-line { stroke-dasharray: 5 4; }
+.rp-step.inject .rp-line { stroke: var(--atk); }
+.rp-step.forge .rp-line { stroke: var(--atk); stroke-width: 2.6; }
+.rp-step.private .rp-line { stroke-dasharray: 1.5 4; stroke-linecap: round; stroke-width: 2; }
+/* Stand-in names: a definition boxed on the lifeline of whoever made it. */
+.rp-defs rect { fill: var(--raised); stroke: var(--line); stroke-width: 1; }
+.rp-defs.atk rect { stroke: var(--atk); }
+.rp-defs.now rect { stroke-width: 1.6; }
+.rp-defs text { font: var(--t-xs) var(--mono); fill: var(--ink-2); }
+.rp-defs.now text { fill: var(--ink); }
+.rp-defs .rp-defs-head { font-family: var(--sans); fill: var(--ink-3); }
+.rp-def { color: var(--ink-2); font-size: var(--t-sm); margin: 0; }
+/* A stand-in name, drawn apart from what ProVerif printed. */
+.rp-name { color: var(--accent); fill: var(--accent); font-style: italic; }
+/* The half of an authentication goal that did not happen. */
+.rp-goal .rp-goal-miss { fill: var(--ink-2); }
+.rp-missed { color: var(--ink-2); }
+.rp-label { font: var(--t-xs) var(--mono); fill: var(--ink-2); }
+.rp-step.now .rp-label { fill: var(--ink); font-weight: 600; }
+.rp-mk path { fill: var(--ink-3); }
+.rp-mk.atk path { fill: var(--atk); }
+/* The one place the false verdict's hue appears in the chart: the goal
+   breaking. */
+.rp-goal rect { fill: color-mix(in srgb, var(--v-neg) 22%, var(--bg)); stroke: var(--v-neg); }
+.rp-goal text { font: 600 var(--t-xs) var(--mono); fill: var(--v-neg); }
+.rp-token rect { fill: var(--hi); stroke: var(--ink-3); stroke-width: 1.2; }
+.rp-token.inject rect, .rp-token.forge rect { stroke: var(--atk); }
+.rp-token text { font: var(--t-xs) var(--mono); fill: var(--ink); }
+.rp-pulse { fill: none; stroke: var(--atk); stroke-width: 2; }
+.rp-cut { margin: var(--s-1) 0 0; }
+.rp-caption { margin-top: var(--s-3); min-height: 4.5rem; }
+.rp-say { margin: 0 0 var(--s-1); line-height: 1.65; }
+.rp-who { margin: 0 var(--s-1); font-size: var(--t-sm); color: var(--ink-2); }
+.rp-kind {
+  margin-right: var(--s-1); padding: 0 6px; white-space: nowrap;
+  font-size: var(--t-xs); color: var(--ink-3);
+  border: 1px solid var(--line); border-radius: 10px;
+}
+.rp-kind.inject, .rp-kind.forge {
+  color: var(--atk); border-color: color-mix(in srgb, var(--atk) 50%, var(--line));
+}
+.rp-value { margin: 0 0 var(--s-1); font-size: var(--t-sm); color: var(--ink-2); overflow-wrap: anywhere; }
+.rp-sub { margin: 0 0 var(--s-1); font-size: var(--t-sm); color: var(--ink-2); }
+.rp-how { font-size: var(--t-sm); }
+.rp-how p { margin: 2px 0; overflow-wrap: anywhere; }
+.rp-broken { color: var(--v-neg); font-weight: 600; }
+.rp-two {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s-3); margin-top: var(--s-3);
+}
+@media (max-width: 900px) { .rp-two { grid-template-columns: minmax(0, 1fr); } }
+.rp-box { min-width: 0; padding: var(--s-2) var(--s-3); background: var(--raised); border-radius: var(--r-sm); }
+.rp-lbl { margin: 0 0 var(--s-2); font-size: var(--t-xs); color: var(--ink-3); }
+.rp-chip {
+  display: inline-block; margin: 0 4px 4px 0; padding: 1px 7px;
+  font-size: var(--t-xs); color: var(--ink-2); overflow-wrap: anywhere;
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+}
+.rp-chip.start { color: var(--ink-3); border-style: dashed; }
+.rp-chip.got { color: var(--ink); border-color: color-mix(in srgb, var(--atk) 45%, var(--line)); }
+.rp-chip.new { color: var(--ink); border-color: var(--atk); background: var(--atk-soft); }
+.rp-chip.secret {
+  color: var(--v-neg); font-weight: 600; border-color: var(--v-neg);
+  background: color-mix(in srgb, var(--v-neg) 16%, transparent);
+}
+.rp-sess + .rp-sess { margin-top: var(--s-2); }
+.rp-sh { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2); font-size: var(--t-sm); }
+.rp-bind { font-size: var(--t-xs); overflow-wrap: anywhere; }
+.rp-row { padding-left: var(--s-3); font-size: var(--t-xs); color: var(--ink-2); overflow-wrap: anywhere; }
+.rp-row.event { color: var(--ink); }
+.rp-row.now { background: var(--hi); border-radius: var(--r-sm); }
+.rp-verdict {
+  margin-top: var(--s-2); padding-top: var(--s-2); border-top: 1px solid var(--line-soft);
+  font-size: var(--t-xs); overflow-wrap: anywhere;
+}
+.rp-verdict b { color: var(--v-neg); }
+.rp-verdict .off { color: var(--v-neg); font-weight: 700; text-decoration: underline; }
+.rp-omitted { margin-top: var(--s-2); }
+.rp-omitted summary { cursor: pointer; }
+.rp-omitted p { margin: 2px 0; }

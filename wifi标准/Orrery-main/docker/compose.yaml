@@ -1,0 +1,27 @@
+# One person, one machine. From the directory holding this file:
+#
+#   docker compose up -d      start; then open http://127.0.0.1:8000
+#   docker compose down       stop; runs stop at their next safe point
+#
+# Everything worth keeping is in ./orrery-work beside this file.
+services:
+  orrery:
+    # The published image. Whoever hands this file out sets the default to
+    # the registry the recipients can reach, or sets ORRERY_IMAGE in .env.
+    image: ${ORRERY_IMAGE:-orrery:1.0.1}
+    # A real init as PID 1: it forwards stop signals so a run can close itself
+    # out, and reaps the solver processes a run leaves behind.
+    init: true
+    ports:
+      # This machine only. The console has no login, so anyone who can reach
+      # the port can start runs on your API key: keep the 127.0.0.1.
+      - "127.0.0.1:${ORRERY_PORT:-8000}:8000"
+    volumes:
+      - ./orrery-work:/work
+    # Linux only: files in ./orrery-work are written as this uid and gid, so
+    # they have to be yours (`id -u`, `id -g`). Docker Desktop maps ownership
+    # itself and ignores the difference.
+    user: "${ORRERY_UID:-1000}:${ORRERY_GID:-1000}"
+    # Long enough for a run to stop at its next safe point and seal what it
+    # has; killed sooner, it is left marked running.
+    stop_grace_period: 60s

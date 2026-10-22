@@ -1,0 +1,160 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1650" height="1750" viewBox="0 0 1650 1750">
+  <defs>
+    <marker id="oa" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M1,1 L11,6 L1,11" fill="none" stroke="#111111" stroke-width="1.4"/>
+    </marker>
+    <style>
+      text{font-family:"Microsoft YaHei","Noto Sans SC","PingFang SC",sans-serif;}
+      .title{font-size:28px;font-weight:700;fill:#111111;letter-spacing:.4px;}
+      .sub{font-size:13px;fill:#555555;}
+      .legend{font-size:12.5px;fill:#444444;}
+      .pname{font-size:22px;font-weight:700;fill:#111111;letter-spacing:.4px;}
+      .prole{font-size:11.5px;fill:#666666;}
+      .msgname{font-size:13.5px;font-weight:700;fill:#111111;}
+      .field{font-size:13px;fill:#111111;}
+      .small{font-size:11.5px;fill:#555555;}
+      .noteTitle{font-size:13.5px;font-weight:700;fill:#111111;}
+      .noteText{font-size:12px;fill:#222222;}
+      .formula{font-family:Consolas,"Courier New",monospace;font-size:12px;fill:#111111;}
+      .fail{fill:#9b1c1c;font-weight:700;}
+      .okTitle{font-size:15px;font-weight:700;fill:#111111;}
+      .okText{font-size:12.5px;fill:#333333;}
+    </style>
+  </defs>
+
+  <rect width="1650" height="1750" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="70" y="50" class="title">FILS Shared Key Authentication — UML 序列图</text>
+  <text x="70" y="78" class="sub">算法 4（无 PFS）/ 5（with PFS）· 两帧认证 + 两帧关联 · TTP 仅参与密钥建立</text>
+  <text x="70" y="98" class="sub">前提：STA 与 TTP 共享 rRK；AP 经安全信道从 TTP 取得 rMSK；AP↔TTP 不增加 STA 往返</text>
+
+  <text x="1120" y="36" class="legend" style="font-weight:700;fill:#111111">记法</text>
+  <text x="1120" y="56" class="legend"><tspan style="font-family:Consolas,monospace">HMAC-ICK(…)</tspan>：ICK 的 HMAC 完整性保护</text>
+  <text x="1120" y="74" class="legend"><tspan style="font-family:Consolas,monospace">AEAD(PTK-KEK)</tspan>：关联帧加密保护</text>
+  <text x="1120" y="92" class="legend"><tspan style="font-family:Consolas,monospace">[ … ]</tspan>：仅 PFS / 缓存时存在</text>
+
+  <!-- Lifelines -->
+  <line x1="300" y1="164" x2="300" y2="1640" stroke="#222222" stroke-width="1.3"/>
+  <line x1="850" y1="164" x2="850" y2="1640" stroke="#222222" stroke-width="1.3"/>
+  <line x1="1400" y1="164" x2="1400" y2="1640" stroke="#222222" stroke-width="1.3"/>
+
+  <!-- Participants -->
+  <rect x="200" y="100" width="200" height="64" rx="4" fill="#ffffff" stroke="#111111" stroke-width="1.8"/>
+  <text x="300" y="128" text-anchor="middle" class="pname">STA</text>
+  <text x="300" y="148" text-anchor="middle" class="prole">non-AP STA</text>
+
+  <rect x="750" y="100" width="200" height="64" rx="4" fill="#ffffff" stroke="#111111" stroke-width="1.8"/>
+  <text x="850" y="128" text-anchor="middle" class="pname">AP</text>
+  <text x="850" y="148" text-anchor="middle" class="prole">FILS AP / Authenticator</text>
+
+  <rect x="1300" y="100" width="200" height="64" rx="4" fill="#ffffff" stroke="#111111" stroke-width="1.8"/>
+  <text x="1400" y="128" text-anchor="middle" class="pname">TTP / AS</text>
+  <text x="1400" y="148" text-anchor="middle" class="prole">Authentication Server</text>
+
+  <rect x="150" y="166" width="300" height="22" rx="5" fill="#ffffff" stroke="#dddddd" stroke-width="0.8"/>
+  <text x="300" y="181" text-anchor="middle" class="small">持有：rRK（与 TTP）+ 可选 PMKSA</text>
+  <rect x="700" y="166" width="300" height="22" rx="5" fill="#ffffff" stroke="#dddddd" stroke-width="0.8"/>
+  <text x="850" y="181" text-anchor="middle" class="small">持有：可选 PMKSA；可连接 TTP</text>
+  <rect x="1250" y="166" width="300" height="22" rx="5" fill="#ffffff" stroke="#dddddd" stroke-width="0.8"/>
+  <text x="1400" y="181" text-anchor="middle" class="small">持有：rRK；验证后派生 rMSK</text>
+
+  <!-- STA pre-send note -->
+  <rect x="40" y="198" width="510" height="105" rx="10" fill="#ffffff" stroke="#444444" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="58" y="223" class="noteTitle">① STA 发送前计算</text>
+  <text x="58" y="245" class="noteText">生成 SNonce（16B）、FILS Session</text>
+  <text x="58" y="265" class="noteText">构造 EAP-Initiate/Reauth（B=0, L=1, ID=0, Cryptosuite≠1）</text>
+  <text x="58" y="285" class="noteText">PFS：选 G、生成 (skSTA, gSTA)；可选 PMKID List</text>
+
+  <!-- Msg1 -->
+  <text x="575" y="315" text-anchor="middle" class="field">Auth (Seq=1)　ANA=4/5, SNonce, Session, RSNE[+PMKID List]</text>
+  <text x="575" y="333" text-anchor="middle" class="small">Wrapped Data = EAP-Initiate/Reauth；[G, FFE=gSTA]（仅 PFS）</text>
+  <line x1="300" y1="355" x2="850" y2="355" stroke="#111111" stroke-width="1.8" marker-end="url(#oa)"/>
+  <text x="575" y="377" text-anchor="middle" class="msgname">Msg1 · 密钥建立①</text>
+
+  <!-- AP post note -->
+  <rect x="880" y="395" width="480" height="115" rx="10" fill="#ffffff" stroke="#444444" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="898" y="420" class="noteTitle">② AP 接收后处理</text>
+  <text x="898" y="442" class="noteText">G 不支持 → <tspan class="fail">Status 77</tspan>；PFS 时校验 gSTA</text>
+  <text x="898" y="462" class="noteText">PMKID 命中 → 用缓存 PMK，跳过 TTP</text>
+  <text x="898" y="482" class="noteText">未命中且无 EAP-Initiate → <tspan class="fail">Status 53</tspan></text>
+  <text x="898" y="502" class="noteText">否则解封 Wrapped Data，转发给 TTP</text>
+
+  <!-- Msg2 -->
+  <text x="1125" y="525" text-anchor="middle" class="field">EAP-Initiate/Reauth（RADIUS / Diameter）</text>
+  <text x="1125" y="543" text-anchor="middle" class="small">Name-NAI / realm 用于定位 TTP</text>
+  <line x1="850" y1="565" x2="1400" y2="565" stroke="#111111" stroke-width="1.8" marker-end="url(#oa)"/>
+  <text x="1125" y="587" text-anchor="middle" class="msgname">Msg2 · EAP-RP 请求</text>
+
+  <!-- TTP post note -->
+  <rect x="1090" y="605" width="520" height="110" rx="10" fill="#ffffff" stroke="#444444" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="1108" y="630" class="noteTitle">③ TTP 接收后处理</text>
+  <text x="1108" y="652" class="noteText">按 RFC 6696 验证 STA 对 rRK 的持有 / EAP-RP</text>
+  <text x="1108" y="672" class="noteText">失败 → EAP-Finish/Reauth (R=1)</text>
+  <text x="1108" y="692" class="noteText">成功 → 派生 rMSK，返回 EAP-Finish(R=0)+rMSK</text>
+
+  <!-- Msg3 -->
+  <text x="1125" y="735" text-anchor="middle" class="field">EAP-Finish/Reauth（R=0/1）+ rMSK</text>
+  <text x="1125" y="753" text-anchor="middle" class="small">rRK / rMSK 生命周期（L=1）</text>
+  <line x1="1400" y1="775" x2="850" y2="775" stroke="#111111" stroke-width="1.8" marker-end="url(#oa)"/>
+  <text x="1125" y="797" text-anchor="middle" class="msgname">Msg3 · EAP-RP 响应</text>
+
+  <!-- AP post note -->
+  <rect x="880" y="815" width="480" height="95" rx="10" fill="#ffffff" stroke="#444444" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="898" y="840" class="noteTitle">④ AP 处理</text>
+  <text x="898" y="862" class="noteText">保存 rMSK；PFS：DHss = scalar-op(skAP, gSTA)</text>
+  <text x="898" y="882" class="noteText">TTP 失败 → <tspan class="fail">Status 15</tspan>；未知 TTP → <tspan class="fail">Status 113</tspan></text>
+  <text x="898" y="902" class="noteText">构造并发送 Auth (Seq=2)</text>
+
+  <!-- Msg4 -->
+  <text x="575" y="930" text-anchor="middle" class="field">Auth (Seq=2)　ANA=4/5, Status=0, ANonce, Session</text>
+  <text x="575" y="948" text-anchor="middle" class="small">Wrapped Data = EAP-Finish/Reauth；[G, FFE=gAP]；[PMKID]</text>
+  <line x1="850" y1="970" x2="300" y2="970" stroke="#111111" stroke-width="1.8" marker-end="url(#oa)"/>
+  <text x="575" y="992" text-anchor="middle" class="msgname">Msg4 · 密钥建立②</text>
+
+  <!-- STA post note -->
+  <rect x="40" y="1010" width="510" height="120" rx="10" fill="#ffffff" stroke="#444444" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="58" y="1035" class="noteTitle">⑤ STA 接收后处理</text>
+  <text x="58" y="1057" class="noteText">校验 ANA / PMKID / Session；PFS 参数必须对称</text>
+  <text x="58" y="1077" class="noteText">EAP-Finish R=0 → rMSK；校验 gAP</text>
+  <text x="58" y="1097" class="noteText">DHss = scalar-op(skSTA, gAP)</text>
+  <text x="58" y="1117" class="noteText">推导 PMK / PMKID / PTK；删除 rMSK、DHss</text>
+
+  <!-- Derivation -->
+  <rect x="360" y="1138" width="900" height="100" rx="10" fill="#f7f7f7" stroke="#333333" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="380" y="1163" class="noteTitle">⑥ 双方独立执行密钥推导</text>
+  <text x="380" y="1185" class="formula">无 PFS：PMK = HMAC-Hash(SNonce ‖ ANonce, rMSK)</text>
+  <text x="380" y="1205" class="formula">有 PFS：PMK = HMAC-Hash(SNonce ‖ ANonce, rMSK ‖ DHss)</text>
+  <text x="380" y="1225" class="formula">PMKID = Trunc128(Hash(EAP-Initiate/Reauth))；PTK = PRF-X(PMK,"FILS PTK Derivation",SPA‖AA‖SNonce‖ANonce)</text>
+
+  <!-- Msg5 -->
+  <text x="575" y="1265" text-anchor="middle" class="field">(Re)Assoc Request　KeyAuth = HMAC-ICK(SNonce‖ANonce‖STA-MAC‖AP-BSSID[‖gSTA‖gAP])</text>
+  <text x="575" y="1283" text-anchor="middle" class="small">AAD = Capability…FILS Session；AEAD(PTK-KEK)</text>
+  <line x1="300" y1="1305" x2="850" y2="1305" stroke="#111111" stroke-width="1.8" marker-end="url(#oa)"/>
+  <text x="575" y="1327" text-anchor="middle" class="msgname">Msg5 · 密钥确认①</text>
+
+  <!-- AP post note -->
+  <rect x="880" y="1355" width="480" height="100" rx="10" fill="#ffffff" stroke="#444444" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="898" y="1380" class="noteTitle">⑦ AP 接收后处理</text>
+  <text x="898" y="1402" class="noteText">校验 Session / AEAD / RSNE</text>
+  <text x="898" y="1422" class="noteText">独立构造 KeyAuth' 并比对</text>
+  <text x="898" y="1442" class="noteText">失败 → <tspan class="fail">Status 112</tspan>，删 ICK/KEK/TK/PTKSA</text>
+
+  <!-- Msg6 -->
+  <text x="575" y="1470" text-anchor="middle" class="field">(Re)Assoc Response　KeyAuth = HMAC-ICK(ANonce‖SNonce‖AP-BSSID‖STA-MAC[‖gAP‖gSTA])</text>
+  <text x="575" y="1488" text-anchor="middle" class="small">Key Delivery = GTK / IGTK / BIGTK / WIGTK；AEAD(PTK-KEK)</text>
+  <line x1="850" y1="1510" x2="300" y2="1510" stroke="#111111" stroke-width="1.8" marker-end="url(#oa)"/>
+  <text x="575" y="1532" text-anchor="middle" class="msgname">Msg6 · 密钥确认②</text>
+
+  <!-- STA post note -->
+  <rect x="40" y="1550" width="510" height="90" rx="10" fill="#ffffff" stroke="#444444" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <text x="58" y="1575" class="noteTitle">⑧ STA 接收后处理</text>
+  <text x="58" y="1597" class="noteText">校验 Session / AEAD / RSNE / KeyAuth</text>
+  <text x="58" y="1617" class="noteText">安装 TK、GTK；PTKSA 完成 → 数据保护</text>
+
+  <!-- Result -->
+  <rect x="40" y="1665" width="1570" height="62" rx="8" fill="#f4f4f4" stroke="#333333" stroke-width="1.5"/>
+  <text x="60" y="1691" class="okTitle">FILS Shared Key 认证完成：4 帧完成认证 + 关联 + 密钥确认；TTP 交互不增加 STA 往返</text>
+  <text x="60" y="1712" class="okText">变体：PMKSA 缓存命中时跳过 TTP，不新建 PMKSA、仍新建 PTKSA；无 PFS 时无 G/FFE；2024 缓存+DH 时 PTK 追加 DHss</text>
+
+</svg>

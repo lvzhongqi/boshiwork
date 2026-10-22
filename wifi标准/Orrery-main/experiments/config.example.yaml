@@ -1,0 +1,16 @@
+llm:
+  backend: remote-openai-responses   # which profile below is live, and the only one to fill. Adapters: remote-claude | remote-gemini | remote-openai-responses | remote-openai-compatible (see the root config.example.yaml). This is the one the paper's runs used; name another and the batch says at startup that the numbers are yours, not the paper's
+  profiles:
+    remote-openai-responses:
+      model: gpt-5.6-sol
+      api_key: "???"        # <- required
+      url: null             # gateway address; null = the vendor's official endpoint
+
+proverif:
+  executable: proverif      # a bare name is looked up on PATH; set a full path when it is not there
+
+paths:
+  work_root: ./a_batches     # where runs are written: <work_root>/<batch>/<protocol>/<run>/. Relative to the project root, not to this directory
+  lib_root: ./VerdictBench     # the corpus that protocols.yaml's paths are relative to
+
+max_runs_concurrency: 20    # how many protocols one batch process works on at once. Per process, not global: two batches at 20 run up to 40

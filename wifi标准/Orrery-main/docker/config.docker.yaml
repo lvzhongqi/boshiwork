@@ -1,0 +1,14 @@
+# This workspace's config, written by the Orrery image on its first start.
+# Only what differs from the built-in defaults is here; every option, with its
+# default and what it does, is in config.example.yaml in the repository.
+#
+# The API key: fill it in on the console's settings panel, which writes it back
+# into this file (and drops these comments; that is expected).
+paths:
+  work_root: /work/runs            # fixed by the image: every run lands on the volume
+  lib_root: /work/corpus           # a protocol corpus for the launch panel to scan, if you put one there
+  playback_root: /work/recordings  # recorded runs to replay, laid out like runs/
+inputs:
+  lib_claims: false                # your own documents carry no claims/ directory, so the run reads the question out of the document. Turn it on for a corpus protocol to use the corpus's own
+proverif:
+  executable: /usr/local/bin/proverif   # fixed by the image: ProVerif 2.05, the version the paper's runs used

@@ -1,0 +1,49 @@
+{
+  "principals": [
+    {
+      "name": "A",
+      "description": "Initiator. Generates I_A, encrypts for B, checks the response, and confirms B's value."
+    },
+    {
+      "name": "B",
+      "description": "Responder. Decrypts A's request, generates I_B, replies to A, and checks the confirmation."
+    }
+  ],
+  "values": [
+    {
+      "name": "SKA",
+      "derived_from": [],
+      "description": "A's long-term private decryption key."
+    },
+    {
+      "name": "PKA",
+      "derived_from": ["SKA"],
+      "description": "A's encryption key, deterministically corresponding to SKA."
+    },
+    {
+      "name": "SKB",
+      "derived_from": [],
+      "description": "B's long-term private decryption key."
+    },
+    {
+      "name": "PKB",
+      "derived_from": ["SKB"],
+      "description": "B's encryption key, deterministically corresponding to SKB."
+    },
+    {
+      "name": "A",
+      "derived_from": [],
+      "description": "A's protocol identity, configured before the run."
+    },
+    {
+      "name": "B",
+      "derived_from": [],
+      "description": "B's protocol identity, configured before the run."
+    },
+    {
+      "name": "KAB",
+      "derived_from": [],
+      "description": "The pre-run symmetric key shared by A and B."
+    }
+  ]
+}

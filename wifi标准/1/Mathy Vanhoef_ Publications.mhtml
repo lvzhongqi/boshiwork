@@ -1,0 +1,2368 @@
+From: <Saved by Blink>
+Snapshot-Content-Location: https://www.mathyvanhoef.com/p/publications.html
+Subject: Mathy Vanhoef: Publications
+Date: Sun, 26 Jul 2026 15:04:20 +0800
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----MultipartBoundary--URwJJoXhPGcZYlmZ1TaUAIWIboqEzcNC5KWnGY4GxY----"
+
+
+------MultipartBoundary--URwJJoXhPGcZYlmZ1TaUAIWIboqEzcNC5KWnGY4GxY----
+Content-Type: text/html
+Content-ID: <frame-A22F637D9B54FE7B5E28E1010CB75B0A@mhtml.blink>
+Content-Transfer-Encoding: quoted-printable
+Content-Location: https://www.mathyvanhoef.com/p/publications.html
+
+<!DOCTYPE html><html class=3D"v2" dir=3D"ltr" lang=3D"en-GB" xmlns=3D"http:=
+//www.w3.org/1999/xhtml" xmlns:b=3D"http://www.google.com/2005/gml/b" xmlns=
+:data=3D"http://www.google.com/2005/gml/data" xmlns:expr=3D"http://www.goog=
+le.com/2005/gml/expr"><head><meta http-equiv=3D"Content-Type" content=3D"te=
+xt/html; charset=3DUTF-8"><link rel=3D"stylesheet" type=3D"text/css" href=
+=3D"cid:css-adef9560-54ce-4ba4-bccb-5492c78a9d92@mhtml.blink" /><link rel=
+=3D"stylesheet" type=3D"text/css" href=3D"cid:css-9725d465-2869-4f17-8118-7=
+cc91debae19@mhtml.blink" />
+<link href=3D"https://www.blogger.com/static/v1/widgets/2872013778-css_bund=
+le_v2.css" rel=3D"stylesheet" type=3D"text/css">
+<link href=3D"https://infosec.exchange/@vanhoefm" rel=3D"me">
+<meta content=3D"width=3D1100" name=3D"viewport">
+
+<meta content=3D"blogger" name=3D"generator">
+<link href=3D"https://www.mathyvanhoef.com/favicon.ico" rel=3D"icon" type=
+=3D"image/x-icon">
+<link href=3D"https://www.mathyvanhoef.com/p/publications.html" rel=3D"cano=
+nical">
+<link rel=3D"alternate" type=3D"application/atom+xml" title=3D"Mathy Vanhoe=
+f - Atom" href=3D"https://www.mathyvanhoef.com/feeds/posts/default">
+<link rel=3D"alternate" type=3D"application/rss+xml" title=3D"Mathy Vanhoef=
+ - RSS" href=3D"https://www.mathyvanhoef.com/feeds/posts/default?alt=3Drss"=
+>
+<link rel=3D"service.post" type=3D"application/atom+xml" title=3D"Mathy Van=
+hoef - Atom" href=3D"https://www.blogger.com/feeds/3500917063499850097/post=
+s/default">
+<!--Can't find substitution for tag [blog.ieCssRetrofitLinks]-->
+<meta content=3D"https://www.mathyvanhoef.com/p/publications.html" property=
+=3D"og:url">
+<meta content=3D"Publications" property=3D"og:title">
+<meta content=3D"J. Robben and M. Vanhoef . Security testing of WireGuard i=
+mplementations . In the Proceedings of the European Symposium on Research i=
+n Compu..." property=3D"og:description">
+<title>Mathy Vanhoef: Publications</title>
+
+
+<!-- Google tag (gtag.js) -->
+
+
+<link href=3D"https://www.blogger.com/dyn-css/authorization.css?targetBlogI=
+D=3D3500917063499850097&amp;zx=3D92f9fa72-cb20-4857-82ad-955a8ac62fc2" medi=
+a=3D"none" rel=3D"stylesheet">
+<meta name=3D"google-adsense-platform-account" content=3D"ca-host-pub-15562=
+23355139109">
+<meta name=3D"google-adsense-platform-domain" content=3D"blogspot.com">
+
+<!-- data-ad-client=3Dca-pub-2753532741085396 -->
+
+</head>
+<body class=3D"">
+<div class=3D"navbar section" id=3D"navbar" name=3D"Navbar"><div class=3D"w=
+idget Navbar" data-version=3D"1" id=3D"Navbar1">
+<div id=3D"navbar-iframe-container"></div>
+
+
+</div></div>
+<div class=3D"body-fauxcolumns">
+<div class=3D"fauxcolumn-outer body-fauxcolumn-outer">
+<div class=3D"cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left">
+<div class=3D"fauxborder-right"></div>
+<div class=3D"fauxcolumn-inner">
+</div>
+</div>
+<div class=3D"cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+</div>
+<div class=3D"content">
+<div class=3D"content-fauxcolumns">
+<div class=3D"fauxcolumn-outer content-fauxcolumn-outer">
+<div class=3D"cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left">
+<div class=3D"fauxborder-right"></div>
+<div class=3D"fauxcolumn-inner">
+</div>
+</div>
+<div class=3D"cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+</div>
+<div class=3D"content-outer">
+<div class=3D"content-cap-top cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left content-fauxborder-left">
+<div class=3D"fauxborder-right content-fauxborder-right"></div>
+<div class=3D"content-inner">
+<header>
+<div class=3D"header-outer">
+<div class=3D"header-cap-top cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left header-fauxborder-left">
+<div class=3D"fauxborder-right header-fauxborder-right"></div>
+<div class=3D"region-inner header-inner">
+<div class=3D"header section" id=3D"header" name=3D"Header"><div class=3D"w=
+idget Header" data-version=3D"1" id=3D"Header1">
+<div id=3D"header-inner">
+<div class=3D"titlewrapper">
+<h1 class=3D"title">
+<a href=3D"https://www.mathyvanhoef.com/">
+Mathy Vanhoef
+</a>
+</h1>
+</div>
+<div class=3D"descriptionwrapper">
+<p class=3D"description"><span>Professor at KU Leuven (Belgium) | Ex-PostDo=
+c at NYU | Open to consultancy</span></p>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+<div class=3D"header-cap-bottom cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+</header>
+<div class=3D"tabs-outer">
+<div class=3D"tabs-cap-top cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left tabs-fauxborder-left">
+<div class=3D"fauxborder-right tabs-fauxborder-right"></div>
+<div class=3D"region-inner tabs-inner">
+<div class=3D"tabs section" id=3D"crosscol" name=3D"Cross-column"><div clas=
+s=3D"widget PageList" data-version=3D"1" id=3D"PageList1">
+<h2>Pages</h2>
+<div class=3D"widget-content">
+<ul>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/">Home</a>
+</li>
+<li class=3D"selected">
+<a href=3D"https://www.mathyvanhoef.com/p/publications.html">Publications</=
+a>
+</li>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/p/tools.html">Tools</a>
+</li>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/p/about.html">About</a>
+</li>
+</ul>
+<div class=3D"clear"></div>
+</div>
+</div></div>
+<div class=3D"tabs no-items section" id=3D"crosscol-overflow" name=3D"Cross=
+-Column 2"></div>
+</div>
+</div>
+<div class=3D"tabs-cap-bottom cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+<div class=3D"main-outer">
+<div class=3D"main-cap-top cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left main-fauxborder-left">
+<div class=3D"fauxborder-right main-fauxborder-right"></div>
+<div class=3D"region-inner main-inner">
+<div class=3D"columns fauxcolumns">
+<div class=3D"fauxcolumn-outer fauxcolumn-center-outer">
+<div class=3D"cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left">
+<div class=3D"fauxborder-right"></div>
+<div class=3D"fauxcolumn-inner">
+</div>
+</div>
+<div class=3D"cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+<div class=3D"fauxcolumn-outer fauxcolumn-left-outer">
+<div class=3D"cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left">
+<div class=3D"fauxborder-right"></div>
+<div class=3D"fauxcolumn-inner">
+</div>
+</div>
+<div class=3D"cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+<div class=3D"fauxcolumn-outer fauxcolumn-right-outer">
+<div class=3D"cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left">
+<div class=3D"fauxborder-right"></div>
+<div class=3D"fauxcolumn-inner">
+</div>
+</div>
+<div class=3D"cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+<!-- corrects IE6 width calculation -->
+<div class=3D"columns-inner">
+<div class=3D"column-center-outer">
+<div class=3D"column-center-inner">
+<div class=3D"main section" id=3D"main" name=3D"Main"><div class=3D"widget =
+Blog" data-version=3D"1" id=3D"Blog1">
+<div class=3D"blog-posts hfeed">
+
+          <div class=3D"date-outer">
+       =20
+
+          <div class=3D"date-posts">
+       =20
+<div class=3D"post-outer">
+<div class=3D"post hentry uncustomized-post-template" itemprop=3D"blogPost"=
+ itemscope=3D"itemscope" itemtype=3D"http://schema.org/BlogPosting">
+<meta content=3D"3500917063499850097" itemprop=3D"blogId">
+<meta content=3D"5694411682882214890" itemprop=3D"postId">
+<a name=3D"5694411682882214890"></a>
+<h3 class=3D"post-title entry-title" itemprop=3D"name">
+Publications
+</h3>
+<div class=3D"post-header">
+<div class=3D"post-header-line-1"></div>
+</div>
+<div class=3D"post-body entry-content" id=3D"post-body-5694411682882214890"=
+ itemprop=3D"description articleBody">
+<p></p><p>J. Robben and <u>M. Vanhoef</u>. <a href=3D"https://papers.mathyv=
+anhoef.com/esorics2026.pdf">Security testing of WireGuard implementations</=
+a>. In the <i>Proceedings of the European Symposium on Research in Computer=
+ Security (ESORICS)</i>, 2026.</p><p>A. Beitis and <u>M. Vanhoef</u>. <a hr=
+ef=3D"http://papers.mathyvanhoef.com/usenix2026.pdf">Lost in Encapsulation:=
+ Exploiting Open Tunnelling Hosts and&nbsp;Attacking Private Networks</a>. =
+In USENIX Security Symposium, 2026.</p><p>R. Appana and <u>M. Vanhoef</u>. =
+<a href=3D"http://papers.mathyvanhoef.com/wisec2026.pdf">Secure Trust On Fi=
+rst Use for Enterprise Wi-Fi: Design Guidelines and Linux Implementation</a=
+>. In the <i>Proceedings of&nbsp;19th ACM Conference on Security and Privac=
+y in Wireless and Mobile Networks (WiSec)</i>, 2026.</p><p>P. V. B. Astillo=
+, J. Sengupta, and <u>M. Vanhoef</u>. <a href=3D"http://papers.mathyvanhoef=
+.com/spaic2026.pdf">Open Challenges for Secure and Scalable Wi-Fi Connectiv=
+ity in Rural Areas</a>. In the 1st Security and Privacy for Asian Internet =
+Communities Workshop (SPAIC), co-located with AsiaCCS, 2026.&nbsp;</p><p>J.=
+ Szymsza, G, Franken, V. Vanderlinden, T. Van Goethem, <u>M. Vanhoef</u>, L=
+. Desmet. <a href=3D"http://papers.mathyvanhoef.com/secdev2026.pdf">Origin =
+Story: A Comprehensive Lifecycle Analysis of Same-Origin Policy Bugs</a>. I=
+n the ACM Secure Development Conference (SecDev), 2026.&nbsp;</p><p>X. Zhou=
+, J. Pu, Z. Liu, Z. Qian, Z. Tan, S. Krishnamurthy, <u>M. Vanhoef</u>. <a h=
+ref=3D"http://papers.mathyvanhoef.com/ndss2026-airsnitch.pdf">AirSnitch: De=
+mystifying and Breaking Client Isolation in Wi-Fi Networks</a>. In the 33rd=
+ Network and Distributed Systems Security (NDSS), 2026. [<a href=3D"https:/=
+/github.com/vanhoefm/airsnitch">GITHUB</a>]</p><p>V. Vanderlinden,&nbsp;T. =
+Van Goethem, and <u>M. Vanhoef</u>. <a href=3D"https://papers.mathyvanhoef.=
+com/ndss2026-timestamps.pdf">Time and Time Again: Leveraging TCP Timestamps=
+ to Improve Remote Timing Attacks</a>. In the 33rd Network and Distributed =
+Systems Security (NDSS), 2026.</p><p>R. Appana and <u>M. Vanhoef</u>. <a hr=
+ef=3D"http://papers.mathyvanhoef.com/csnet2025.pdf">Measuring and Preventin=
+g Certificate Misconfigurations in Enterprise WPA2/3 Networks</a>. In the 9=
+th Cyber Security in Networking Conference (CSNet), 2025.&nbsp;</p><p>M. Sc=
+hloegel, D. Klischies, S. Koch, D. Klein, L. Gerlach, M. Wessels, L. Trampe=
+rt, M. Johns, <u>M. Vanhoef</u>, M. Schwarz, T. Holz, J. Van Bulck. <a href=
+=3D"https://papers.mathyvanhoef.com/usenix2025-cves.pdf">Confusing Value wi=
+th Enumeration: Studying the Use of CVEs in Academia</a>. In&nbsp;<i>USENIX=
+ Security Symposium</i>, 2025. <span style=3D"color: red;">Won the distingu=
+ished paper award!</span></p><p>A. Beitis, J. Robben, A. Matern, Z. Lei, Y.=
+ Li, N. Xue, Y. Chen, V. Vanderlinden, and <u>M. Vanhoef</u>. <a href=3D"ht=
+tp://papers.mathyvanhoef.com/pets2025.pdf">LANShield: Analysing and Protect=
+ing Local Network Access on Mobile Devices</a>. In&nbsp;<i>Proceedings of t=
+he 25th Privacy Enhancing Technologies Symposium (PETS)</i>, 2025.</p><p>S.=
+ Devroe, H. Gollier, <u>M. Vanhoef</u>. <a href=3D"http://papers.mathyvanho=
+ef.com/wisec2025.pdf">Fragile Frames: Wi-Fi's Fraught Fight Against FragAtt=
+acks</a>. In&nbsp;<i>Proceedings of the 18th ACM Conference on Security and=
+ Privacy in Wireless and Mobile Networks (WiSec)</i>, 2025. [<a href=3D"htt=
+ps://zenodo.org/records/16431394">Zenodo</a>]</p><p>M. D. Dar, R. Lorch, A.=
+ Sadeghi, V. Sorcigli, H. Gollier, C. Tinelli, <u>M. Vanhoef</u>, O. Chowdh=
+ury. <a href=3D"http://papers.mathyvanhoef.com/ieeesp2025.pdf">SAECRED: A S=
+tate-Aware, Over-the-Air Protocol Testing Approach for Discovering Parsing =
+Bugs in SAE Handshake Implementations of COTS Wi-Fi Access Points</a>. In t=
+he <i>Proceedings of IEEE Symposium on Security &amp; Privacy (S&amp;P)</i>=
+, 2025. <br></p><p>A. Beitis and <u>M. Vanhoef</u>. <a href=3D"https://pape=
+rs.mathyvanhoef.com/usenix2025-tunnels.pdf">Haunted by Legacy: Discovering =
+and Exploiting Vulnerable Tunnelling Hosts</a>. In&nbsp;<i>USENIX Security =
+Symposium</i>, 2025. <span style=3D"color: red;">Won the Most Innovative Re=
+search Award (Pwnie) at DEF CON</span>!</p><p>H. Gollier and <u>M. Vanhoef<=
+/u>. <a href=3D"https://papers.mathyvanhoef.com/wisec2024.pdf">SSID Confusi=
+on: Making Wi-Fi Clients Connect to the Wrong Network</a>. In the <i>Procee=
+dings of the 17th ACM Conference on Security and Privacy in Wireless and Mo=
+bile Networks (WiSec)</i>, 2024. <span style=3D"color: red;">Won the best p=
+aper award</span>! [<a href=3D"https://github.com/vanhoefm/ssid-confusion-h=
+ostap#fils-clarification">FILS Clarification</a>]<br></p><p>J. Robben and <=
+u>M. Vanhoef</u>. <a href=3D"http://papers.mathyvanhoef.com/esorics2024.pdf=
+">Netfuzzlib: Adding First-Class Fuzzing Support to Network Protocol Implem=
+entations</a>. In the <i>Proceedings of the European Symposium on Research =
+in Computer Security (ESORICS)</i>, 2024.</p><p><u>M. Vanhoef</u> and J. Ro=
+bben. <a href=3D"http://papers.mathyvanhoef.com/acns2024.pdf">A Security An=
+alysis of WPA3-PK: Implementation and Precomputation Attacks</a>. At the <i=
+>Proceedings of the 22nd International Conference on Applied Cryptography a=
+nd Network Security (ACNS)</i>, 2024.<br></p><p>V. Vanderlinden,&nbsp;T. Va=
+n Goethem, and <u>M. Vanhoef</u>. <a href=3D"http://papers.mathyvanhoef.com=
+/esorics2023.pdf">Time Will Tell: Exploiting Timing Leaks Using HTTP Respon=
+se Headers</a>. In <i>Proceedings of the European Symposium on Research in =
+Computer Security (ESORICS)</i>, 2023.<br></p><p>N. Xue, Y. Malla, Z. Xia, =
+C. P=C3=B6pper, and <u>M. Vanhoef</u>. <a href=3D"https://papers.mathyvanho=
+ef.com/usenix2023-tunnelcrack.pdf">Bypassing Tunnels: Leaking VPN Client Tr=
+affic by Abusing Routing Tables</a>. <i>USENIX Security Symposium</i>, 2023=
+. [<a href=3D"https://tunnelcrack.mathyvanhoef.com/">TunnelCrack Site</a>]<=
+br></p><p>V. Vanderlinden, W. Joosen, and <u>M. Vanhoef</u>. <a href=3D"htt=
+ps://papers.mathyvanhoef.com/madweb2023.pdf">Can You Tell Me the Time? Secu=
+rity Implications of the Server-Timing Header</a>. In <i>Proceedings of the=
+ Workshop on Measurements, Attacks, and Defenses for the Web (MADWeb)</i>, =
+co-located with NDSS, 2023. Won the best paper award!<br></p>
+<p><u>M. Vanhoef</u>, X. Jiao, W. Liu, and I. Moerman. <a href=3D"https://p=
+apers.mathyvanhoef.com/wisec2023-wifi-injection.pdf">Testing and Improving =
+the Correctness of Wi-Fi Frame Injection</a>. In <i>Proceedings of the 16th=
+ ACM Conference on Security and Privacy in Wireless and Mobile Networks (Wi=
+Sec)</i>, 2023.<br></p>
+<p>D. Schepers, A. Ranganathan, and <u>M. Vanhoef</u>. <a href=3D"https://p=
+apers.mathyvanhoef.com/usenix2023-wifi.pdf">Framing Frames: Bypassing Wi-Fi=
+ Encryption by Manipulating Transmit Queues</a>. <i>USENIX Security Symposi=
+um</i>, 2023.</p><p>C. M. Stone, S. L. Thomas, <u>M. Vanhoef</u>, J. Hender=
+son, N. Bailluet, and T. Chothia. <a href=3D"https://papers.mathyvanhoef.co=
+m/ccs2022-greyboxstatelearning.pdf">The Closer You Look, The More You Learn=
+: A Grey-box Approach to Protocol State Machine Learning</a>. In <i>Proceed=
+ings of the 29th ACM Conference on Computer and Communication Security (CCS=
+ 2022).</i></p><p>D. Schepers, A. Ranganathan, and <u>M. Vanhoef</u>. <a hr=
+ef=3D"https://papers.mathyvanhoef.com/wisec2022.pdf">On the Robustness of W=
+i-Fi Deauthentication Countermeasures</a>. In <i>Proceedings of the 15th AC=
+M Conference on Security and Privacy in Wireless and Mobile Networks (WiSec=
+)</i>, 2022.
+</p><p><u>M. Vanhoef</u>. <a href=3D"https://papers.mathyvanhoef.com/apkc20=
+22.pdf">A Time-Memory Trade-Off Attack on WPA3's SAE-PK</a>. <i>In Proceedi=
+ngs of the 9th ASIA Public-Key Cryptography Workshop (APKC)</i>, 2022.<br><=
+/p><p>C. M. Stone, S. L. Thomas, <u>M. Vanhoef</u>, J. Henderson, N. Baillu=
+et, and T. Chothia. <a href=3D"https://arxiv.org/abs/2106.02623">The Closer=
+ You Look, The More You Learn: A Grey-box Approach to Protocol State Machin=
+e Learning</a>. arXiv:2106.02623, 2021.<br></p>
+<p>D. Schepers, A. Ranganathan, and <u>M. Vanhoef</u>. <a href=3D"https://p=
+apers.mathyvanhoef.com/wisec2021.pdf">Let Numbers Tell the Tale: Measuring =
+Security Trends in Wi-Fi Networks and Best Practices</a>. In <i>Proceedings=
+ of the 14th ACM Conference on Security and Privacy in Wireless and Mobile =
+Networks (WiSec)</i>, 2021.
+</p>
+<p>
+D. Schepers, <u>M. Vanhoef</u>, and A. Ranganathan. <a href=3D"https://pape=
+rs.mathyvanhoef.com/wisec2021-demo.pdf">DEMO: A Framework to Test and Fuzz =
+Wi-Fi Devices</a>. In <i>Proceedings of the 14th ACM Conference on Security=
+ and Privacy in Wireless and Mobile Networks (WiSec)</i>, 2021.<u><br></u>
+</p>
+<p><u>M. Vanhoef</u>. <a href=3D"https://papers.mathyvanhoef.com/usenix2021=
+.pdf">Fragment and Forge: Breaking Wi-Fi Through Frame Aggregation and Frag=
+mentation</a>. In <i>USENIX Security Symposium</i>, 2021. See the f<a href=
+=3D"https://www.fragattacks.com/">ragattacks.com</a> website for extra info=
+rmation.<br>
+<br>
+T. Van Goethem, C. P=C3=B6pper, W. Joosens, and <u>M. Vanhoef</u>. <a href=
+=3D"https://papers.mathyvanhoef.com/usenix2020.pdf">Timeless Timing Attacks=
+: Exploiting Concurrency to Leak Secrets over Remote Connections</a>. In <i=
+>USENIX Security Symposium</i>, 2020.<br>
+<br>
+<u>M. Vanhoef</u>, P. Adhikari, and C. P=C3=B6pper. <a href=3D"http://paper=
+s.mathyvanhoef.com/wisec2020.pdf">Protecting Wi-Fi Beacons from Outsider Fo=
+rgeries</a>. In <i>13th ACM Conference on Security and Privacy in Wireless =
+and Mobile Networks (WiSec)</i>, 2020.<br>
+<br>
+<u>M. Vanhoef</u> and E. Ronen. <a href=3D"https://papers.mathyvanhoef.com/=
+dragonblood.pdf">Dragonblood: Analyzing the Dragonfly Handshake of WPA3 and=
+ EAP-pwd</a>. In <i>Proceedings of the IEEE Symposium on Security &amp; Pri=
+vacy (SP '20)</i>. 2020. <span style=3D"color: red;">Won the Best Cryptogra=
+phic Attack Award (Pwnie) at Black Hat USA!</span><br>
+<br>
+D. Schepers and <u>M. Vanhoef</u>. <a href=3D"https://i.blackhat.com/eu-19/=
+Thursday/eu-19-Schepers-Practical-Side-Channel-Attacks-Against-WPA-TKIP-wp.=
+pdf" target=3D"_blank">Breaking WPA-TKIP Using Side-Channel Attacks</a>. In=
+ <i>Black Hat Briefings Europe</i>, London, UK, 2019.<br>
+<br>
+F. Goovaerts, G. Acar, R. Galvez, F. Piessens, and <u>M. Vanhoef</u>. <a hr=
+ef=3D"https://papers.mathyvanhoef.com/nordsec2019.pdf">Improving Privacy th=
+rough Fast Passive Wi-Fi Scanning</a>. In <i>Proceedings of the 24th Nordic=
+ Workshop on Secure IT Systems (NordSec)</i>, 2019.</p><p><u>M. Vanhoef</u>=
+ and E. Ronen. <a href=3D"https://i.blackhat.com/USA-19/Wednesday/us-19-Van=
+hoef-Dragonblood-Attacking-The-Dragonfly-Handshake-Of-WPA3-wp.pdf" target=
+=3D"_blank">Dragonblood: Attacking the Dragonfly Handshake of WPA3</a>. In =
+<i>Black Hat Briefings</i>, USA, 2019.<br>
+<br>
+D. Schepers, A. Ranganathan, and <u>M. Vanhoef</u>. <a href=3D"http://paper=
+s.mathyvanhoef.com/asiaccs2019.pdf">Practical Side-Channel Attacks against =
+WPA-TKIP</a>. In <i>Proceedings of the ACM Symposium on Information, Comput=
+er and Communications Security (ASIA CCS 2019)</i>, 2019.<br>
+<br>
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"https://papers.mathyvanhoef.c=
+om/ccs2018.pdf">Release the Kraken: New KRACKs in the 802.11 Standard</a>. =
+In <i>Proceedings of the 25th ACM Conference on Computer and Communication =
+Security (CCS 2018)</i>, Toronto, Canada.<br>
+<br>
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"https://papers.mathyvanhoef.c=
+om/woot2018.pdf">Symbolic Execution of Security Protocol Implementations: H=
+andling Cryptographic Primitives</a>. In <i>USENIX Workshop on Offensive Te=
+chnology (USENIX WOOT)</i>, 2018.<br>
+<br>
+<u>M. Vanhoef</u>, N. Bhandaru, T. Derham, I. Ouzieli, and F. Piessens. <a =
+href=3D"https://papers.mathyvanhoef.com/wisec2018.pdf">Operating Channel Va=
+lidation: Preventing Multi-Channel Man-in-the-Middle Attacks Against Protec=
+ted Wi-Fi Networks</a>. In <i>11th ACM Conference on Security and Privacy i=
+n Wireless and Mobile Networks (WiSec)</i>, 2018. [<a href=3D"https://mento=
+r.ieee.org/802.11/dcn/17/11-17-1807-12-000m-defense-against-multi-channel-m=
+itm-attacks-via-operating-channel-validation.docx">SPEC</a>]<br>
+<br>
+<u>M. Vanhoef</u>. <a href=3D"https://papers.mathyvanhoef.com/blackhat-eu20=
+17.pdf">Key Reinstallation Attacks: Breaking the WPA2 Protocol</a>. In <i>B=
+lack Hat Briefings Europe</i>, London, UK, 2017. [<a href=3D"https://papers=
+.mathyvanhoef.com/blackhat-eu2017-slides.pdf">SLIDES</a>, <a href=3D"https:=
+//papers.mathyvanhoef.com/ccs2017.pdf">RESEARCH PAPER</a>]<br>
+<br>
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"https://papers.mathyvanhoef.c=
+om/ncs2017.pdf">Denial-of-Service Attacks Against the 4-way Wi-Fi Handshake=
+</a>. In <i>NeTCoM,</i>&nbsp;Dubai, 2017.<br>
+<br>
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"https://papers.mathyvanhoef.c=
+om/ccs2017.pdf">Key Reinstallation Attacks: Forcing Nonce Reuse in WPA2</a>=
+. In <i>Proceedings of the 24th ACM Conference on Computer and Communicatio=
+n Security (CCS 2017)</i>, Dallas, USA, 30 October - 3 November 2017. <span=
+ style=3D"color: red;">Won the real-word impact award!</span> [<a href=3D"h=
+ttps://papers.mathyvanhoef.com/ccs2017-slides.pdf">SLIDES</a>]<br>
+<br>
+<u>M. Vanhoef</u>. <a href=3D"https://papers.mathyvanhoef.com/blackhat2017.=
+pdf">WiFuzz: Detecting and Exploiting Logical Flaws in the Wi-Fi Cryptograp=
+hic Handshake</a>. In <i>Black Hat Briefings</i>, USA, 2017. [<a href=3D"ht=
+tp://papers.mathyvanhoef.com/blackhat2017-slides.pdf">SLIDES</a>]<br>
+<br>
+<u>M. Vanhoef</u>, D. Schepers, and F. Piessens. <a href=3D"https://papers.=
+mathyvanhoef.com/asiaccs2017.pdf">Discovering Logical Vulnerabilities in th=
+e Wi-Fi Handshake Using Model-Based Testing</a>. In <i>Proceedings of the 1=
+2th ACM Symposium on Information, Computer and Communications Security (ASI=
+A CCS 2017)</i>, Abu Dhabi, United Arab Emirates, 2017. [<a href=3D"https:/=
+/lirias.kuleuven.be/bitstream/123456789/572634/1/asiaccs2017.pdf">PDF</a>, =
+<a href=3D"http://papers.mathyvanhoef.com/asiaccs2017-slides.pdf">SLIDES</a=
+>, <a href=3D"https://github.com/vanhoefm/hostap-asiaccs2017">SCRIPTS</a>]<=
+br>
+<br>
+<u>M. Vanhoef</u>. <a href=3D"http://papers.mathyvanhoef.com/phdthesis.pdf"=
+>A Security Analysis of the WPA-TKIP and TLS Security Protocols</a>. <i>PhD=
+ dissertation</i>, KU Leuven, July 201<span style=3D"font-family: inherit;"=
+>6.<span style=3D"color: red;"><span style=3D"color: black;"> <span style=
+=3D"color: red;">PhD thesis, accepted </span></span><span style=3D"color: r=
+ed;">summa cum laude</span></span>.<span style=3D"font-family: inherit;"> [=
+<a href=3D"http://papers.mathyvanhoef.com/phdthesis-slides.pdf">SLIDES</a>]=
+</span></span><br>
+<br>
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"http://papers.mathyvanhoef.co=
+m/usenix2016-wifi.pdf">Predicting, Decrypting, and Abusing WPA2/802.11 Grou=
+p Keys</a>. In <i>USENIX Security Symposium</i>, 2016. [<a href=3D"http://p=
+apers.mathyvanhoef.com/usenix2016-wifi-slides.pdf">SLIDES</a>, <a href=3D"h=
+ttps://github.com/vanhoefm/broadkey">CODE</a>]<br>
+<br>
+T. Van Goethem, <u>M. Vanhoef</u>, F. Piessens, and W. Joosens. <a href=3D"=
+http://papers.mathyvanhoef.com/usenix2016-web.pdf">Request and Conquer: Exp=
+osing Cross-Origin Resource Size</a>. In <i>USENIX Security Symposium</i>, =
+2016.<br>
+<br>
+<u>M. Vanhoef</u> and T. Van Goethem. <a href=3D"http://papers.mathyvanhoef=
+.com/blackhat2016.pdf">HEIST: HTTP Encrypted Information can be Stolen thro=
+ugh TCP-windows</a>. In <i>Black Hat Briefings</i>, USA, 2016. [<a href=3D"=
+http://papers.mathyvanhoef.com/blackhat2016-slides.pdf">SLIDES</a>]<br>
+<br>
+C. Matte, M. Cunche, F. Rousseau, and <u>M. Vanhoef</u>. <a href=3D"http://=
+papers.mathyvanhoef.com/wisec2016.pdf">Defeating MAC Address Randomization =
+Through Timing Attacks</a>. In <i>9th ACM Conference on Security and Privac=
+y in Wireless and Mobile Networks (WiSec)</i>, 2016.<br>
+<br>
+<u>M. Vanhoef</u>, C. Matte, M. Cunche, L. S. Cardoso, and F. Piessens. <a =
+href=3D"http://papers.mathyvanhoef.com/asiaccs2016.pdf">Why MAC Address Ran=
+domization is not Enough: An Analysis of Wi-Fi Network Discovery Mechanisms=
+</a>. In <i>Proceedings of the 11th ACM Symposium on Information, Computer =
+and Communications Security (ASIA CCS 2016)</i>, Xi'an, China, 2016.<br>
+<br>
+<u>M. Vanhoef</u>. <a href=3D"http://papers.mathyvanhoef.com/fcc2015.pdf">A=
+ Case For Open Radio Software</a>. Included in a comment submitted to the F=
+ederal Register regarding proposed software security rules for radio device=
+s. You can <a href=3D"http://people.cs.kuleuven.be/~mathy.vanhoef/papers/fc=
+c2015_comment.pdf">view the formal comment addressing the FCC here</a>.<br>
+<br>
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"http://www.rc4nomore.com/vanh=
+oef-usenix2015.pdf">All Your Biases Belong To Us: Breaking RC4 in WPA-TKIP =
+and TLS</a>. In <i>USENIX Security Symposium</i>, 2015. <span style=3D"colo=
+r: red;">Won the best student paper award!</span> See <a href=3D"http://www=
+.rc4nomore.com/">www.rc4nomore.com</a> for more info. [<a href=3D"http://ww=
+w.rc4nomore.com/">SITE</a>, <a href=3D"http://www.rc4nomore.com/vanhoef-use=
+nix2015.pdf">PDF</a>, <a href=3D"https://lirias.kuleuven.be/handle/12345678=
+9/505186">LIRIAS</a>]<br>
+<br>
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"https://papers.mathyvanhoef.c=
+om/acsac2014.pdf">Advanced WiFi Attacks Using Commodity Hardware</a>. In <i=
+>Annual Computer Security Applications Conference (ACSAC), 2014</i>. [<a hr=
+ef=3D"http://people.cs.kuleuven.be/~mathy.vanhoef/papers/acsac2014.pdf">PDF=
+</a>, <a href=3D"https://distrinet.cs.kuleuven.be/research/publications/bib=
+tex.do?publicationID=3D473761">BIBTEX</a>, <a href=3D"https://lirias.kuleuv=
+en.be/handle/123456789/473761">LIRIAS</a>, <a href=3D"http://modwifi.bitbuc=
+ket.org/">CODE</a>]<br>
+<br>
+W. De Groef, D. Devriese, <u>M. Vanhoef</u>, and F. Piessens, <a href=3D"ht=
+tps://lirias.kuleuven.be/bitstream/123456789/460784/1/ifc-tutorial.pdf">Inf=
+ormation flow control for web scripts</a>. In Lecture Notes in Computer Sci=
+ence, volume 8604, 2014. [<a href=3D"https://lirias.kuleuven.be/bitstream/1=
+23456789/460784/1/ifc-tutorial.pdf">PDF</a>, <a href=3D"https://distrinet.c=
+s.kuleuven.be/research/publications/bibtex.do?publicationID=3D460784">BIBTE=
+X</a>, <a href=3D"https://lirias.kuleuven.be/handle/123456789/460784">LIRIA=
+S</a>]<br>
+<br>
+<u>M. Vanhoef</u>, W. De Groef, D. Devriese, F. Piessens, and T. Rezk. <a h=
+ref=3D"https://papers.mathyvanhoef.com/csf2014.pdf">Stateful Declassificati=
+on Policies for Event-Driven Programs</a>. In <i>27th Computer Security Fou=
+ndations Symposium (CSF 2014)</i>, Vienna, Austria, 2014. [<a href=3D"https=
+://lirias.kuleuven.be/bitstream/123456789/452207/1/sme_declassification.pdf=
+">PDF</a>, <a href=3D"https://distrinet.cs.kuleuven.be/research/publication=
+s/bibtex.do?publicationID=3D452207">BIBTEX</a>, <a href=3D"https://lirias.k=
+uleuven.be/handle/123456789/452207">LIRIAS</a>, <a href=3D"https://distrine=
+t.cs.kuleuven.be/software/FlowFox/">FlowFox</a>]<br>
+<br>
+</p><div style=3D"text-align: justify;">
+<u>M. Vanhoef</u> and F. Piessens. <a href=3D"http://papers.mathyvanhoef.co=
+m/asiaccs2013.pdf">Practical Verification of WPA-TKIP Vulnerabilities</a>. =
+In <i>Proceedings of the 8th ACM Symposium on Information, Computer and Com=
+munications Security (ASIA CCS 2013)</i>, Hangzhou, China, 2013. [<a href=
+=3D"https://lirias.kuleuven.be/bitstream/123456789/401042/1/wpatkip.pdf">PD=
+F</a>, <a href=3D"https://distrinet.cs.kuleuven.be/research/publications/bi=
+btex.do?publicationID=3D401042">BIBTEX</a>, <a href=3D"https://lirias.kuleu=
+ven.be/handle/123456789/401042">LIRIAS</a>]</div>
+<br>
+<u>M. Vanhoef</u>. <a href=3D"http://papers.mathyvanhoef.com/masterthesis.p=
+df">Privacy in Databases</a>. <i>Master Thesis</i>, Hasselt University, 201=
+2. Under supervision of Jan Van den Bussche.<br>
+<br>
+<a id=3D"presentations"></a>
+<span style=3D"font-size: x-large;"><b>Presentations</b></span><br>
+<div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><br></div><div d=
+ir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"http://pape=
+rs.mathyvanhoef.com/blackhat-asia2026-slides.pdf">AirSnitch: Breaking Clien=
+t Isolation in Wi-Fi Networks</a>. Given at Black Hat Asia, Singapore, 23 A=
+pril 2026.</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">=
+<br></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">10 Yea=
+rs After the KRACK Attack, What Now? Given at the DistriNet Reunion, Leuven=
+, Belgium, 5 February 2026.</div><div dir=3D"ltr" style=3D"text-align: left=
+;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"text-align: left;" trb=
+idi=3D"on">Measuring and Preventing Certificate Misconfigurations in Enterp=
+rise=20
+WPA2/3 Networks. Given at the 9th Cyber Security in Networking
+ Conference (CSNet), Abu Dhabi, United Arab Emirates.</div><div dir=3D"ltr"=
+ style=3D"text-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=
+=3D"text-align: left;" trbidi=3D"on">Time and Time Again Leveraging TCP Tim=
+estamps to Improve Remote Timing Attacks. Given at New York University (NYU=
+) Abu Dhabi, United Arab Emirates, 16 October 2025.</div><div dir=3D"ltr" s=
+tyle=3D"text-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=
+=3D"text-align: left;" trbidi=3D"on">Improving Wi-Fi Security: Lessons from=
+ Attacks &amp; Future Defenses. Given at Darmstadt, Germany, 20 March 2025.=
+</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><br></div>=
+<div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"https=
+://papers.mathyvanhoef.com/pake2025-slides.pdf">Multiple Passwords in WPA3:=
+ Use Cases &amp; Initial Proposals</a>. Given at the <a href=3D"https://afo=
+nsoarriaga.github.io/pake-25/">PAKE'25</a> workshop in Luxembourg, 7 Februa=
+ry 2025.</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">&n=
+bsp;</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a hre=
+f=3D"https://papers.mathyvanhoef.com/secappdev2024-vanhoef.pdf">When Networ=
+k Protocols Meet New Threat Models</a>. Given at the SecAppDev training in =
+Leuven, Belgium, 5 June 2024.<br></div><div dir=3D"ltr" style=3D"text-align=
+: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"text-align: left=
+;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/wisec2024-keyno=
+te.pdf">When Wireless Protocols Meet New Threat Models</a>. <span style=3D"=
+color: red;">Invited keynote</span> given at the 17th ACM Conference on Sec=
+urity and Privacy in Wireless and Mobile Networks (WiSec), South Korea, 28 =
+May 2024.<br></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"o=
+n"><br></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a =
+href=3D"https://papers.mathyvanhoef.com/ifipwg2024-keynote.pdf">Breaking Ne=
+twork Protocols: When Established Protocols Meet New Threat Models</a>. <sp=
+an style=3D"color: red;">Invited keynote</span> given at the Network &amp; =
+Distributed Systems Security Workshop (IFIP TC11 WG 11.4), Belgium, 16 May =
+2024.<br></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><=
+br></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=
+=3D"http://papers.mathyvanhoef.com/acns2024-slides.pdf">A Security Analysis=
+ of WPA3-PK: Implementation and Precomputation Attacks</a>, given at ACNS,&=
+nbsp; Abu Dhabi, UAE, 8 March 2024.<br></div><div dir=3D"ltr" style=3D"text=
+-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"text-align=
+: left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/blackhat-=
+eu2023-slides.pdf">TunnelCrack: Leaking VPN Traffic by Manipulating Routing=
+ Tables</a>, given at Black Hat Europe, London, UK, 6 December 2023.<br></d=
+iv><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><br></div><di=
+v dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"https://=
+papers.mathyvanhoef.com/brucon2023-sleepmode.pdf">Breaking &amp; Disrupting=
+ WPA2/3 Networks by Abusing Sleep Mode</a>, given at BruCON, Mechelen, Belg=
+ium, 29 September 2023.<br></div><div dir=3D"ltr" style=3D"text-align: left=
+;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"text-align: left;" trb=
+idi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/wac2023-slides.pdf">F=
+raming Frames: Bypassing Wi-Fi Encryption by Manipulating Transmit Queues</=
+a>, given by invitation at the CRYPTO Workshop on Attacks (WAC6), 20 August=
+ 2023, Santa Barbara, US (talk by Aanjhan).<br></div><div dir=3D"ltr" style=
+=3D"text-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"te=
+xt-align: left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/u=
+senix2023-tunnelcrack-slides.pdf">Bypassing Tunnels: Leaking VPN Client Tra=
+ffic by Abusing Routing Tables</a>, given at USENIX Security, Anaheim, USA,=
+ 11 August 2023. <br></div><div dir=3D"ltr" style=3D"text-align: left;" trb=
+idi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=
+=3D"on"><a href=3D"https://papers.mathyvanhoef.com/summerschool-sophia2023-=
+wifi.pdf">Recent Wi-Fi attacks &amp; defenses: general lessons learned &amp=
+; open problems</a>, given at the Summer School: Cyber in Sophia Antipolis =
+(8th edition), Nice, France, July 5, 2023. <br></div><div dir=3D"ltr" style=
+=3D"text-align: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"=
+text-align: left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com=
+/wisec2023-slides.pdf">Testing and Improving the Correctness of Wi Fi Frame=
+ Injection</a>, given at WiSec, United Kingdom, May 31, 2023.<br></div><div=
+ dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">&nbsp;</div><div dir=
+=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"http://papers=
+.mathyvanhoef.com/blackhat-asia2023-slides.pdf">Sweet Dreams: Abusing Sleep=
+ Mode to Break Wi-Fi Encryption &amp; Disrupt WPA2/3 Networks</a>, given at=
+ Black Hat Asia, Singapore, May 12, 2023.<br></div><div dir=3D"ltr" style=
+=3D"text-align: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"=
+text-align: left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com=
+/rwc2023-slides.pdf">Framing Frames: Bypassing Wi-Fi Encryption by Manipula=
+ting Transmit Queues</a>, given at Real-World-Crypto (RWC), Tokyo, Japan, o=
+n 27 March, 2023.<br></div><div dir=3D"ltr" style=3D"text-align: left;" trb=
+idi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=
+=3D"on">Leaking &amp; Injecting Wi-Fi Traffic and the Ethics of Surveying N=
+etworks, given at New York University (NYU) Abu Dhabi on 23 March, 2023.<br=
+></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">&nbsp;</d=
+iv><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">Detecting Wi-=
+Fi Networks Vulnerable to FragAttacks: Feasible, but also Ethical?, given a=
+t TU Graz on 3 February, 2023.<br></div><div dir=3D"ltr" style=3D"text-alig=
+n: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-align: l=
+eft;" trbidi=3D"on">Detecting Wi-Fi Networks Vulnerable to FragAttacks: Fea=
+sible, but also Ethical?, given at Northeastern University on 13 January, 2=
+023.</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><br></=
+div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"h=
+ttps://papers.mathyvanhoef.com/summerschool-fuzzing2022.pdf">Fuzzing Networ=
+k Protocol Implementations</a>, given at the Summer School on Security Test=
+ing and Verification as an <span style=3D"color: red;">invited speaker</spa=
+n>, 20 September 2022, Leuven, Belgium.<br></div><div dir=3D"ltr" style=3D"=
+text-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"text-a=
+lign: left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/hitbs=
+ecconf2022-slides.pdf">Attacking WPA3: New Vulnerabilities &amp; Exploit Fr=
+amework</a>, given at HITBSecConf Singapore on August 25, 2022.<br></div><d=
+iv dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><br></div><div dir=
+=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"https://paper=
+s.mathyvanhoef.com/wac2022-slides.pdf">Analysis of Protected Management Fra=
+mes and WPA3's SAE-PK</a>, given at the CRYPTO Workshop on Attacks (WAC5) a=
+s an <span style=3D"color: red;">invited speaker</span>, 14 August 2022, Sa=
+nta Barbara, US (talk given online).</div><div dir=3D"ltr" style=3D"text-al=
+ign: left;" trbidi=3D"on"><div dir=3D"ltr" style=3D"text-align: left;" trbi=
+di=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=
+=3D"on">Bypassing Internet and Rate Limits by Committing SYNs, given a Typh=
+oonCon, 23 June, 2022, Seoul, South Korea.</div><div dir=3D"ltr" style=3D"t=
+ext-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"text-al=
+ign: left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/summer=
+school-wifi2022.pdf">Recent Wi-Fi attacks and defenses: general lessons lea=
+rned and open problems</a>, given at the Summer School on real-world crypto=
+ and privacy as an <span style=3D"color: red;">invited speaker</span>, 17 J=
+une 2022, =C5=A0ibenik, Croatia.<br></div><div dir=3D"ltr" style=3D"text-al=
+ign: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-align:=
+ left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/gisec2022.=
+pdf">FragAttacks: Recent Flaws in WPA2/3 and New Defenses</a>, given at GIS=
+EC, March 21-23, 2022, Dubai, UAE.<br></div><div dir=3D"ltr" style=3D"text-=
+align: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-alig=
+n: left;" trbidi=3D"on"><a href=3D"http://papers.mathyvanhoef.com/poc2021-s=
+lides.pdf">Exploiting WPA3 Networks: New Vulnerabilities and Defenses</a>, =
+given at PoC 2021, November 11-12, 2021, Virtual.</div><div dir=3D"ltr" sty=
+le=3D"text-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"=
+text-align: left;" trbidi=3D"on">Wireless network security: recent advancem=
+ents and open challenges, given at Ericsson, 9 September 2021, Virtual.</di=
+v><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">&nbsp;</div><d=
+iv dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"https:/=
+/papers.mathyvanhoef.com/wac2021-slides.pdf">Fragment and Forge: Fragmentat=
+ion and Aggregation Flaws in Wi-Fi</a>, given at the CRYPTO Workshop on Att=
+acks (WAC4), 15 August 2021, Santa Barbara, US (recorded talk). <br></div><=
+/div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">&nbsp;</div=
+><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"http=
+s://papers.mathyvanhoef.com/usenix2021-slides.pdf">Fragment and Forge: Brea=
+king Wi-Fi Through Frame Aggregation and Fragmentation</a>, given at USENIX=
+ Security, 11 August 2021, Virtual.<br></div><div dir=3D"ltr" style=3D"text=
+-align: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-ali=
+gn: left;" trbidi=3D"on"><div dir=3D"ltr" style=3D"text-align: left;" trbid=
+i=3D"on">Timeless Timing Attacks, given at DEF CON, 5-8 August 2021, Virtua=
+l.</div></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><b=
+r></div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=
+=3D"https://papers.mathyvanhoef.com/blackhat2021-fragattacks.pdf">FragAttac=
+ks: Breaking Wi-Fi Through Frame Aggregation and Fragmentation</a>, given a=
+t Black Hat US, 4-5 August 2021, Virtual.</div><div dir=3D"ltr" style=3D"te=
+xt-align: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-a=
+lign: left;" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/black=
+hat2021-timeless.pdf">Timeless Timing Attacks</a>, given at Black Hat US, 4=
+-5 August 2021, Virtual.</div><div dir=3D"ltr" style=3D"text-align: left;" =
+trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-align: left;" trbi=
+di=3D"on">Wireless network security: recent advancements and open challenge=
+s, given at <i>DRADS</i>, 13 July 2021, Belgium (Virtual).</div><div dir=3D=
+"ltr" style=3D"text-align: left;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr=
+" style=3D"text-align: left;" trbidi=3D"on">Fragment
+ and Forge: Breaking Wi-Fi Through Frame Aggregation and Fragmentation,=20
+given at ETH Zurich, 10 June 2021, Virtual.</div><div dir=3D"ltr" style=3D"=
+text-align: left;" trbidi=3D"on"><br></div><div dir=3D"ltr" style=3D"text-a=
+lign: left;" trbidi=3D"on"><div dir=3D"ltr" style=3D"text-align: left;" trb=
+idi=3D"on">Fragment and Forge: Breaking Wi-Fi Through Frame Aggregation and=
+ Fragmentation, given at Tel Aviv University, 26 May 2021, Virtual.</div></=
+div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><br></div><d=
+iv dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"https:/=
+/papers.mathyvanhoef.com/blackhat-webcast2020-slides.pdf">Abusing Wi-Fi Bea=
+cons and Detecting &amp; Preventing Attacks</a>, given as a <i>Black Hat We=
+bCast</i>, September 17, 2020.</div><div dir=3D"ltr" style=3D"text-align: l=
+eft;" trbidi=3D"on">&nbsp;</div><div dir=3D"ltr" style=3D"text-align: left;=
+" trbidi=3D"on"><a href=3D"https://papers.mathyvanhoef.com/defcon2020-slide=
+s.pdf">Protecting WiFi Beacons from Outside Forgeries</a>, given at DEF CON=
+ Safe Mode Red Team Village, 18 August 2020, Virtual Event. <br></div><div =
+dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><br>
+</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><div dir=
+=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D"https://paper=
+s.mathyvanhoef.com/wisec2020-slides.pdf">Protecting Wi-Fi Beacons from Outs=
+ider Forgeries</a>, given at WiSec, 9 July 2020, Linz, Austria (Virtual Eve=
+nt).</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on">&nbsp;=
+</div>
+</div><div dir=3D"ltr" style=3D"text-align: left;" trbidi=3D"on"><a href=3D=
+"https://papers.mathyvanhoef.com/rwc2020.pdf">Dragonblood: Analyzing the Dr=
+agonfly Handshake of WPA3 and EAP-pwd</a>, given at the Real World Crypto c=
+onference at New York. 10 January 2020.<br>
+<br>
+Dragonblood: Attacking the Dragonfly Handshake of WPA3 and EAP-pwd, given a=
+t New York University, New York. 7 January 2020.<br>
+<br>
+Dragonblood: Attacking the Dragonfly Handshake of WPA3 and EAP-pwd, given a=
+t UHasselt, Belgium. 12 December 2019.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/brucon2019-slides.pdf">Dragonblo=
+od: Weaknesses in WPA3=E2=80=99s Dragonfly Handshake</a>, given at BruCON o=
+n 11 October 2019, Belgium.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/wac2019-slides.pdf">Dragonblood:=
+ A Security Analysis of WPA3=E2=80=99s SAE Handshake</a>, given at the CRYP=
+TO Workshop on Attacks (WAC) as an <span style=3D"color: red;">invited spea=
+ker</span>, 17 August 2019, Santa Barbara, US.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/blackhat2019-slides.pdf">Dragonb=
+lood: Attacking the Dragonfly Handshake of WPA3</a>, given at <i>Black Hat =
+Briefings 2019</i>, Las Vegas, Nevada. Won the <span style=3D"color: red;">=
+Pwnie Award</span> for best cryptographic attack!<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/anrw2019_slides.pdf">Dragonblood=
+: Analyzing the Dragonfly Handshake of WPA3 and EAP-pwd</a>, given at the A=
+pplied Networking Research Workshop (ANRW) as an <span style=3D"color: red;=
+">invited speaker</span> on 22 July 2019, Montreal, Canada.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/opcde2019.pdf">Rooting Routers U=
+sing Symbolic Execution (updated talk)</a>, given at OPCDE on 20 April 2019=
+, Dubai, UAE.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/itdefense2019.pdf">Rooting Route=
+rs Using Symbolic Execution</a>, given at IT-Defense on 7 February 2019, St=
+uttgart, Germany.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/hitbdxb2018-slides.pdf">Rooting =
+Routers Using&nbsp; Symbolic Execution</a>, given at HITB DXB on 27 Novembe=
+r 2018, Dubai, UAE.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/ccs2018-slides.pdf">Release the =
+Kraken: new KRACKs in the 802.11 Standard</a>, given at CCS'18 on 16 Octobe=
+r 2018, Toronto, Canada.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/brucon2018-slides.pdf">Advanced =
+Wi-Fi Attacks Using Commodity Hardware (updated talk)</a>, given at BruCON =
+on 3 October 2018, Belgium.<br>
+<br>
+KRACKing WPA2 and Mitigating Future Attacks, given at NYU Abu Dhabi on 26 A=
+ugust 2018, Abu Dhabi, UAE.<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/crypto-wac2018-slides.pdf">KRACKi=
+ng WPA2 and Mitigating Future Attacks</a>, given at the CRYPTO Workshop on =
+Attacks (WAC) as an <span style=3D"color: red;">invited speaker</span>, 18 =
+August 2018, Santa Barbara, US.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/woot2018-slides.pdf">Symbolic Ex=
+ecution of Security Protocol Implementations: Handling Cryptographic Primit=
+ives</a>, given at USENIX WOOT, 14 August 2018, Baltimore, US.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/hackpra2018-slides.pdf">KRACKing=
+ WPA2 by Forcing Nonce Reuse</a>, given at HackPra, Ruhr-Universit=C3=A4t B=
+ochum, 18 July 2018, Germany.<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/chalmers2018-slides.pdf">KRACKing=
+ WPA2 by Forcing Nonce Reuse</a>, given at Chalmers University, 21 June 201=
+8, Sweden.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/wisec2018-slides.pdf">Operating =
+Channel Validation: Preventing Multi-Channel Man-in-the-Middle Attacks Agai=
+nst Protected Wi-Fi Networks</a>, given at WiSec, 18 June 2018, Stockholm, =
+Sweden.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/itf2018-slides.pdf">How WPA2 got=
+ KRACKed using Key Reinstallation Attacks</a>, given at ITF, 24 may 2018, B=
+elgium.<br>
+<br>
+KRACKing WPA2 using Key Reinstallation Attacks, given at SWIFT, 17 may 2018=
+, Belgium.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/opcde2018-slides.pdf">Improved K=
+RACK Attacks Against WPA2 Implementations</a>, given at OPCDE, 7 April 2018=
+, in Dubai, UAE.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/nullcon2018-slides.pdf">KRACKing=
+ WPA2 by forcing Nonce Reuse</a>, given at the OWASP Chapter Meeting Brusse=
+ls, 19 March 2018, in Belgium.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/nullcon2018-slides.pdf">KRACKing=
+ WPA2 by forcing Nonce Reuse</a>, given at Nullcon, 2 March 2018, in Goa, I=
+ndia.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/bluehatil2018-slides.pdf">KRACKi=
+ng WPA2 in Practice Using Key Reinstallation Attacks</a>, given at <span cl=
+ass=3D"st">Microsoft BlueHatIL security conference as an invited speaker</s=
+pan>, 24 January 2018, in Tel Aviv, Isreal.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/34c3-krack-slides.pdf">KRACKing =
+WPA2 by Forcing Nonce Reuse</a>, given at the 34rd Chaos Communication Cong=
+ress (34C3), 27 December 2017 in Leipzig, Germany.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/blackhat-eu2017-slides.pdf">Key =
+Reinstallation Attacks: Breaking the WPA2 Protocol</a>, given at <i>Black H=
+at Briefings Europe</i>, 7 December 2017, London.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/ccs2017-slides.pdf">Key Reinstal=
+lation Attacks: Forcing Nonce Reuse in WPA2</a>, given at CCS 2017, October=
+ 1, 2017.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/wfa-keynote2017-slides.pdf">Key =
+Reinstallation Attacks: Forcing Nonce Reuse in WPA2</a>, <span style=3D"col=
+or: red;">keynote given at Wi-Fi Alliance meeting</span> Bucharest, October=
+ 24, 2017.<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/blackhat-webcast2017-slides.pdf">=
+Securely Implementing Network Protocols: Detecting and Preventing Logical F=
+laws</a>, given as a <i>Black Hat WebCast</i>, August 24, 2017.<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/blackhat2017-slides.pdf">WiFuzz: =
+Detecting and Exploiting Logical Flaws in the Wi-Fi Cryptographic Handshake=
+</a>, given at <i>Black Hat Briefings 2017</i>, Las Vegas, Nevada. [<a href=
+=3D"http://papers.mathyvanhoef.com/blackhat2017-slides.pdf">PDF</a>]<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/asiaccs2017-slides.pdf">Discoveri=
+ng Logical Vulnerabilities in the Wi-Fi Handshake Using Model-Based Testing=
+</a>, given at ASIA CCS 2017, 2-6 April, Abu Dhabi, United Arab Emirates. [=
+<a href=3D"http://papers.mathyvanhoef.com/asiaccs2017-slides.pdf">PDF</a>]<=
+br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/predicting-and-abusing-wpa280=
+211-group-keys">Predicting and Abusing WPA2/802.11 Group Keys</a>, given at=
+ the <i>33rd Chaos Communication Congress (33C3)</i>, 27-30 December 2016 i=
+n Hamburg, Germany. [<a href=3D"http://papers.mathyvanhoef.com/33c3-broadke=
+y-slides.pdf">PDF</a>]<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/usenix2016-wifi-slides.pdf">Predi=
+cting, Decrypting, and Abusing WPA2/802.11 Group Keys</a>, given at <i>USEN=
+IX Security Symposium 2016</i>, 11-13 August in Austin, Texas. [<a href=3D"=
+http://papers.mathyvanhoef.com/usenix2016-wifi-slides.pdf">PDF</a>]<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/blackhat2016-slides.pdf">HEIST: H=
+TTP Encrypted Information can be Stolen through TCP-windows</a>, given at <=
+i>Black Hat Briefings 2016</i>, Las Vegas, Nevada. [<a href=3D"http://paper=
+s.mathyvanhoef.com/blackhat2016-slides.pdf">PDF</a>]<br>
+<br>
+<a href=3D"http://papers.mathyvanhoef.com/phdthesis-slides.pdf">A Security =
+Analysis of the WPA-TKIP and TLS Security Protocols</a>. Public PhD defense=
+, given on 4 July 201<span style=3D"font-family: inherit;">6<span style=3D"=
+font-family: inherit;"> <span style=3D"font-family: inherit;">in </span>Leu=
+ven, Belgiu<span style=3D"font-family: inherit;">m</span></span>.<span styl=
+e=3D"font-family: inherit;"> [<a href=3D"http://papers.mathyvanhoef.com/phd=
+thesis-slides.pdf"><span style=3D"font-family: inherit;">PDF</span></a>]</s=
+pan></span><br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/atc2016-slides.pdf">All Your Bia=
+ses Belong To Us: Breaking RC4 in WPA-TKIP and TLS</a>, <span style=3D"colo=
+r: red;">given at USENIX ATC 2016</span> <span style=3D"color: red;">as an =
+invited speaker</span>, 22-24 June in Denver, Colorado.<br>
+<br>
+<a href=3D"https://papers.mathyvanhoef.com/owasp2016-slides.pdf">All Your B=
+iases Belong To Us: Breaking RC4 in WPA-TKIP and TLS</a>, given at <i>OWASP=
+ Chapter Meeting on </i>23 May 2016 in Mechelen, Belgium.<br>
+<br>
+All Your Biases Belong To Us: Breaking RC4 in WPA-TKIP and TLS, given at <i=
+>DRADS 2016</i>, 14-15 April in Leuven, Belgium.<br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/brucon2015-public">Advanced W=
+iFi Attacks Using Commodity Hardware,</a> given at <i>BruCON 2015</i>, 8-9 =
+October in Ghent, Belgium [<a href=3D"http://people.cs.kuleuven.be/~mathy.v=
+anhoef/papers/brucon2015_slides.pdf">PDF</a>]. Extended and more practicall=
+y oriented presentation of the ACSAC presentation. <a href=3D"https://www.y=
+outube.com/watch?v=3Dak9vU1hpjhM"><i>View on YouTube!</i></a><br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/usenix-security-15">All Your =
+Biases Belong To Us: Breaking RC4 in WPA-TKIP and TLS</a>, given at <i>USEN=
+IX Security 2015</i>, 12-14 August in Washington D.C. [<a href=3D"http://ww=
+w.rc4nomore.com/slides_usenix2015.pdf">PDF</a>].<br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/acsac2014-presentation">Advan=
+ced WiFi Attacks Using Commodity Hardware</a>, given at <i>ACSAC 2014</i>, =
+10-12 December in New Orleans, Louisiana<i> </i>[<a href=3D"http://people.c=
+s.kuleuven.be/~mathy.vanhoef/papers/acsac2014_slides.pdf">PDF</a>]<i>.</i><=
+br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/csf2014-public">Stateful Decl=
+assification Policies for Event-Driven Programs,</a> given at<i> Computer S=
+ecurity Foundations (CSF 2014)</i>, 19-22 July in Vienna, Austria [<a href=
+=3D"http://people.cs.kuleuven.be/~mathy.vanhoef/papers/csf2014_slides.pdf">=
+PDF</a>].<br>
+<br>
+The Insecurity of Wi-Fi, given at <i>DRADS 2014</i>, 15-16 May in Leuven, B=
+elgium.<br>
+<br>
+Jammin' Like a Boss: Breaking Bad Wireless, given at <i>HackFu 2013</i>, 28=
+-90 June in Norfolk, United Kingdom.<br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/practical-verification-of-tki=
+p-vulnerabilities">Practical Verification of TKIP Vulnerabilities</a>, give=
+n at <i>ASIA CCS 2013</i>, 7-10 May 2013 in Hangzhou, China.<br>
+<br>
+Stateful Declassification Policies, given at <i>DRADS 2013</i>, 25-26 April=
+ in Leuven, Belgium.<br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/informal-presentation-on-wpat=
+kip">Informal Presentation on Vulnerabilities Found in WPA-TKIP</a>, given =
+at KU Leuven, 30 October 2012. This was an informal presentation, and is in=
+cluded here to distribute additional slides.<br>
+<br>
+How you could be hacked, given at <i>AFC caf=C3=A9 2012</i>, 25 October in =
+Leuven, Belgium.<br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/new-flaws-in-wpatkip">New fla=
+ws in WPA-TKIP,</a> given at <i>BruCON 2012</i>, 26-27 September in Ghent, =
+Belgium.<br>
+<br>
+<a href=3D"http://www.slideshare.net/vanhoefm/tedxuhasselt-salon-how-you-ca=
+n-be-hacked">How you could be hacked</a>, given at <i>TEDxUhasselt Salon 20=
+12</i>, 23 Februari at UHasselt, Belgium.<br></div>
+<div style=3D"clear: both;"></div>
+</div>
+<div class=3D"post-footer">
+<div class=3D"post-footer-line post-footer-line-1">
+<span class=3D"post-author vcard">
+</span>
+<span class=3D"post-timestamp">
+</span>
+<span class=3D"post-comment-link">
+</span>
+<span class=3D"post-icons">
+<span class=3D"item-control blog-admin pid-606357465">
+<a href=3D"https://www.blogger.com/page-edit.g?blogID=3D3500917063499850097=
+&amp;pageID=3D5694411682882214890&amp;from=3Dpencil" title=3D"Edit page">
+<img alt=3D"" class=3D"icon-action" height=3D"18" src=3D"https://resources.=
+blogblog.com/img/icon18_edit_allbkg.gif" width=3D"18">
+</a>
+</span>
+</span>
+<div class=3D"post-share-buttons goog-inline-block">
+<a class=3D"goog-inline-block share-button sb-email" href=3D"https://www.bl=
+ogger.com/share-post.g?blogID=3D3500917063499850097&amp;pageID=3D5694411682=
+882214890&amp;target=3Demail" target=3D"_blank" title=3D"Email This"><span =
+class=3D"share-button-link-text">Email This</span></a><a class=3D"goog-inli=
+ne-block share-button sb-blog" href=3D"https://www.blogger.com/share-post.g=
+?blogID=3D3500917063499850097&amp;pageID=3D5694411682882214890&amp;target=
+=3Dblog" target=3D"_blank" title=3D"BlogThis!"><span class=3D"share-button-=
+link-text">BlogThis!</span></a><a class=3D"goog-inline-block share-button s=
+b-twitter" href=3D"https://www.blogger.com/share-post.g?blogID=3D3500917063=
+499850097&amp;pageID=3D5694411682882214890&amp;target=3Dtwitter" target=3D"=
+_blank" title=3D"Share to X"><span class=3D"share-button-link-text">Share t=
+o X</span></a><a class=3D"goog-inline-block share-button sb-facebook" href=
+=3D"https://www.blogger.com/share-post.g?blogID=3D3500917063499850097&amp;p=
+ageID=3D5694411682882214890&amp;target=3Dfacebook" target=3D"_blank" title=
+=3D"Share to Facebook"><span class=3D"share-button-link-text">Share to Face=
+book</span></a><a class=3D"goog-inline-block share-button sb-pinterest" hre=
+f=3D"https://www.blogger.com/share-post.g?blogID=3D3500917063499850097&amp;=
+pageID=3D5694411682882214890&amp;target=3Dpinterest" target=3D"_blank" titl=
+e=3D"Share to Pinterest"><span class=3D"share-button-link-text">Share to Pi=
+nterest</span></a>
+</div>
+</div>
+<div class=3D"post-footer-line post-footer-line-2">
+<span class=3D"post-labels">
+</span>
+</div>
+<div class=3D"post-footer-line post-footer-line-3">
+<span class=3D"post-location">
+</span>
+</div>
+</div>
+</div>
+<div class=3D"comments" id=3D"comments">
+<a name=3D"comments"></a>
+</div>
+</div>
+
+        </div></div>
+     =20
+</div>
+<div class=3D"blog-pager" id=3D"blog-pager">
+<a class=3D"home-link" href=3D"https://www.mathyvanhoef.com/">Home</a>
+</div>
+<div class=3D"clear"></div>
+<div class=3D"blog-feeds">
+<div class=3D"feed-links">
+Subscribe to:
+<a class=3D"feed-link" href=3D"https://www.mathyvanhoef.com/feeds/posts/def=
+ault" target=3D"_blank" type=3D"application/atom+xml">Posts (Atom)</a>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+<div class=3D"column-left-outer">
+<div class=3D"column-left-inner">
+<aside>
+</aside>
+</div>
+</div>
+<div class=3D"column-right-outer">
+<div class=3D"column-right-inner">
+<aside>
+<div class=3D"sidebar section" id=3D"sidebar-right-1"><div class=3D"widget =
+BlogArchive" data-version=3D"1" id=3D"BlogArchive1">
+<h2>Blog Archive</h2>
+<div class=3D"widget-content">
+<div id=3D"ArchiveList">
+<div id=3D"BlogArchive1_ArchiveList">
+<ul class=3D"hierarchy">
+<li class=3D"archivedate expanded">
+<a class=3D"toggle">
+<span class=3D"zippy toggle-open">
+
+        =E2=96=BC&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2024/">
+2024
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate expanded">
+<a class=3D"toggle">
+<span class=3D"zippy toggle-open">
+
+        =E2=96=BC&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2024/08/"=
+>
+August
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+<ul class=3D"posts">
+<li><a href=3D"https://www.mathyvanhoef.com/2024/08/the-ssid-confusion-atta=
+ck-common.html">The SSID Confusion Attack: Common Misconceptions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2023/">
+2023
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2023/08/"=
+>
+August
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2021/">
+2021
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2021/05/"=
+>
+May
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2020/">
+2020
+</a>
+<span class=3D"post-count" dir=3D"ltr">(3)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2020/09/"=
+>
+September
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2020/07/"=
+>
+July
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2020/06/"=
+>
+June
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2019/">
+2019
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2019/09/"=
+>
+September
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2018/">
+2018
+</a>
+<span class=3D"post-count" dir=3D"ltr">(3)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2018/06/"=
+>
+June
+</a>
+<span class=3D"post-count" dir=3D"ltr">(2)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2018/03/"=
+>
+March
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2017/">
+2017
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2017/02/"=
+>
+February
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2016/">
+2016
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2016/03/"=
+>
+March
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2015/">
+2015
+</a>
+<span class=3D"post-count" dir=3D"ltr">(3)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2015/10/"=
+>
+October
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2015/09/"=
+>
+September
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2015/03/"=
+>
+March
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2014/">
+2014
+</a>
+<span class=3D"post-count" dir=3D"ltr">(2)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2014/09/"=
+>
+September
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2014/05/"=
+>
+May
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2013/">
+2013
+</a>
+<span class=3D"post-count" dir=3D"ltr">(5)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2013/12/"=
+>
+December
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2013/11/"=
+>
+November
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2013/06/"=
+>
+June
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2013/04/"=
+>
+April
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2013/02/"=
+>
+February
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/">
+2012
+</a>
+<span class=3D"post-count" dir=3D"ltr">(9)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/11/"=
+>
+November
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/09/"=
+>
+September
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/08/"=
+>
+August
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/07/"=
+>
+July
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/06/"=
+>
+June
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/05/"=
+>
+May
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/02/"=
+>
+February
+</a>
+<span class=3D"post-count" dir=3D"ltr">(2)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2012/01/"=
+>
+January
+</a>
+<span class=3D"post-count" dir=3D"ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2011/">
+2011
+</a>
+<span class=3D"post-count" dir=3D"ltr">(5)</span>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2011/10/"=
+>
+October
+</a>
+<span class=3D"post-count" dir=3D"ltr">(3)</span>
+</li>
+</ul>
+<ul class=3D"hierarchy">
+<li class=3D"archivedate collapsed">
+<a class=3D"toggle">
+<span class=3D"zippy">
+
+        =E2=96=BA&nbsp;
+     =20
+</span>
+</a>
+<a class=3D"post-count-link" href=3D"https://www.mathyvanhoef.com/2011/08/"=
+>
+August
+</a>
+<span class=3D"post-count" dir=3D"ltr">(2)</span>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class=3D"clear"></div>
+</div>
+</div></div>
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" class=3D"section-co=
+lumns columns-2">
+<tbody>
+<tr>
+<td class=3D"first columns-cell">
+<div class=3D"sidebar no-items section" id=3D"sidebar-right-2-1"></div>
+</td>
+<td class=3D"columns-cell">
+<div class=3D"sidebar no-items section" id=3D"sidebar-right-2-2"></div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class=3D"sidebar section" id=3D"sidebar-right-3"><div class=3D"widget =
+Subscribe" data-version=3D"1" id=3D"Subscribe1">
+<div style=3D"white-space:nowrap">
+<h2 class=3D"title">Subscribe To</h2>
+<div class=3D"widget-content">
+<div class=3D"subscribe-wrapper subscribe-type-POST">
+<div class=3D"subscribe expanded subscribe-type-POST" id=3D"SW_READER_LIST_=
+Subscribe1POST" style=3D"display:none;">
+<div class=3D"top">
+<span class=3D"inner">
+<img class=3D"subscribe-dropdown-arrow" src=3D"https://resources.blogblog.c=
+om/img/widgets/arrow_dropdown.gif">
+<img align=3D"absmiddle" alt=3D"" border=3D"0" class=3D"feed-icon" src=3D"h=
+ttps://resources.blogblog.com/img/icon_feed12.png">
+Posts
+</span>
+<div class=3D"feed-reader-links">
+<a class=3D"feed-reader-link" href=3D"https://www.netvibes.com/subscribe.ph=
+p?url=3Dhttps%3A%2F%2Fwww.mathyvanhoef.com%2Ffeeds%2Fposts%2Fdefault" targe=
+t=3D"_blank">
+<img src=3D"https://resources.blogblog.com/img/widgets/subscribe-netvibes.p=
+ng">
+</a>
+<a class=3D"feed-reader-link" href=3D"https://add.my.yahoo.com/content?url=
+=3Dhttps%3A%2F%2Fwww.mathyvanhoef.com%2Ffeeds%2Fposts%2Fdefault" target=3D"=
+_blank">
+<img src=3D"https://resources.blogblog.com/img/widgets/subscribe-yahoo.png"=
+>
+</a>
+<a class=3D"feed-reader-link" href=3D"https://www.mathyvanhoef.com/feeds/po=
+sts/default" target=3D"_blank">
+<img align=3D"absmiddle" class=3D"feed-icon" src=3D"https://resources.blogb=
+log.com/img/icon_feed12.png">
+                  Atom
+                </a>
+</div>
+</div>
+<div class=3D"bottom"></div>
+</div>
+<div class=3D"subscribe" id=3D"SW_READER_LIST_CLOSED_Subscribe1POST">
+<div class=3D"top">
+<span class=3D"inner">
+<img class=3D"subscribe-dropdown-arrow" src=3D"https://resources.blogblog.c=
+om/img/widgets/arrow_dropdown.gif">
+<span>
+<img align=3D"absmiddle" alt=3D"" border=3D"0" class=3D"feed-icon" src=3D"h=
+ttps://resources.blogblog.com/img/icon_feed12.png">
+Posts
+</span>
+</span>
+</div>
+<div class=3D"bottom"></div>
+</div>
+</div>
+<div class=3D"subscribe-wrapper subscribe-type-COMMENT">
+<div class=3D"subscribe expanded subscribe-type-COMMENT" id=3D"SW_READER_LI=
+ST_Subscribe1COMMENT" style=3D"display:none;">
+<div class=3D"top">
+<span class=3D"inner">
+<img class=3D"subscribe-dropdown-arrow" src=3D"https://resources.blogblog.c=
+om/img/widgets/arrow_dropdown.gif">
+<img align=3D"absmiddle" alt=3D"" border=3D"0" class=3D"feed-icon" src=3D"h=
+ttps://resources.blogblog.com/img/icon_feed12.png">
+All Comments
+</span>
+<div class=3D"feed-reader-links">
+<a class=3D"feed-reader-link" href=3D"https://www.netvibes.com/subscribe.ph=
+p?url=3Dhttps%3A%2F%2Fwww.mathyvanhoef.com%2Ffeeds%2Fcomments%2Fdefault" ta=
+rget=3D"_blank">
+<img src=3D"https://resources.blogblog.com/img/widgets/subscribe-netvibes.p=
+ng">
+</a>
+<a class=3D"feed-reader-link" href=3D"https://add.my.yahoo.com/content?url=
+=3Dhttps%3A%2F%2Fwww.mathyvanhoef.com%2Ffeeds%2Fcomments%2Fdefault" target=
+=3D"_blank">
+<img src=3D"https://resources.blogblog.com/img/widgets/subscribe-yahoo.png"=
+>
+</a>
+<a class=3D"feed-reader-link" href=3D"https://www.mathyvanhoef.com/feeds/co=
+mments/default" target=3D"_blank">
+<img align=3D"absmiddle" class=3D"feed-icon" src=3D"https://resources.blogb=
+log.com/img/icon_feed12.png">
+                  Atom
+                </a>
+</div>
+</div>
+<div class=3D"bottom"></div>
+</div>
+<div class=3D"subscribe" id=3D"SW_READER_LIST_CLOSED_Subscribe1COMMENT">
+<div class=3D"top">
+<span class=3D"inner">
+<img class=3D"subscribe-dropdown-arrow" src=3D"https://resources.blogblog.c=
+om/img/widgets/arrow_dropdown.gif">
+<span>
+<img align=3D"absmiddle" alt=3D"" border=3D"0" class=3D"feed-icon" src=3D"h=
+ttps://resources.blogblog.com/img/icon_feed12.png">
+All Comments
+</span>
+</span>
+</div>
+<div class=3D"bottom"></div>
+</div>
+</div>
+<div style=3D"clear:both"></div>
+</div>
+</div>
+<div class=3D"clear"></div>
+</div><div class=3D"widget PopularPosts" data-version=3D"1" id=3D"PopularPo=
+sts1">
+<h2>Popular Posts</h2>
+<div class=3D"widget-content popular-posts">
+<ul>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/2012/05/whatsapp-considered-insecur=
+e.html">WhatsApp Considered Insecure (2012)</a>
+</li>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/2013/02/understanding-heap-exploiti=
+ng-heap.html">Understanding the Heap &amp; Exploiting Heap Overflows</a>
+</li>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/2016/03/how-mac-address-randomizati=
+on-works-on.html">How MAC Address Randomization Works on Windows 10</a>
+</li>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/2013/12/reversing-and-exploiting-ar=
+m-binaries.html">Reversing and Exploiting ARM Binaries: rwthCTF Trafman</a>
+</li>
+<li>
+<a href=3D"https://www.mathyvanhoef.com/2011/10/exploiting-insert-into-sql-=
+injections.html">Exploiting 'INSERT INTO' SQL Injections Ninja Style</a>
+</li>
+</ul>
+<div class=3D"clear"></div>
+</div>
+</div></div>
+</aside>
+</div>
+</div>
+</div>
+<div style=3D"clear: both"></div>
+<!-- columns -->
+</div>
+<!-- main -->
+</div>
+</div>
+<div class=3D"main-cap-bottom cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+<footer>
+<div class=3D"footer-outer">
+<div class=3D"footer-cap-top cap-top">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+<div class=3D"fauxborder-left footer-fauxborder-left">
+<div class=3D"fauxborder-right footer-fauxborder-right"></div>
+<div class=3D"region-inner footer-inner">
+<div class=3D"foot no-items section" id=3D"footer-1"></div>
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" class=3D"section-co=
+lumns columns-2">
+<tbody>
+<tr>
+<td class=3D"first columns-cell">
+<div class=3D"foot no-items section" id=3D"footer-2-1"></div>
+</td>
+<td class=3D"columns-cell">
+<div class=3D"foot no-items section" id=3D"footer-2-2"></div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- outside of the include in order to lock Attribution widget -->
+<div class=3D"foot section" id=3D"footer-3" name=3D"Footer"><div class=3D"w=
+idget Attribution" data-version=3D"1" id=3D"Attribution1">
+<div class=3D"widget-content" style=3D"text-align: center;">
+Powered by <a href=3D"https://www.blogger.com/" target=3D"_blank">Blogger</=
+a>.
+</div>
+<div class=3D"clear"></div>
+</div></div>
+</div>
+</div>
+<div class=3D"footer-cap-bottom cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+</footer>
+<!-- content -->
+</div>
+</div>
+<div class=3D"content-cap-bottom cap-bottom">
+<div class=3D"cap-left"></div>
+<div class=3D"cap-right"></div>
+</div>
+</div>
+</div>
+
+
+
+
+
+</body></html>
+------MultipartBoundary--URwJJoXhPGcZYlmZ1TaUAIWIboqEzcNC5KWnGY4GxY----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: https://www.blogger.com/dyn-css/authorization.css?targetBlogID=3500917063499850097&zx=92f9fa72-cb20-4857-82ad-955a8ac62fc2
+
+@charset "utf-8";
+=0A
+------MultipartBoundary--URwJJoXhPGcZYlmZ1TaUAIWIboqEzcNC5KWnGY4GxY----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: https://www.blogger.com/static/v1/widgets/2872013778-css_bundle_v2.css
+
+@charset "utf-8";
+=0A
+------MultipartBoundary--URwJJoXhPGcZYlmZ1TaUAIWIboqEzcNC5KWnGY4GxY----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: cid:css-9725d465-2869-4f17-8118-7cc91debae19@mhtml.blink
+
+@charset "utf-8";
+
+body { min-width: 960px; }
+
+.content-outer, .content-fauxcolumn-outer, .region-inner { min-width: 960px=
+; max-width: 960px; }
+
+.main-inner .columns { padding-left: 0px; padding-right: 310px; }
+
+.main-inner .fauxcolumn-center-outer { left: 0px; right: 310px; }
+
+.main-inner .fauxcolumn-left-outer { width: 0px; }
+
+.main-inner .fauxcolumn-right-outer { width: 310px; }
+
+.main-inner .column-left-outer { width: 0px; right: 100%; margin-left: 0px;=
+ }
+
+.main-inner .column-right-outer { width: 310px; margin-right: -310px; }
+
+#layout { min-width: 0px; }
+
+#layout .content-outer { min-width: 0px; width: 800px; }
+
+#layout .region-inner { min-width: 0px; width: auto; }
+
+body#layout div.add_widget { padding: 8px; }
+
+body#layout div.add_widget a { margin-left: 32px; }
+------MultipartBoundary--URwJJoXhPGcZYlmZ1TaUAIWIboqEzcNC5KWnGY4GxY----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: cid:css-adef9560-54ce-4ba4-bccb-5492c78a9d92@mhtml.blink
+
+@charset "utf-8";
+
+body { font: 13px Arial, Tahoma, Helvetica, FreeSans, sans-serif; color: rg=
+b(68, 68, 68); background: none left top repeat scroll rgb(238, 238, 238); =
+}
+
+html body .content-outer { min-width: 0px; max-width: 100%; width: 100%; }
+
+a:link { text-decoration: none; color: rgb(55, 120, 205); }
+
+a:visited { text-decoration: none; color: rgb(77, 70, 156); }
+
+a:hover { text-decoration: underline; color: rgb(55, 120, 205); }
+
+.body-fauxcolumn-outer .cap-top { position: absolute; z-index: 1; height: 2=
+76px; width: 100%; background: none left top repeat-x scroll transparent; }
+
+.content-inner { padding: 0px; }
+
+.header-inner .section { margin: 0px 16px; }
+
+.tabs-inner .section { margin: 0px 16px; }
+
+.main-inner { padding-top: 30px; }
+
+.main-inner .column-center-inner, .main-inner .column-left-inner, .main-inn=
+er .column-right-inner { padding: 0px 5px; }
+
+* + html body .main-inner .column-center-inner { margin-top: -30px; }
+
+#layout .main-inner .column-center-inner { margin-top: 0px; }
+
+.header-outer { margin: 0px; background: none 0px 0px repeat scroll transpa=
+rent; }
+
+.Header h1 { font: bold 40px Arial, Tahoma, Helvetica, FreeSans, sans-serif=
+; color: rgb(68, 68, 68); }
+
+.Header h1 a { color: rgb(68, 68, 68); }
+
+.Header .description { font: 14px Arial, Tahoma, Helvetica, FreeSans, sans-=
+serif; color: rgb(68, 68, 68); }
+
+.header-inner .Header .titlewrapper, .header-inner .Header .descriptionwrap=
+per { padding-left: 0px; padding-right: 0px; margin-bottom: 0px; }
+
+.header-inner .Header .titlewrapper { padding-top: 22px; }
+
+.tabs-outer { overflow: hidden; position: relative; background: url("https:=
+//resources.blogblog.com/blogblog/data/1kt/awesomeinc/tabs_gradient_light.p=
+ng") 0px 0px repeat scroll rgb(238, 238, 238); }
+
+#layout .tabs-outer { overflow: visible; }
+
+.tabs-cap-top, .tabs-cap-bottom { position: absolute; width: 100%; border-t=
+op: 1px solid rgb(153, 153, 153); }
+
+.tabs-cap-bottom { bottom: 0px; }
+
+.tabs-inner .widget li a { display: inline-block; margin: 0px; padding: 0.6=
+em 1.5em; font: bold 14px / 16px Arial, Tahoma, Helvetica, FreeSans, sans-s=
+erif; color: rgb(68, 68, 68); border-top: 1px solid rgb(153, 153, 153); bor=
+der-bottom: 1px solid rgb(153, 153, 153); border-left: 1px solid rgb(153, 1=
+53, 153); height: 16px; }
+
+.tabs-inner .widget li:last-child a { border-right: 1px solid rgb(153, 153,=
+ 153); }
+
+.tabs-inner .widget li.selected a, .tabs-inner .widget li a:hover { backgro=
+und: url("https://resources.blogblog.com/blogblog/data/1kt/awesomeinc/tabs_=
+gradient_light.png") 0px -100px repeat-x scroll rgb(102, 102, 102); color: =
+rgb(255, 255, 255); }
+
+h2 { font: bold 14px Arial, Tahoma, Helvetica, FreeSans, sans-serif; color:=
+ rgb(68, 68, 68); }
+
+.main-inner .section { margin: 0px 27px; padding: 0px; }
+
+.main-inner .column-left-outer, .main-inner .column-right-outer { margin-to=
+p: 0px; }
+
+#layout .main-inner .column-left-outer, #layout .main-inner .column-right-o=
+uter { margin-top: 0px; }
+
+.main-inner .column-left-inner, .main-inner .column-right-inner { backgroun=
+d: none 0px 0px repeat transparent; box-shadow: rgba(0, 0, 0, 0.2) 0px 0px =
+0px; border-radius: 0px; }
+
+#layout .main-inner .column-left-inner, #layout .main-inner .column-right-i=
+nner { margin-top: 0px; }
+
+.sidebar .widget { font: 14px Arial, Tahoma, Helvetica, FreeSans, sans-seri=
+f; color: rgb(68, 68, 68); }
+
+.sidebar .widget a:link { color: rgb(55, 120, 205); }
+
+.sidebar .widget a:visited { color: rgb(77, 70, 156); }
+
+.sidebar .widget a:hover { color: rgb(55, 120, 205); }
+
+.sidebar .widget h2 { }
+
+.main-inner .widget { background-color: rgb(255, 255, 255); border: 1px sol=
+id rgb(238, 238, 238); padding: 0px 15px 15px; margin: 20px -16px; box-shad=
+ow: rgba(0, 0, 0, 0.2) 0px 0px 20px; border-radius: 0px; }
+
+.main-inner .widget h2 { margin: 0px -15px; padding: 0.6em 15px 0.5em; bord=
+er-bottom: 1px solid transparent; }
+
+.footer-inner .widget h2 { padding: 0px 0px 0.4em; border-bottom: 1px solid=
+ transparent; }
+
+.main-inner .widget h2 + div, .footer-inner .widget h2 + div { border-top: =
+1px solid rgb(238, 238, 238); padding-top: 8px; }
+
+.main-inner .widget .widget-content { margin: 0px -15px; padding: 7px 15px =
+0px; }
+
+.main-inner .widget ul, .main-inner .widget #ArchiveList ul.flat { margin: =
+-8px -15px 0px; padding: 0px; list-style: none; }
+
+.main-inner .widget #ArchiveList { margin: -8px 0px 0px; }
+
+.main-inner .widget ul li, .main-inner .widget #ArchiveList ul.flat li { pa=
+dding: 0.5em 15px; text-indent: 0px; color: rgb(102, 102, 102); border-top:=
+ 1px solid rgb(238, 238, 238); border-bottom: 1px solid transparent; }
+
+.main-inner .widget #ArchiveList ul li { padding-top: 0.25em; padding-botto=
+m: 0.25em; }
+
+.main-inner .widget ul li:first-child, .main-inner .widget #ArchiveList ul.=
+flat li:first-child { border-top-width: medium; border-top-style: none; bor=
+der-top-color: currentcolor; }
+
+.main-inner .widget ul li:last-child, .main-inner .widget #ArchiveList ul.f=
+lat li:last-child { border-bottom-width: medium; border-bottom-style: none;=
+ border-bottom-color: currentcolor; }
+
+.post-body { position: relative; }
+
+.main-inner .widget .post-body ul { padding: 0px 2.5em; margin: 0.5em 0px; =
+list-style: disc; }
+
+.main-inner .widget .post-body ul li { padding: 0.25em 0px; margin-bottom: =
+0.25em; color: rgb(68, 68, 68); border-width: medium; border-style: none; b=
+order-color: currentcolor; border-image: initial; }
+
+.footer-inner .widget ul { padding: 0px; list-style: none; }
+
+.widget .zippy { color: rgb(102, 102, 102); }
+
+body .main-inner .Blog { padding: 0px; margin-bottom: 1em; background-color=
+: transparent; border-width: medium; border-style: none; border-color: curr=
+entcolor; border-image: initial; box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px; =
+}
+
+.main-inner .section:last-child .Blog:last-child { padding: 0px; margin-bot=
+tom: 1em; }
+
+.main-inner .widget h2.date-header { margin: 0px -15px 1px; padding: 0px; f=
+ont: 14px Arial, Tahoma, Helvetica, FreeSans, sans-serif; color: rgb(68, 68=
+, 68); background: none left top no-repeat scroll transparent; border-top: =
+0px solid rgb(238, 238, 238); border-bottom: 1px solid transparent; border-=
+top-left-radius: 0px; border-top-right-radius: 0px; position: static; botto=
+m: 100%; right: 15px; }
+
+.main-inner .widget h2.date-header span { font: 14px Arial, Tahoma, Helveti=
+ca, FreeSans, sans-serif; display: block; padding: 0.5em 15px; border-left:=
+ 0px solid rgb(238, 238, 238); border-right: 0px solid rgb(238, 238, 238); =
+}
+
+.date-outer { position: relative; margin: 30px 0px 20px; padding: 0px 15px;=
+ background-color: rgb(255, 255, 255); border: 1px solid rgb(238, 238, 238)=
+; box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 20px; border-radius: 0px; }
+
+.date-outer:first-child { margin-top: 0px; }
+
+.date-outer:last-child { margin-bottom: 20px; border-bottom-left-radius: 0p=
+x; border-bottom-right-radius: 0px; }
+
+.date-posts { margin: 0px -15px; padding: 0px 15px; clear: both; }
+
+.post-outer, .inline-ad { border-top: 1px solid rgb(238, 238, 238); margin:=
+ 0px -15px; padding: 15px; }
+
+.post-outer { padding-bottom: 10px; }
+
+.post-outer:first-child { padding-top: 0px; border-top-width: medium; borde=
+r-top-style: none; border-top-color: currentcolor; }
+
+.post-outer:last-child, .inline-ad:last-child { border-bottom-width: medium=
+; border-bottom-style: none; border-bottom-color: currentcolor; }
+
+.post-body { position: relative; }
+
+.post-body img { padding: 8px; background: transparent; border: 1px solid t=
+ransparent; box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px; border-radius: 0px;=
+ }
+
+h3.post-title, h4 { font: bold 22px Arial, Tahoma, Helvetica, FreeSans, san=
+s-serif; color: rgb(68, 68, 68); }
+
+h3.post-title a { font: bold 22px Arial, Tahoma, Helvetica, FreeSans, sans-=
+serif; color: rgb(68, 68, 68); }
+
+h3.post-title a:hover { color: rgb(55, 120, 205); text-decoration: underlin=
+e; }
+
+.post-header { margin: 0px 0px 1em; }
+
+.post-body { line-height: 1.4; }
+
+.post-outer h2 { color: rgb(68, 68, 68); }
+
+.post-footer { margin: 1.5em 0px 0px; }
+
+#blog-pager { padding: 15px; font-size: 120%; background-color: rgb(255, 25=
+5, 255); border: 1px solid rgb(238, 238, 238); box-shadow: rgba(0, 0, 0, 0.=
+2) 0px 0px 20px; border-radius: 0px; margin-top: 1em; }
+
+.blog-feeds, .post-feeds { margin: 1em 0px; text-align: center; color: rgb(=
+68, 68, 68); }
+
+.blog-feeds a, .post-feeds a { color: rgb(55, 120, 205); }
+
+.blog-feeds a:visited, .post-feeds a:visited { color: rgb(77, 70, 156); }
+
+.blog-feeds a:hover, .post-feeds a:hover { color: rgb(55, 120, 205); }
+
+.post-outer .comments { margin-top: 2em; }
+
+.comments .comments-content .icon.blog-author { background-repeat: no-repea=
+t; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABI=
+AAAASCAYAAABWzo5XAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEg=
+AACxIB0t1+/AAAAAd0SU1FB9sLFwMeCjjhcOMAAAD+SURBVDjLtZSvTgNBEIe/WRRnm3U8RC1ne=
+Qdsm1zSBIU9VVF1FkUguQQsD9ITmD7ECZIJSE4OZo9stoVjC/zc7ky+zH9hXwVwDpTAWWLrgS3Q=
+Ae8AZgaAJI5zYAmc8r0G4AHYHQKVwII8PZrZFsBFkeRCABYiMh9BRUhnSkPTNCtVXYXURi1FpBD=
+gArj8QU1eVXUzfnjv7yP7kwu1mYrkWlU33vs1QNu2qU8pwN0UpKoqokjWwCztrMuBhEhmh8bD5U=
+Dqur75asbcX0BGUB9/HAMB+r32hznJgXy2v0sGLBcyAJ1EK3LFcbo1s91JeLwAbwGYu7TP/3ZGf=
+nXYPgAVNngtqatUNgAAAABJRU5ErkJggg=3D=3D"); }
+
+.comments .comments-content .loadmore a { border-top: 1px solid rgb(153, 15=
+3, 153); border-bottom: 1px solid rgb(153, 153, 153); }
+
+.comments .continue { border-top: 2px solid rgb(153, 153, 153); }
+
+.footer-outer { margin: -20px 0px -1px; padding: 20px 0px 0px; color: rgb(6=
+8, 68, 68); overflow: hidden; }
+
+.footer-fauxborder-left { border-top: 1px solid rgb(238, 238, 238); backgro=
+und: none 0px 0px repeat scroll rgb(255, 255, 255); box-shadow: rgba(0, 0, =
+0, 0.2) 0px 0px 20px; margin: 0px -20px; }
+
+body.mobile { background-size: auto; }
+
+.mobile .body-fauxcolumn-outer { background: none left top repeat scroll tr=
+ansparent; }
+
+* + html body.mobile .main-inner .column-center-inner { margin-top: 0px; }
+
+.mobile .main-inner .widget { padding: 0px 0px 15px; }
+
+.mobile .main-inner .widget h2 + div, .mobile .footer-inner .widget h2 + di=
+v { border-top-width: medium; border-top-style: none; border-top-color: cur=
+rentcolor; padding-top: 0px; }
+
+.mobile .footer-inner .widget h2 { padding: 0.5em 0px; border-bottom-width:=
+ medium; border-bottom-style: none; border-bottom-color: currentcolor; }
+
+.mobile .main-inner .widget .widget-content { margin: 0px; padding: 7px 0px=
+ 0px; }
+
+.mobile .main-inner .widget ul, .mobile .main-inner .widget #ArchiveList ul=
+.flat { margin: 0px -15px; }
+
+.mobile .main-inner .widget h2.date-header { right: 0px; }
+
+.mobile .date-header span { padding: 0.4em 0px; }
+
+.mobile .date-outer:first-child { margin-bottom: 0px; border: 1px solid rgb=
+(238, 238, 238); border-top-left-radius: 0px; border-top-right-radius: 0px;=
+ }
+
+.mobile .date-outer { border-color: rgb(238, 238, 238); border-width: 0px 1=
+px 1px; }
+
+.mobile .date-outer:last-child { margin-bottom: 0px; }
+
+.mobile .main-inner { padding: 0px; }
+
+.mobile .header-inner .section { margin: 0px; }
+
+.mobile .post-outer, .mobile .inline-ad { padding: 5px 0px; }
+
+.mobile .tabs-inner .section { margin: 0px 10px; }
+
+.mobile .main-inner .widget h2 { margin: 0px; padding: 0px; }
+
+.mobile .main-inner .widget h2.date-header span { padding: 0px; }
+
+.mobile .main-inner .widget .widget-content { margin: 0px; padding: 7px 0px=
+ 0px; }
+
+.mobile #blog-pager { border: 1px solid transparent; background: none 0px 0=
+px repeat scroll rgb(255, 255, 255); }
+
+.mobile .main-inner .column-left-inner, .mobile .main-inner .column-right-i=
+nner { background: none 0px 0px repeat transparent; box-shadow: none; }
+
+.mobile .date-posts { margin: 0px; padding: 0px; }
+
+.mobile .footer-fauxborder-left { margin: 0px; border-top: inherit; }
+
+.mobile .main-inner .section:last-child .Blog:last-child { margin-bottom: 0=
+px; }
+
+.mobile-index-contents { color: rgb(68, 68, 68); }
+
+.mobile .mobile-link-button { background: url("https://resources.blogblog.c=
+om/blogblog/data/1kt/awesomeinc/tabs_gradient_light.png") 0px 0px repeat sc=
+roll rgb(55, 120, 205); }
+
+.mobile-link-button a:link, .mobile-link-button a:visited { color: rgb(255,=
+ 255, 255); }
+
+.mobile .tabs-inner .PageList .widget-content { background: transparent; bo=
+rder-top: 1px solid rgb(153, 153, 153); border-right-color: rgb(153, 153, 1=
+53); border-bottom-color: rgb(153, 153, 153); border-left-color: rgb(153, 1=
+53, 153); color: rgb(68, 68, 68); }
+
+.mobile .tabs-inner .PageList .widget-content .pagelist-arrow { border-left=
+: 1px solid rgb(153, 153, 153); }
+------MultipartBoundary--URwJJoXhPGcZYlmZ1TaUAIWIboqEzcNC5KWnGY4GxY------

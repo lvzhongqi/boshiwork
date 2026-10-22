@@ -1,0 +1,86 @@
+(* Standard complete model of the fixture protocol TAP — the shape LIB stores:
+   the honest baseline plus the security goals of claims/properties.json.
+   flow.pv beside it is the same protocol without the goals, which is what
+   the apply stage edits.
+
+   Not a real protocol and never analysed for its own sake. It carries the
+   structures the assumption subtypes attach to, so every subtype's rules have
+   something to point at: an identity->key table (admission), keys
+   passed as role parameters (lifted_parameter), a certificate chain
+   (certificate admission), directed named channels (link_control), and a symmetric
+   long-term key (ltk_reveal). *)
+
+free c: channel.
+free channel_A_B: channel.
+free channel_B_A: channel.
+
+type host.
+type pkey.
+type skey.
+type key.
+
+fun pk(skey): pkey.
+fun aenc(bitstring, pkey): bitstring.
+reduc forall x: bitstring, y: skey; adec(aenc(x, pk(y)), y) = x.
+
+fun senc(bitstring, key): bitstring.
+reduc forall x: bitstring, k: key; sdec(senc(x, k), k) = x.
+
+fun sign(bitstring, skey): bitstring.
+reduc forall x: bitstring, k: skey; check(sign(x, k), pk(k)) = x.
+fun cert(host, pkey, skey): bitstring.
+
+table keys(host, pkey).
+
+(* -- Security goals -- *)
+event beginA(pkey).
+event endA(pkey).
+event beginB(pkey).
+event endB(pkey).
+
+free secretIA, secretIB: bitstring [private].
+
+query attacker(secretIA).
+query attacker(secretIB).
+query x: pkey; inj-event(endA(x)) ==> inj-event(beginA(x)).
+query x: pkey; inj-event(endB(x)) ==> inj-event(beginB(x)).
+
+(* Initiator A: holds its own key pair, the peer identity B, B's public key as
+   cached at setup, and a long-term symmetric key shared with B. *)
+let processA(A: host, B: host, SKA: skey, PKA: pkey, PKB: pkey, KAB: key) =
+  event beginB(PKB);
+  new I_A: bitstring;
+  out(channel_A_B, aenc((I_A, A), PKB));
+  in(channel_B_A, msg2: bitstring);
+  let (=I_A, I_B: bitstring) = adec(msg2, SKA) in
+  out(channel_A_B, senc(I_B, KAB));
+  event endA(PKA);
+  out(c, senc(secretIA, KAB));
+  0.
+
+(* Responder B: same shape from the other side. *)
+let processB(B: host, A: host, SKB: skey, PKB: pkey, PKA: pkey, KAB: key) =
+  in(channel_A_B, msg1: bitstring);
+  let (I_A_recv: bitstring, A_recv: host) = adec(msg1, SKB) in
+  event beginA(PKA);
+  new I_B: bitstring;
+  out(channel_B_A, aenc((I_A_recv, I_B), PKA));
+  in(channel_A_B, msg3: bitstring);
+  let I_B_recv = sdec(msg3, KAB) in
+  if I_B_recv = I_B then
+  event endB(PKB);
+  out(c, senc(secretIB, KAB));
+  0.
+
+process
+  new A: host;
+  new B: host;
+  new SKA: skey;
+  new SKB: skey;
+  new KAB: key;
+  let PKA = pk(SKA) in
+  let PKB = pk(SKB) in
+  insert keys(A, PKA);
+  insert keys(B, PKB);
+  out(c, A); out(c, B); out(c, PKA); out(c, PKB);
+  ( !processA(A, B, SKA, PKA, PKB, KAB) | !processB(B, A, SKB, PKB, PKA, KAB) )

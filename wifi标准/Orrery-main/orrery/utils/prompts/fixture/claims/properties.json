@@ -1,0 +1,57 @@
+{
+  "vocab_version": "2.2.0",
+  "properties": [
+    {
+      "id": "secrecy_i_a",
+      "type": "Secrecy",
+      "subtype": "basic",
+      "values": [
+        "I_A"
+      ],
+      "parties": {
+        "holders": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "id": "secrecy_i_b",
+      "type": "Secrecy",
+      "subtype": "basic",
+      "values": [
+        "I_B"
+      ],
+      "parties": {
+        "holders": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "id": "auth_a_to_b",
+      "type": "Authentication",
+      "subtype": "injective_agreement",
+      "parties": {
+        "asserter": "A",
+        "subject": "B"
+      },
+      "values": [
+        "PKA"
+      ]
+    },
+    {
+      "id": "auth_b_to_a",
+      "type": "Authentication",
+      "subtype": "injective_agreement",
+      "parties": {
+        "asserter": "B",
+        "subject": "A"
+      },
+      "values": [
+        "PKB"
+      ]
+    }
+  ]
+}

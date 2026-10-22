@@ -1,0 +1,158 @@
+digraph {
+graph [ordering = out]
+edge [arrowhead = none, penwidth = 1.6, fontsize = 30]
+node [shape = point, width = 0, height = 0, fontsize = 30]
+Trace [label = <A trace has been found.<br/>
+>, shape = plaintext]
+P0__0 [label = "Honest Process", shape = plaintext]
+P__0 [label = "Attacker", shape = plaintext]
+Trace -> P0__0 [label = "", style = invisible, weight = 100]{rank = same; P0__0 P__0}
+P0__0 -> P0__1 [label = <>, weight = 100]
+P0__1 -> P0__2 [label = <>, weight = 100]
+P0__2 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{1}</FONT><FONT COLOR="blue">new </FONT>I_A_4</TD></TR><TR><TD><FONT COLOR="darkgreen">{2}</FONT><FONT COLOR="blue">new </FONT>I_B_4</TD></TR><TR><TD><FONT COLOR="darkgreen">{3}</FONT><FONT COLOR="blue">new </FONT>I_P_4</TD></TR><TR><TD><FONT COLOR="darkgreen">{4}</FONT><FONT COLOR="blue">new </FONT>K_AP_3</TD></TR><TR><TD><FONT COLOR="darkgreen">{5}</FONT><FONT COLOR="blue">new </FONT>K_BP_3</TD></TR><TR><TD><FONT COLOR="darkgreen">{6}</FONT><FONT COLOR="blue">new </FONT>Text1_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{7}</FONT><FONT COLOR="blue">new </FONT>Text2_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{8}</FONT><FONT COLOR="blue">new </FONT>Text3_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{9}</FONT><FONT COLOR="blue">new </FONT>Text4_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{10}</FONT><FONT COLOR="blue">new </FONT>Text5_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{11}</FONT><FONT COLOR="blue">new </FONT>Text6_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{12}</FONT><FONT COLOR="blue">new </FONT>Text7_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{13}</FONT><FONT COLOR="blue">new </FONT>Text8_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{14}</FONT><FONT COLOR="blue">new </FONT>Text9_2</TD></TR></TABLE>>]
+P0__2 -> P0__3 [label = <>, weight = 100]
+P0__3 -> P0__4 [label = <>, weight = 100]
+P__0 -> P__1 [label = <>, weight = 100]
+{rank = same; P__1 P0__4}
+P0__4 -> P0__5 [label = <>, weight = 100]
+P__1 -> P__2 [label = <>, weight = 100]
+{rank = same; P__2 P0__5}
+P0__5 -> P__2 [label = <~M = I_A_4>, arrowhead = normal]
+P0__5 -> P0__6 [label = <>, weight = 100]
+P__2 -> P__3 [label = <>, weight = 100]
+{rank = same; P__3 P0__6}
+P0__6 -> P0__7 [label = <>, weight = 100]
+P__3 -> P__4 [label = <>, weight = 100]
+{rank = same; P__4 P0__7}
+P0__7 -> P0__8 [label = <>, weight = 100]
+P__4 -> P__5 [label = <>, weight = 100]
+{rank = same; P__5 P0__8}
+P0__8 -> P__5 [label = <~M_1 = I_B_4>, arrowhead = normal]
+P0__8 -> P0__9 [label = <>, weight = 100]
+P__5 -> P__6 [label = <>, weight = 100]
+{rank = same; P__6 P0__9}
+P0__9 -> P0__10 [label = <>, weight = 100]
+P__6 -> P__7 [label = <>, weight = 100]
+{rank = same; P__7 P0__10}
+P0__10 -> P0__11 [label = <>, weight = 100]
+P__7 -> P__8 [label = <>, weight = 100]
+{rank = same; P__8 P0__11}
+P0__11 -> P__8 [label = <~M_2 = I_P_4>, arrowhead = normal]
+P0__11 -> P0__12 [label = <>, weight = 100]
+P__8 -> P__9 [label = <>, weight = 100]
+{rank = same; P__9 P0__12}
+P0__12 -> P0__13 [label = <>, weight = 100]
+P0__13 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{18}</FONT><FONT COLOR="blue">insert </FONT>peer_auth_keys(I_A_4,K_AP_3)</TD></TR><TR><TD><FONT COLOR="darkgreen">{19}</FONT><FONT COLOR="blue">insert </FONT>peer_auth_keys(I_B_4,K_BP_3)</TD></TR></TABLE>>]
+P0__13 -> P0__14 [label = <>, weight = 100]
+P__9 -> P__10 [label = <>, weight = 100]
+{rank = same; P__10 P0__13}
+/*RPar */
+P0__14 -> P0_3__14 [label = <>]
+P0__14 -> P0_2__14 [label = <>]
+P0__14 -> P0_1__14 [label = <>]
+P0__14 -> P0_0__14 [label = <>]
+P0__14 [label = "", fixedsize = false, width = 0, height = 0, shape = none]
+{rank = same; P0_0__14 P0_1__14 P0_2__14 P0_3__14}
+P0_0__14 -> P0_0__15 [label = <>, weight = 100]
+P__10 -> P__11 [label = <>, weight = 100]
+{rank = same; P__11 P0_0__15}
+P0_0__15 -> P0_0__16 [label = <>, weight = 100]
+P__11 -> P__12 [label = <>, weight = 100]
+{rank = same; P__12 P0_0__16}
+P0_0__16 -> P__12 [label = <~M_3 = K_AP_3>, arrowhead = normal]
+P0_0__16 -> P0_0__17 [label = <>, weight = 100]
+P__12 -> P__13 [label = <>, weight = 100]
+{rank = same; P__13 P0_0__17}
+P0_0__18 [label = "", width = 0.3, height = 0.3]
+P0_0__17 -> P0_0__18 [label = <>, weight = 100]
+P0_1__14 [label = "!", shape = ellipse]
+P0_2__14 [label = "!", shape = ellipse]
+P0_3__14 [label = "!", shape = ellipse]
+P0_3_0__14 [label = "", fixedsize = false, width = 0, height = 0, shape = none]
+P0_3__14 -> P0_3_0__14 [label = <>, weight = 100]
+P0_3_0__14 -> P0_3_0__15 [label = <>, weight = 100]
+P0_3_0__15 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD>Beginning of process <FONT COLOR="darkgreen">processA</FONT></TD></TR></TABLE>>]
+P0_3_0__15 -> P0_3_0__16 [label = <>, weight = 100]
+P0_3_0__16 -> P0_3_0__17 [label = <>, weight = 100]
+P0_2__15 [label = "", style = invisible]
+P0_2__14 -> P0_2__15 [label = <>, weight = 100, style = invisible]
+P0_1__15 [label = "", style = invisible]
+P0_1__14 -> P0_1__15 [label = <>, weight = 100, style = invisible]
+P0_0__19 [label = "", style = invisible]
+P0_0__18 -> P0_0__19 [label = <>, weight = 100, style = invisible]
+P__13 -> P__14 [label = <>, weight = 100]
+{rank = same; P__14 P0_0__19 P0_1__15 P0_2__15 P0_3_0__17}
+P0_3_0__17 -> P0_3_0__18 [label = <>, weight = 100]
+P__14 -> P__15 [label = <>, weight = 100]
+{rank = same; P__15 P0_3_0__18}
+P0_3_0__18 -> P__15 [label = <(a_1,a)>, dir = back, arrowhead = normal]
+P0_3_0__18 -> P0_3_0__19 [label = <>, weight = 100]
+P0_2__16 [label = "", style = invisible]
+P0_2__15 -> P0_2__16 [label = <>, weight = 100, style = invisible]
+P0_1__16 [label = "", style = invisible]
+P0_1__15 -> P0_1__16 [label = <>, weight = 100, style = invisible]
+P0_0__20 [label = "", style = invisible]
+P0_0__19 -> P0_0__20 [label = <>, weight = 100, style = invisible]
+P__15 -> P__16 [label = <>, weight = 100]
+{rank = same; P__16 P0_0__20 P0_1__16 P0_2__16 P0_3_0__19}
+P0_3_0__19 -> P0_3_0__20 [label = <>, weight = 100]
+P0_3_0__20 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{29}</FONT><FONT COLOR="blue">let</FONT> (R_B_recv: nonce,Text1_recv: bitstring)<br/>
+= (a_1,a)</TD></TR><TR><TD><FONT COLOR="darkgreen">{30}</FONT><FONT COLOR="blue">new </FONT>R_A_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{25}</FONT><FONT COLOR="blue">let</FONT> Text2_1: bitstring = Text2_2</TD></TR><TR><TD><FONT COLOR="darkgreen">{22}</FONT><FONT COLOR="blue">let</FONT> I_B_1: host = I_B_4</TD></TR></TABLE>>]
+P0_3_0__20 -> P0_3_0__21 [label = <>, weight = 100]
+P0_3_0__21 -> P0_3_0__22 [label = <>, weight = 100]
+P0_2__17 [label = "", style = invisible]
+P0_2__16 -> P0_2__17 [label = <>, weight = 100, style = invisible]
+P0_1__17 [label = "", style = invisible]
+P0_1__16 -> P0_1__17 [label = <>, weight = 100, style = invisible]
+P0_0__21 [label = "", style = invisible]
+P0_0__20 -> P0_0__21 [label = <>, weight = 100, style = invisible]
+P__16 -> P__17 [label = <>, weight = 100]
+{rank = same; P__17 P0_0__21 P0_1__17 P0_2__17 P0_3_0__22}
+P0_3_0__22 -> P0_3_0__23 [label = <>, weight = 100]
+P__17 -> P__18 [label = <>, weight = 100]
+{rank = same; P__18 P0_3_0__23}
+P0_3_0__23 -> P__18 [label = <(~M_4,~M_5,~M_6,~M_7) = (R_A_2,a_1,I_B_4,Text2_2)>, arrowhead = normal]
+P0_3_0__23 -> P0_3_0__24 [label = <>, weight = 100]
+P0_2__18 [label = "", style = invisible]
+P0_2__17 -> P0_2__18 [label = <>, weight = 100, style = invisible]
+P0_1__18 [label = "", style = invisible]
+P0_1__17 -> P0_1__18 [label = <>, weight = 100, style = invisible]
+P0_0__22 [label = "", style = invisible]
+P0_0__21 -> P0_0__22 [label = <>, weight = 100, style = invisible]
+P__18 -> P__19 [label = <>, weight = 100]
+{rank = same; P__19 P0_0__22 P0_1__18 P0_2__18 P0_3_0__24}
+P0_3_0__24 -> P0_3_0__25 [label = <>, weight = 100]
+P0_2__19 [label = "", style = invisible]
+P0_2__18 -> P0_2__19 [label = <>, weight = 100, style = invisible]
+P0_1__19 [label = "", style = invisible]
+P0_1__18 -> P0_1__19 [label = <>, weight = 100, style = invisible]
+P0_0__23 [label = "", style = invisible]
+P0_0__22 -> P0_0__23 [label = <>, weight = 100, style = invisible]
+P__19 -> P__20 [label = <>, weight = 100]
+{rank = same; P__20 P0_0__23 P0_1__19 P0_2__19 P0_3_0__25}
+P0_3_0__25 -> P0_3_0__26 [label = <>, weight = 100]
+P__20 -> P__21 [label = <>, weight = 100]
+{rank = same; P__21 P0_3_0__26}
+P0_3_0__26 -> P__21 [label = <(a_5,senc((~M_4,a_4,~M_1,a_3),~M_3),a_2) = (a_5,<br/>
+senc((R_A_2,a_4,I_B_4,a_3),K_AP_3),a_2)>, dir = back, arrowhead = normal]
+P0_3_0__26 -> P0_3_0__27 [label = <>, weight = 100]
+P0_2__20 [label = "", style = invisible]
+P0_2__19 -> P0_2__20 [label = <>, weight = 100, style = invisible]
+P0_1__20 [label = "", style = invisible]
+P0_1__19 -> P0_1__20 [label = <>, weight = 100, style = invisible]
+P0_0__24 [label = "", style = invisible]
+P0_0__23 -> P0_0__24 [label = <>, weight = 100, style = invisible]
+P__21 -> P__22 [label = <>, weight = 100]
+{rank = same; P__22 P0_0__24 P0_1__20 P0_2__20 P0_3_0__27}
+P0_3_0__27 -> P0_3_0__28 [label = <>, weight = 100]
+P0_3_0__28 [shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{33}</FONT><FONT COLOR="blue">let</FONT> (Text5_recv: bitstring,token_PA_for_A_recv:<br/>
+bitstring,token_PA_for_B_recv: bitstring) = (a_5,<br/>
+senc((R_A_2,a_4,I_B_4,a_3),K_AP_3),a_2)</TD></TR><TR><TD><FONT COLOR="darkgreen">{24}</FONT><FONT COLOR="blue">let</FONT> K_AP_1: key = K_AP_3</TD></TR><TR><TD><FONT COLOR="darkgreen">{34}</FONT><FONT COLOR="blue">let</FONT> (R_A_token_recv: nonce,K_AB: key,I_B_token_recv:<br/>
+host,Text4_recv: bitstring) = (R_A_2,a_4,I_B_4,<br/>
+a_3)</TD></TR><TR><TD><FONT COLOR="darkgreen">{35}</FONT><FONT COLOR="blue">if</FONT> (I_B_4 = I_B_4)</TD></TR><TR><TD><FONT COLOR="darkgreen">{36}</FONT><FONT COLOR="blue">if</FONT> (R_A_2 = R_A_2)</TD></TR></TABLE>>]
+P0_3_0__28 -> P0_3_0__29 [label = <>, weight = 100]
+P0_3_0__29 -> P0_3_0__30 [label = <>, weight = 100]
+P0_3_0__30 [color = red, shape = plaintext, label = <<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4"> <TR><TD><FONT COLOR="darkgreen">{37}</FONT><FONT COLOR="blue">event</FONT> end_alice_injective_agreement_with_trusted_party(<br/>
+R_A_2,a_4)</TD></TR></TABLE>>]
+P0_3_0__30 -> P0_3_0__31 [label = <>, weight = 100]
+}

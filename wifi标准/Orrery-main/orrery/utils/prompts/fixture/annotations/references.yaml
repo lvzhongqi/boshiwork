@@ -1,0 +1,6 @@
+# Fixture annotations, mirroring the corpus's v4 three-file split:
+# subprotocols.yaml (section -> sub), tags.yaml (type tags),
+# references.yaml (dependency resolution). Empty maps here are the
+# single-document case: parsed, with nothing to resolve.
+schema_version: 4
+references: {}

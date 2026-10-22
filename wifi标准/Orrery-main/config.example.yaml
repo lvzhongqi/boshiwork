@@ -1,0 +1,95 @@
+# Orrery configuration: every option, with its default. Copied to config.yaml on
+# first use (gitignored — it holds your key); fill in the one api_key whose
+# backend is live and the rest works as is. `orrery config` shows what is in effect.
+
+paths:
+  work_root: ./a_runs           # where runs are written: <work_root>/<protocol>/<run>/. Relative to this project, not to your shell
+  lib_root: ./VerdictBench      # the protocol corpus the console scans
+  playback_root: ./runs/main    # the recorded runs the console replays, same layout as work_root. One batch directory, not the directory holding the batches
+
+# What a run is handed instead of extracting for itself. Pinning a band to the
+# corpus's own copy is what makes two runs comparable.
+inputs:
+  lib_principals: false         # use <protocol>/flow/principals.json instead of extracting the initial knowledge
+  lib_flow: false               # use <protocol>/flow/flow.pv. Needs lib_principals: a mother model and the principals it was written on travel together
+  lib_claims: true              # use <protocol>/claims/{assumptions,properties,claims}.json. One switch for the three, because claims.json references the other two
+  end_point: scenarios          # where the run stops: principals | flow | claims | scenarios. Must leave at least one step to do
+  flow: null                    # explicit path to a mother model .pv outside the corpus; wins over lib_flow
+  principals: null              # the principals.json that model was written on
+
+llm:
+  # remote-claude Anthropic /v1/messages · remote-gemini Google generateContent ·
+  # remote-openai-responses OpenAI /v1/responses, required for gpt-5.5+ in an agent
+  # loop · remote-openai-compatible /v1/chat/completions, what everyone else speaks.
+  backend: remote-openai-responses   # which profile below is live; only that one needs filling
+
+  # One slot per backend, so switching away and back costs nothing. A key and
+  # the url it is sent to are one unit: the right key at the wrong url fails at
+  # request time with an error that reads like a model fault.
+  profiles:
+    remote-claude:
+      model: "claude-opus-5"  # model id; anything the gateway answers to
+      api_key: "???"          # <- required for the live backend. Must be non-empty: with no key every vendor SDK falls back to its own env var and the run uses a credential this file never names
+      url: null               # gateway address; null = the vendor's official endpoint
+      extra_headers: null     # sent verbatim with every request, and the only way any header reaches the wire. Some relays need one before prompt caching works
+    remote-gemini:
+      model: "gemini-3.1-pro-preview"
+      api_key: "???"          # <- required for the live backend
+      url: null
+      extra_headers: null
+    remote-openai-responses:
+      model: "gpt-5.6-sol"
+      api_key: "???"          # <- required for the live backend
+      url: null
+      extra_headers: null
+    remote-openai-compatible:
+      model: "claude-sonnet-5"
+      api_key: "???"          # <- required for the live backend
+      url: null               # a relay almost always needs one, e.g. https://your-relay/v1
+      extra_headers: null
+
+  cache_ttl: null           # claude backend only: null = the 5m prompt-cache default; "1h" holds the corpus block across repeat runs at 2x write cost
+  timeout_s: 600            # ceiling on one model call. Raise this before raising any step's effort; below ~400s a runaway reply times out (run ends) instead of truncating (one repair round)
+
+# There is deliberately no temperature option: requests never carry the
+# parameter and use the model's default. A caller that needs one passes it to
+# invoke() directly.
+
+proverif:
+  executable: proverif      # a bare name is looked up on PATH; set a full path when it is not there. The published runs used ProVerif 2.05 — another release can answer differently
+  timeout_s: 180            # per-solve ceiling; a timeout is judged TIMEOUT and is never sent back for repair
+
+pipeline:
+  mode: auto                # auto = run straight through; manual = stop at every node boundary and wait for approval
+  approval_timeout_s: null  # how long manual approval waits; null = forever
+  gap_budget: 3             # how many cross-node rollbacks one run may accept
+  gap_reject_limit: 2       # how many rejected gap reports before failing; a rejection re-runs the reporting node, so an unbounded loop burns tokens
+  max_scenarios_concurrency: 4  # how many scenarios one run works on at once
+
+document:
+  inline_max_chars: 30000   # main document under this size is inlined whole into the shared corpus block; larger keeps only flow-tagged sections
+
+agent:
+  max_rounds: 12            # model calls per node task, repair rounds included
+  max_tool_calls: 40        # tool calls per node
+  max_repairs: 6            # repair rounds after a failed check
+  tool_return_chars: 20000  # character budget for what a tool returns; clipped beyond it
+
+expert:                     # the explain-and-fix chat. No ceilings by default: a node runs unattended and has to end by construction, the expert answers someone who is watching
+  max_rounds: null          # model calls for one message; null = no ceiling
+  max_tool_calls: null      # readings for one message; null = no ceiling
+
+scenarios:
+  inject_cells_per_call: 4  # how many (type, subtype) cells one goal-injection call may cover; never across families. 1 = one call per cell
+
+solve:
+  trace_retry_timeout_s: 100    # first pass disables trace reconstruction; each cannot_be_proved goal is retried alone with it restored
+  precise_actions_retry: true   # still cannot_be_proved: retry that goal once more with set preciseActions
+  precise_retry_timeout_s: 100  # ceiling on that final retry; past it the goal stays unknown
+  vacuity_check: true           # a goal proved on an unreachable observation point is recorded `vacuous`, not `true`
+  vacuity_timeout_s: 120        # ceiling on that pass; no answer leaves every verdict unchanged
+
+attacks:
+  enabled: true     # after the verdicts, replay the attack behind each false cell as a step-by-step script
+  auto_cells: 10    # replayed on their own; past it the broken goals are covered first and the rest wait for you in the console
+  long_timeout_s: 300  # seconds for the long-display re-run; past it the cell is re-run under the default display

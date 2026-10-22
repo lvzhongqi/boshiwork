@@ -1,0 +1,46 @@
+{
+  "vocab_version": "2.2.0",
+  "world": [
+    {
+      "id": "world_role_binding_A",
+      "axis": "role_binding",
+      "target": {
+        "of": "A"
+      },
+      "subtype": "any_roles"
+    },
+    {
+      "id": "world_role_binding_B",
+      "axis": "role_binding",
+      "target": {
+        "of": "B"
+      },
+      "subtype": "any_roles"
+    }
+  ],
+  "fixed": [],
+  "variable": [
+    {
+      "id": "admission_peer_auth",
+      "axis": "admission",
+      "subtypes": [
+        "closed",
+        "open"
+      ],
+      "target": {
+        "scope": "peer_auth"
+      }
+    },
+    {
+      "id": "ltk_reveal_kab",
+      "axis": "data",
+      "target": {
+        "of": "KAB"
+      },
+      "subtypes": [
+        "none",
+        "disclosed"
+      ]
+    }
+  ]
+}

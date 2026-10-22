@@ -1,0 +1,119 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orrery"
+version = "1.0.1"
+description = "Turn a protocol specification into a ProVerif model and run it"
+readme = "README.md"
+requires-python = ">=3.11"
+
+# Frozen, exactly, including the transitive dependencies — because the one
+# install command the artifact documents is `pip install -e .`, which reads
+# this list and nothing else. A range here would leave the version to whatever
+# PyPI serves on the day someone installs, and a range on the ten direct
+# dependencies alone would leave pydantic, starlette and httpx floating even if
+# those ten were pinned: pip resolves what fastapi and the SDKs ask for, not
+# what this project ran against. So the whole closure is written out. These are
+# the versions every reported experiment used.
+#
+# There is deliberately no requirements.txt: a second copy of these versions
+# would drift from this one, and `pip install -e .` never reads it anyway.
+# Python 3.12.13 is what this was resolved and tested on.
+dependencies = [
+    # Directly imported.
+    "click==8.3.3",
+    "PyYAML==6.0.3",
+    "jsonschema==4.26.0",
+    "jinja2==3.1.6",
+    "fastapi==0.141.1",
+    "uvicorn==0.52.3",
+    "psutil==7.2.2",
+    # The three vendor SDKs. infra/llm/factory.py imports only the one the live
+    # backend names, but all three are here so any backend works after a plain
+    # install.
+    "anthropic==0.121.0",
+    "openai==1.109.1",
+    "google-genai==1.69.0",
+    # Pulled in by the ten above. Pinned for the same reason they are; not
+    # imported by this project.
+    "annotated-doc==0.0.5",
+    "annotated-types==0.7.0",
+    "anyio==4.13.0",
+    "attrs==26.1.0",
+    "certifi==2026.2.25",
+    "cffi==2.0.0",
+    "charset-normalizer==3.4.6",
+    "cryptography==46.0.6",
+    "distro==1.9.0",
+    "docstring-parser==0.18.0",
+    "google-auth==2.49.1",
+    "h11==0.16.0",
+    "httpcore==1.0.9",
+    "httpx==0.28.1",
+    "idna==3.11",
+    "jiter==0.13.0",
+    "jsonschema-specifications==2025.9.1",
+    "markupsafe==3.0.3",
+    "pyasn1==0.6.3",
+    "pyasn1-modules==0.4.2",
+    "pycparser==3.0",
+    "pydantic==2.12.5",
+    "pydantic-core==2.41.5",
+    "referencing==0.37.0",
+    "requests==2.32.5",
+    "rpds-py==0.30.0",
+    "sniffio==1.3.1",
+    "starlette==1.6.0",
+    "tenacity==9.1.4",
+    "tqdm==4.67.3",
+    "typing-extensions==4.15.0",
+    "typing-inspection==0.4.2",
+    "urllib3==2.6.3",
+    "websockets==16.0",
+]
+
+# What the test suite needs, where the suite exists: `pip install -e ".[dev]" &&
+# pytest tests`. `tests/` is in the development checkout and not in the published
+# artifact — it exercises the engine's internals, which is not a number anyone
+# reproduces — so on a published copy this extra installs a runner with nothing to
+# run. pytest-asyncio is not optional: the async tests are written with
+# @pytest.mark.asyncio, which silently skips the body without it. httpx is already
+# above, pulled in by the SDKs, and is also what fastapi's TestClient imports.
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.3",
+    "pytest-asyncio==1.3.0",
+    "iniconfig==2.3.0",
+    "packaging==25.0",
+    "pluggy==1.6.0",
+    "pygments==2.20.0",
+]
+
+[project.scripts]
+orrery = "orrery.main:cli"
+
+[tool.setuptools.packages.find]
+include = ["orrery*"]
+
+# Patterns by file type, not by directory.
+#
+# `**/*.pv` is here for one directory, utils/prompts/fixture: the prompt preview
+# reads a ProVerif model out of it at import time. `**/*.dot` is there for the
+# same directory: the attack graphs the preview renders an explanation from.
+#
+# By type and not by directory, because a list of directories goes stale the day
+# a new one is added and nothing says so — a rules.sys.md that is read at import
+# time and missing from the wheel makes the package unimportable. A pattern that
+# says "every markdown file under the package" cannot go stale that way, and
+# tests/contracts/test_packaged_data.py fails if one still does.
+[tool.setuptools.package-data]
+orrery = [
+    "**/*.md",
+    "**/*.yaml",
+    "**/*.json",
+    "**/*.pv",
+    "**/*.dot",
+    "web/static/**/*",
+]

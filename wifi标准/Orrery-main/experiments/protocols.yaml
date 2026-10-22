@@ -1,0 +1,508 @@
+# The protocols every batch runs: the 101 units the paper reports, and
+# nothing else. Selection and catalog therefore hold the same 101 ids; the two
+# stay separate so a subset can be selected without editing the definitions.
+# Order: academic, EDHOC, IKEv2, 5G/3GPP, OAuth, TLS, ISO, remaining targets.
+selected_protocols:
+- NSPK
+- Denning-Sacco
+- Kao-Chow
+- NSSK
+- Neuman-Stubblebine
+- Otway-Rees
+- wide-mouth-frog
+- Yahalom
+- ISO-9798-2-mechanism-1
+- ISO-9798-2-mechanism-2
+- ISO-9798-2-mechanism-2-no-identifier
+- ISO-9798-2-mechanism-3
+- ISO-9798-2-mechanism-4
+- ISO-9798-2-mechanism-4-no-identifier
+- ISO-9798-2-mechanism-5-mutual
+- ISO-9798-2-mechanism-5-unilateral
+- ISO-9798-2-mechanism-6-mutual
+- ISO-9798-2-mechanism-6-unilateral
+- ISO-9798-3-mechanism-mut-cr
+- ISO-9798-3-mechanism-mut-cr-par
+- ISO-9798-3-mechanism-mut-ts
+- ISO-9798-3-mechanism-tp-mut-1
+- ISO-9798-3-mechanism-tp-mut-2
+- ISO-9798-3-mechanism-tp-mut-3
+- ISO-9798-3-mechanism-tp-uni-1
+- ISO-9798-3-mechanism-tp-uni-2
+- ISO-9798-3-mechanism-uni-cr
+- ISO-9798-3-mechanism-uni-ts
+- ISO-9798-4-mutual-three-pass
+- ISO-9798-4-mutual-two-pass
+- ISO-9798-4-unilateral-one-pass
+- ISO-9798-4-unilateral-two-pass
+- ISO-9798-5-generic-three-pass-mutual-decryption
+- ISO-9798-5-generic-three-pass-unilateral
+- ISO-9798-5-generic-two-pass-unilateral-decryption
+- ISO-9798-6-mechanism-1
+- ISO-9798-6-mechanism-1-certificate
+- ISO-9798-6-mechanism-2
+- ISO-9798-6-mechanism-3
+- ISO-9798-6-mechanism-4
+- ISO-9798-6-mechanism-5
+- ISO-9798-6-mechanism-6
+- ISO-9798-6-mechanism-7a
+- ISO-9798-6-mechanism-7b
+- ISO-9798-6-mechanism-8a
+- ISO-9798-6-mechanism-8b
+- ISO-11770-2-key-establishment-mechanism-1
+- ISO-11770-2-key-establishment-mechanism-2
+- ISO-11770-2-key-establishment-mechanism-3
+- ISO-11770-2-key-establishment-mechanism-4
+- ISO-11770-2-key-establishment-mechanism-5
+- ISO-11770-2-key-establishment-mechanism-6
+- ISO-11770-2-key-establishment-mechanism-7
+- ISO-11770-2-key-establishment-mechanism-8
+- ISO-11770-2-key-establishment-mechanism-9
+- ISO-11770-2-key-establishment-mechanism-10
+- ISO-11770-2-key-establishment-mechanism-11
+- ISO-11770-2-key-establishment-mechanism-12
+- ISO-11770-2-key-establishment-mechanism-13
+- ISO-11770-3-key-agreement-mechanism-1
+- ISO-11770-3-key-agreement-mechanism-2
+- ISO-11770-3-key-agreement-mechanism-3
+- ISO-11770-3-key-agreement-mechanism-4
+- ISO-11770-3-key-agreement-mechanism-5
+- ISO-11770-3-key-agreement-mechanism-6
+- ISO-11770-3-key-agreement-mechanism-7
+- ISO-11770-3-key-agreement-mechanism-8
+- ISO-11770-3-key-agreement-mechanism-9
+- ISO-11770-3-key-agreement-mechanism-10
+- ISO-11770-3-key-agreement-mechanism-11
+- ISO-11770-3-key-agreement-mechanism-12
+- ISO-11770-3-key-agreement-mechanism-13
+- ISO-11770-3-key-agreement-mechanism-14
+- ISO-11770-3-key-agreement-mechanism-15
+- ISO-11770-3-public-key-transport-mechanism-1
+- ISO-11770-3-public-key-transport-mechanism-2
+- ISO-11770-3-public-key-transport-mechanism-3
+- ISO-11770-3-secret-key-transport-mechanism-1
+- ISO-11770-3-secret-key-transport-mechanism-2
+- ISO-11770-3-secret-key-transport-mechanism-3
+- ISO-11770-3-secret-key-transport-mechanism-4
+- ISO-11770-3-secret-key-transport-mechanism-5
+- ISO-11770-3-secret-key-transport-mechanism-6
+- ISO-11770-4-augmented-key-agreement-mechanism-1
+- ISO-11770-4-augmented-key-agreement-mechanism-2
+- ISO-11770-4-augmented-key-agreement-mechanism-3
+- ISO-11770-4-balanced-key-agreement-mechanism-1
+- ISO-11770-4-balanced-key-agreement-mechanism-2
+- ISO-11770-4-key-retrieval-mechanism-1
+- ISO-11770-7-mechanism-1
+- ISO-11770-7-mechanism-2
+- ISO-11770-7-mechanism-3
+- FIDO-UAF-registration
+- EDHOC-draft-08-symmetric
+- EDHOC-draft-12-dh
+- IKEv2-signature
+- 5G-AKA-TS33.501-v15.0.0-AKA
+- OAuth-2.0-draft22-mac
+- TLS13-draft18-zero-rtt
+- TLS13-draft20
+- Signal-PQXDH-revision2
+protocols:
+  Denning-Sacco:
+    protocol_name: Denning-Sacco
+    path: academic/Denning-Sacco
+  Kao-Chow:
+    protocol_name: Kao-Chow
+    path: academic/Kao-Chow
+  Neuman-Stubblebine:
+    protocol_name: Neuman-Stubblebine
+    path: academic/Neuman-Stubblebine
+  NSPK:
+    protocol_name: NSPK
+    path: academic/NSPK
+  NSSK:
+    protocol_name: NSSK
+    path: academic/NSSK
+  Otway-Rees:
+    protocol_name: Otway-Rees
+    path: academic/Otway-Rees
+  wide-mouth-frog:
+    protocol_name: wide-mouth-frog
+    path: academic/wide-mouth-frog
+  Yahalom:
+    protocol_name: Yahalom
+    path: academic/Yahalom
+  EDHOC-draft-08-symmetric:
+    protocol_name: EDHOC
+    version: draft-08
+    subprotocol: symmetric
+    path: rfc/EDHOC/draft-08
+  EDHOC-draft-12-dh:
+    protocol_name: EDHOC
+    version: draft-12
+    subprotocol: dh
+    path: rfc/EDHOC/draft-12
+  IKEv2-signature:
+    protocol_name: IKEv2
+    subprotocol: signature
+    path: rfc/IKEV2
+  5G-AKA-TS33.501-v15.0.0-AKA:
+    protocol_name: 5G-AKA
+    version: TS33.501-v15.0.0
+    subprotocol: AKA
+    path: 3gpp/5G-AKA/TS33.501-v15.0.0
+  OAuth-2.0-draft22-mac:
+    protocol_name: OAuth-2.0
+    version: draft22
+    subprotocol: mac
+    path: rfc/OAuth-2.0/draft22
+  TLS13-draft18-zero-rtt:
+    protocol_name: TLS13
+    version: draft18
+    subprotocol: zero-rtt
+    path: rfc/TLS13/draft18
+  TLS13-draft20:
+    protocol_name: TLS13
+    version: draft20
+    path: rfc/TLS13/draft20
+  ISO-9798-2-mechanism-1:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-1
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-2:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-2
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-2-no-identifier:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-2-no-identifier
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-3:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-3
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-4:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-4
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-4-no-identifier:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-4-no-identifier
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-5-mutual:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-5-mutual
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-5-unilateral:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-5-unilateral
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-6-mutual:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-6-mutual
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-2-mechanism-6-unilateral:
+    protocol_name: ISO-9798-2
+    subprotocol: mechanism-6-unilateral
+    path: ISO/9798-2-symmetric-encipherment
+  ISO-9798-3-mechanism-mut-cr:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-mut-cr
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-mut-cr-par:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-mut-cr-par
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-mut-ts:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-mut-ts
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-tp-mut-1:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-tp-mut-1
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-tp-mut-2:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-tp-mut-2
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-tp-mut-3:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-tp-mut-3
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-tp-uni-1:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-tp-uni-1
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-tp-uni-2:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-tp-uni-2
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-uni-cr:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-uni-cr
+    path: ISO/9798-3-digital-signature
+  ISO-9798-3-mechanism-uni-ts:
+    protocol_name: ISO-9798-3
+    subprotocol: mechanism-uni-ts
+    path: ISO/9798-3-digital-signature
+  ISO-9798-4-mutual-three-pass:
+    protocol_name: ISO-9798-4
+    subprotocol: mutual-three-pass
+    path: ISO/9798-4-cryptographic-check
+  ISO-9798-4-mutual-two-pass:
+    protocol_name: ISO-9798-4
+    subprotocol: mutual-two-pass
+    path: ISO/9798-4-cryptographic-check
+  ISO-9798-4-unilateral-one-pass:
+    protocol_name: ISO-9798-4
+    subprotocol: unilateral-one-pass
+    path: ISO/9798-4-cryptographic-check
+  ISO-9798-4-unilateral-two-pass:
+    protocol_name: ISO-9798-4
+    subprotocol: unilateral-two-pass
+    path: ISO/9798-4-cryptographic-check
+  ISO-9798-5-generic-three-pass-mutual-decryption:
+    protocol_name: ISO-9798-5
+    subprotocol: generic-three-pass-mutual-decryption
+    path: ISO/9798-5-zero-knowledge
+  ISO-9798-5-generic-three-pass-unilateral:
+    protocol_name: ISO-9798-5
+    subprotocol: generic-three-pass-unilateral
+    path: ISO/9798-5-zero-knowledge
+  ISO-9798-5-generic-two-pass-unilateral-decryption:
+    protocol_name: ISO-9798-5
+    subprotocol: generic-two-pass-unilateral-decryption
+    path: ISO/9798-5-zero-knowledge
+  ISO-9798-6-mechanism-1:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-1
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-1-certificate:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-1-certificate
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-2:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-2
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-3:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-3
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-4:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-4
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-5:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-5
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-6:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-6
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-7a:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-7a
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-7b:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-7b
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-8a:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-8a
+    path: ISO/9798-6-manual-data-transfer
+  ISO-9798-6-mechanism-8b:
+    protocol_name: ISO-9798-6
+    subprotocol: mechanism-8b
+    path: ISO/9798-6-manual-data-transfer
+  ISO-11770-2-key-establishment-mechanism-1:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-1
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-2:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-2
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-3:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-3
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-4:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-4
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-5:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-5
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-6:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-6
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-7:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-7
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-8:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-8
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-9:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-9
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-10:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-10
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-11:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-11
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-12:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-12
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-2-key-establishment-mechanism-13:
+    protocol_name: ISO-11770-2
+    subprotocol: key-establishment-mechanism-13
+    path: ISO/11770-2-symmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-1:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-1
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-2:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-2
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-3:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-3
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-4:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-4
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-5:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-5
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-6:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-6
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-7:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-7
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-8:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-8
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-9:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-9
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-10:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-10
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-11:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-11
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-12:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-12
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-13:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-13
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-14:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-14
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-key-agreement-mechanism-15:
+    protocol_name: ISO-11770-3
+    subprotocol: key-agreement-mechanism-15
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-public-key-transport-mechanism-1:
+    protocol_name: ISO-11770-3
+    subprotocol: public-key-transport-mechanism-1
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-public-key-transport-mechanism-2:
+    protocol_name: ISO-11770-3
+    subprotocol: public-key-transport-mechanism-2
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-public-key-transport-mechanism-3:
+    protocol_name: ISO-11770-3
+    subprotocol: public-key-transport-mechanism-3
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-secret-key-transport-mechanism-1:
+    protocol_name: ISO-11770-3
+    subprotocol: secret-key-transport-mechanism-1
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-secret-key-transport-mechanism-2:
+    protocol_name: ISO-11770-3
+    subprotocol: secret-key-transport-mechanism-2
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-secret-key-transport-mechanism-3:
+    protocol_name: ISO-11770-3
+    subprotocol: secret-key-transport-mechanism-3
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-secret-key-transport-mechanism-4:
+    protocol_name: ISO-11770-3
+    subprotocol: secret-key-transport-mechanism-4
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-secret-key-transport-mechanism-5:
+    protocol_name: ISO-11770-3
+    subprotocol: secret-key-transport-mechanism-5
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-3-secret-key-transport-mechanism-6:
+    protocol_name: ISO-11770-3
+    subprotocol: secret-key-transport-mechanism-6
+    path: ISO/11770-3-asymmetric-techniques
+  ISO-11770-4-augmented-key-agreement-mechanism-1:
+    protocol_name: ISO-11770-4
+    subprotocol: augmented-key-agreement-mechanism-1
+    path: ISO/11770-4-weak-secrets
+  ISO-11770-4-augmented-key-agreement-mechanism-2:
+    protocol_name: ISO-11770-4
+    subprotocol: augmented-key-agreement-mechanism-2
+    path: ISO/11770-4-weak-secrets
+  ISO-11770-4-augmented-key-agreement-mechanism-3:
+    protocol_name: ISO-11770-4
+    subprotocol: augmented-key-agreement-mechanism-3
+    path: ISO/11770-4-weak-secrets
+  ISO-11770-4-balanced-key-agreement-mechanism-1:
+    protocol_name: ISO-11770-4
+    subprotocol: balanced-key-agreement-mechanism-1
+    path: ISO/11770-4-weak-secrets
+  ISO-11770-4-balanced-key-agreement-mechanism-2:
+    protocol_name: ISO-11770-4
+    subprotocol: balanced-key-agreement-mechanism-2
+    path: ISO/11770-4-weak-secrets
+  ISO-11770-4-key-retrieval-mechanism-1:
+    protocol_name: ISO-11770-4
+    subprotocol: key-retrieval-mechanism-1
+    path: ISO/11770-4-weak-secrets
+  ISO-11770-7-mechanism-1:
+    protocol_name: ISO-11770-7
+    subprotocol: mechanism-1
+    path: ISO/11770-7-cross-domain-key-exchange
+  ISO-11770-7-mechanism-2:
+    protocol_name: ISO-11770-7
+    subprotocol: mechanism-2
+    path: ISO/11770-7-cross-domain-key-exchange
+  ISO-11770-7-mechanism-3:
+    protocol_name: ISO-11770-7
+    subprotocol: mechanism-3
+    path: ISO/11770-7-cross-domain-key-exchange
+  FIDO-UAF-registration:
+    protocol_name: FIDO-UAF
+    subprotocol: registration
+    path: informal/FIDO/UAF
+  Signal-PQXDH-revision2:
+    protocol_name: Signal-PQXDH
+    version: revision2
+    path: informal/Signal/PQXDH/revision2
