@@ -3,21 +3,38 @@ mixed-port: 7890
 allow-lan: false
 mode: rule
 log-level: info
-ipv6: false
+ipv6: true
 
 proxies:
-  - name: ByteVirt
+  - name: ByteVirt-IPv4
     type: ss
     server: 69.8.130.17
-    port: 28443
+    port: 48443
+    cipher: chacha20-ietf-poly1305
+    password: "UdjixDkY4pLkXYDSZ4SkvbDngl2W0bmp"
+
+  - name: ByteVirt-IPv6
+    type: ss
+    server: "2a12:bec0:166:111::"
+    port: 18443
     cipher: chacha20-ietf-poly1305
     password: "UdjixDkY4pLkXYDSZ4SkvbDngl2W0bmp"
 
 proxy-groups:
+  - name: ByteVirt-Auto
+    type: fallback
+    proxies:
+      - ByteVirt-IPv4
+      - ByteVirt-IPv6
+    url: "https://www.gstatic.com/generate_204"
+    interval: 300
+
   - name: Proxy
     type: select
     proxies:
-      - ByteVirt
+      - ByteVirt-Auto
+      - ByteVirt-IPv4
+      - ByteVirt-IPv6
       - DIRECT
 
 rules:
