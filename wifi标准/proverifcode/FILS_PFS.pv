@@ -1,0 +1,276 @@
+(* =====================================================================
+   FILS 前向保密（PFS）专项模型
+   IEEE 802.11-2024 §12.11.1：
+     “When FILS Shared Key authentication is used, the authentication
+      exchange can optionally be performed with PFS. When FILS Public
+      Key authentication is used, PFS is always used.”
+   因此本文件验证三件事：
+     (1) FILS PK（ANA=6）：长期签名私钥泄露后，旧会话的 TK 仍保密；
+     (2) FILS SK（ANA=5，带 PFS）：rMSK 泄露后，旧会话的 TK 仍保密；
+     (3) FILS SK（ANA=4，无 PFS）：rMSK 泄露即可恢复旧会话的 TK
+         —— 这是标准允许的设计取舍，不是实现缺陷，用于对照。
+
+   方法：phase 0 完成一次会话并输出“受 TK 保护的数据帧”（探针）；
+         phase 1 泄露长期密钥/rMSK；再查询攻击者是否得到探针明文。
+         会话不做复制，避免攻击者在 phase 1 用泄露的长期密钥
+         新开会话、从而误报。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta1:bitstring.
+const sta2:bitstring.
+const ap1:bitstring.
+const ap2:bitstring.
+
+const g:bitstring.
+const aan4:bitstring.
+const aan5:bitstring.
+const aan6:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+
+(* rMSK：EAP-RP 后端交付，对空口不可见 *)
+free rmsk2:bitstring [private].
+free rmsk4:bitstring [private].
+
+(* 三个探针，互不干扰 *)
+free probe_pk:bitstring [private].
+free probe_sk5:bitstring [private].
+free probe_sk4:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+fun pk(bitstring):bitstring.
+fun sign(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, sk:bitstring;
+  checksign(sign(m,sk), pk(sk)) = m.
+
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+(* ---- 期望为 true 的两条：PFS 成立 ---- *)
+query attacker(probe_pk).
+query attacker(probe_sk5).
+
+(* ---- 期望为 false 的一条：ANA=4 无 PFS（标准允许） ---- *)
+query attacker(probe_sk4).
+
+(* =====================================================================
+   FILS PK 单次会话（无复制）
+   ===================================================================== *)
+let sta_pk(sta:bitstring, ap:bitstring, skS:bitstring, pkA:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+  out(c, (sta, ap, aan6, seq1, dhgrp, gs, sn, sess, rsne));
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring));
+  if apR = ap then if staR = sta then if aanR = aan6 then if seqR = seq2 then
+  if stR = st_ok then if dhR = dhgrp then if snR = sn then if sessR = sess then
+  if rsneR = rsne then
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+    let ka = sign((gs, gaR, sn, anR, sta, ap), skS) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    out(c, (sta, ap, sess, rsne, aead((aad, (pk(skS), ka)), kek)));
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then if sta2R = sta then if sess2R = sess then
+    if rsne2R = rsne then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let (pkaR:bitstring, kaAR:bitstring) = adec(ct2R, aad2, kek) in
+      if pkaR = pkA then
+      if checksign(kaAR, pkA) = (gaR, gs, anR, sn, ap, sta) then
+        out(c, aead((label_data, probe_pk), tk)).
+
+let ap_pk(ap:bitstring, sta:bitstring, skA:bitstring, pkS:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring));
+  if apR = ap then if staR = sta then if aanR = aan6 then if seqR = seq1 then
+  if dhR = dhgrp then
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    out(c, (ap, sta, aan6, seq2, st_ok, dhgrp, ga, snR, sessR, rsneR, an));
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = sta then if ap2R = ap then if sess2R = sessR then
+    if rsne3R = rsneR then
+      let aad = (sta, ap, snR, an, sessR, rsne3R) in
+      let (pkSR:bitstring, kaR:bitstring) = adec(ctR, aad, kek) in
+      if pkSR = pkS then
+      if checksign(kaR, pkS) = (gsR, ga, snR, an, sta, ap) then
+        let kaap = sign((ga, gsR, an, snR, ap, sta), skA) in
+        let aad2 = (ap, sta, an, snR, sessR, rsneR) in
+        out(c, (ap, sta, sessR, rsneR,
+                aead((aad2, (pk(skA), kaap)), kek))).
+
+(* =====================================================================
+   FILS SK ANA=5（带 PFS）单次会话
+   ===================================================================== *)
+let sta_sk5(sta:bitstring, ap:bitstring, rmsk:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+  out(c, (sta, ap, aan5, seq1, dhgrp, gs, sn, sess, rsne));
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring));
+  if apR = ap then if staR = sta then if aanR = aan5 then if seqR = seq2 then
+  if stR = st_ok then if dhR = dhgrp then if snR = sn then if sessR = sess then
+  if rsneR = rsne then
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), (rmsk, dhss)) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+    let ka = hmac(ick, (sn, anR, sta, ap, gs, gaR)) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    out(c, (sta, ap, sess, rsne, aead((aad, ka), kek)));
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then if sta2R = sta then if sess2R = sess then
+    if rsne2R = rsne then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let kaAR:bitstring = adec(ct2R, aad2, kek) in
+      if kaAR = hmac(ick, (anR, sn, ap, sta, gaR, gs)) then
+        out(c, aead((label_data, probe_sk5), tk)).
+
+let ap_sk5(ap:bitstring, sta:bitstring, rmsk:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring));
+  if apR = ap then if staR = sta then if aanR = aan5 then if seqR = seq1 then
+  if dhR = dhgrp then
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), (rmsk, dhss)) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    out(c, (ap, sta, aan5, seq2, st_ok, dhgrp, ga, snR, sessR, rsneR, an));
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = sta then if ap2R = ap then if sess2R = sessR then
+    if rsne3R = rsneR then
+      let aad = (sta, ap, snR, an, sessR, rsne3R) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR, an, sta, ap, gsR, ga)) then
+        let kaap = hmac(ick, (an, snR, ap, sta, ga, gsR)) in
+        let aad2 = (ap, sta, an, snR, sessR, rsneR) in
+        out(c, (ap, sta, sessR, rsneR,
+                aead((aad2, kaap), kek))).
+
+(* =====================================================================
+   FILS SK ANA=4（无 PFS）单次会话
+   ===================================================================== *)
+let sta_sk4(sta:bitstring, ap:bitstring, rmsk:bitstring) =
+  new sn:bitstring;
+  new sess:bitstring;
+  out(c, (sta, ap, aan4, seq1, sn, sess, rsne));
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, anR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring));
+  if apR = ap then if staR = sta then if aanR = aan4 then if seqR = seq2 then
+  if stR = st_ok then if snR = sn then if sessR = sess then
+  if rsneR = rsne then
+    let pmk = hmac((sn, anR), rmsk) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+    let ka = hmac(ick, (sn, anR, sta, ap)) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    out(c, (sta, ap, sess, rsne, aead((aad, ka), kek)));
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then if sta2R = sta then if sess2R = sess then
+    if rsne2R = rsne then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let kaAR:bitstring = adec(ct2R, aad2, kek) in
+      if kaAR = hmac(ick, (anR, sn, ap, sta)) then
+        out(c, aead((label_data, probe_sk4), tk)).
+
+let ap_sk4(ap:bitstring, sta:bitstring, rmsk:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         snR:bitstring, sessR:bitstring, rsneR:bitstring));
+  if apR = ap then if staR = sta then if aanR = aan4 then if seqR = seq1 then
+    new an:bitstring;
+    let pmk = hmac((snR, an), rmsk) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    out(c, (ap, sta, aan4, seq2, st_ok, an, snR, sessR, rsneR));
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = sta then if ap2R = ap then if sess2R = sessR then
+    if rsne3R = rsneR then
+      let aad = (sta, ap, snR, an, sessR, rsne3R) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR, an, sta, ap)) then
+        let kaap = hmac(ick, (an, snR, ap, sta)) in
+        let aad2 = (ap, sta, an, snR, sessR, rsneR) in
+        out(c, (ap, sta, sessR, rsneR,
+                aead((aad2, kaap), kek))).
+
+(* =====================================================================
+   顶层：phase 0 跑会话；phase 1 泄露长期密钥
+   ===================================================================== *)
+process
+  new skS1:bitstring;
+  new skA1:bitstring;
+  let pkS1 = pk(skS1) in
+  let pkA1 = pk(skA1) in
+  out(c, pkS1);
+  out(c, pkA1);
+
+  (
+    ( sta_pk(sta1, ap1, skS1, pkA1) | ap_pk(ap1, sta1, skA1, pkS1) )
+    |
+    ( sta_sk5(sta2, ap2, rmsk2) | ap_sk5(ap2, sta2, rmsk2) )
+    |
+    ( sta_sk4(sta2, ap2, rmsk4) | ap_sk4(ap2, sta2, rmsk4) )
+    |
+    (
+      phase 1;
+      (* 长期签名私钥泄露（PK 的 PFS 测试） *)
+      out(c, skS1);
+      out(c, skA1);
+      (* rMSK 泄露（SK 的 PFS 对照） *)
+      out(c, rmsk2);
+      out(c, rmsk4)
+    )
+  )

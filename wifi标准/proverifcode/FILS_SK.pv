@@ -1,0 +1,473 @@
+(* =====================================================================
+   FILS Shared Key authentication（ANA = 4 / 5）—— ProVerif 模型
+   依据 IEEE Std 802.11-2024：
+     §12.11.1        FILS 安全假设与目标
+     §12.11.2.3.2    STA 构造 Authentication（Seq=1）
+     §12.11.2.3.3/.4 AP 处理与构造 Authentication（Seq=2）
+     §12.11.2.3.5    STA 处理 Authentication（Seq=2）
+     §12.11.2.5.2/.3 PMK / PMKID / PTK 推导
+     §12.11.2.6.2/.3 (Re)Association 密钥确认
+     §12.11.2.7      AEAD
+
+   与 Visio「FILS SK 基于共享密钥的认证」面板的对应：
+     M1 = Auth(Seq=1, AAN=4/5, DHGroup?, gSTA?, SNonce, Session, RSNE,
+               [PMKIDList], WrappedData(EAP-Initiate/Reauth))
+     M2 = Auth(Seq=2, Status, DHGroup?, gAP?, ANonce, Session, RSNE,
+               [PMKID], WrappedData(EAP-Finish/Reauth))
+     M3 = (Re)Assoc Request (Session, RSNE, AEAD(PTK-KEK, KeyAuth_STA))
+     M4 = (Re)Assoc Response(Session, Status, AEAD(PTK-KEK, KeyAuth_AP||GTK))
+
+   ★ TTP / EAP-RP 的建模边界（必须声明）：
+     标准 §12.11.2.3.3 明确 AP↔Authentication Server 的接口
+     “out of scope of this spec”（RADIUS/Diameter）。EAP-RP 本身由
+     IETF RFC 6696 定义，且 §12.11.1 把“STA 与 TTP 共享有效 rRK”
+     列为协议安全前提。
+     因此本模型把 rMSK 抽象为「STA 与 AP 经可信后端共同持有的私有不变量」，
+     即 eaprp_rmsk1 / eaprp_rmsk2。这样既保留了 §12.11.2.5.2 之后的
+     全部密钥建立与确认逻辑，又不会因为自行实现一个简化版 EAP-RP
+     而引入与标准无关的伪攻击。
+     若需要验证 EAP-RP 自身（MIC、SEQ、KeyName 绑定），应另建 TTP
+     三方模型，不在本文范围内。
+
+   相对 Visio 图按标准做的修正（详见报告）：
+     1) PMKID 应写作 Truncate-128(Hash(EAP-Initiate/Reauth))，
+        图中简写为 Hash(WrappedData1)（内容上等价，长度需截断）。
+     2) PTK 上下文中的 [||DHss] 只在使用 PMKSA caching 且做了 DH 时出现；
+        ANA=5 且不使用缓存时 DHss 已混入 PMK，PTK 上下文不应再含 DHss。
+        图中该方括号条件未区分，本模型按标准区分。
+     3) KeyAuth 的输入顺序为方向绑定：STA 侧 SNonce||ANonce||STA-MAC||AP-BSSID，
+        AP 侧 ANonce||SNonce||AP-BSSID||STA-MAC，两侧值必然不同。
+     4) 图中未画 RSNE 一致性校验，标准 §12.11.2.6.2/.3 要求
+        Authentication 与 (Re)Association 的 RSNE 一致，本模型纳入 AAD。
+   ===================================================================== *)
+
+free c:channel.
+
+(* ---------------- 公开身份与常量 ---------------- *)
+const sta1:bitstring.
+const sta2:bitstring.
+const ap1:bitstring.
+const ap2:bitstring.
+
+const g:bitstring.
+const aan4:bitstring.
+const aan5:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const st_15:bitstring.
+const st_53:bitstring.
+const st_77:bitstring.
+const st_112:bitstring.
+const st_113:bitstring.
+const dhgrp:bitstring.
+const rsne_sk:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+
+(* EAP-RP 结果：按 §12.11.2.3.3 由后端交付，对空口不可见 *)
+free eaprp_rmsk1:bitstring [private].
+free eaprp_rmsk2:bitstring [private].
+
+(* PMKSA 缓存条目（此前一次成功会话的结果） *)
+free pmk_c1:bitstring [private].
+free pmk_c2:bitstring [private].
+const pmkid_c1:bitstring.
+const pmkid_c2:bitstring.
+
+(* 机密性探针 *)
+free gtk_val:bitstring [private].
+free probe_tk:bitstring [private].
+
+(* ---------------- 密码学原语 ---------------- *)
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+fun h(bitstring):bitstring.
+fun trunc128(bitstring):bitstring.
+fun some(bitstring):bitstring.
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+(* ---------------- 事件 ---------------- *)
+event StaStart4(bitstring,bitstring,bitstring).
+event ApFinish4(bitstring,bitstring,bitstring).
+event StaFinish4(bitstring,bitstring,bitstring).
+
+event StaStart5(bitstring,bitstring,bitstring).
+event ApFinish5(bitstring,bitstring,bitstring).
+event StaFinish5(bitstring,bitstring,bitstring).
+
+event StaStart5C(bitstring,bitstring,bitstring).
+event ApFinish5C(bitstring,bitstring,bitstring).
+event StaFinish5C(bitstring,bitstring,bitstring).
+
+(* =====================================================================
+   安全目标与查询
+   SG1  PMK / PTK / TK / GTK 机密性
+   SG2  双向认证与密钥确认
+   SG3  新鲜性 / 抗重放（injective agreement）
+   SG4  PMKSA 缓存机密性
+   ===================================================================== *)
+query attacker(gtk_val).
+query attacker(probe_tk).
+query attacker(pmk_c1).
+query attacker(pmk_c2).
+query attacker(eaprp_rmsk1).
+query attacker(eaprp_rmsk2).
+
+(* ANA=4：无 PFS *)
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinish4(s,a,se)) ==> event(ApFinish4(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinish4(s,a,se)) ==> inj-event(ApFinish4(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(ApFinish4(s,a,se)) ==> event(StaStart4(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(ApFinish4(s,a,se)) ==> inj-event(StaStart4(s,a,se)).
+
+(* ANA=5：有 PFS，无缓存 *)
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinish5(s,a,se)) ==> event(ApFinish5(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinish5(s,a,se)) ==> inj-event(ApFinish5(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(ApFinish5(s,a,se)) ==> event(StaStart5(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(ApFinish5(s,a,se)) ==> inj-event(StaStart5(s,a,se)).
+
+(* ANA=5 + PMKSA caching *)
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinish5C(s,a,se)) ==> event(ApFinish5C(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinish5C(s,a,se)) ==> inj-event(ApFinish5C(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(ApFinish5C(s,a,se)) ==> event(StaStart5C(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(ApFinish5C(s,a,se)) ==> inj-event(StaStart5C(s,a,se)).
+
+(* =====================================================================
+   ANA = 4（FILS Shared Key without PFS）：STA
+   ===================================================================== *)
+let sta_sk4(sta:bitstring, ap:bitstring, rmsk:bitstring) =
+  new sn:bitstring;
+  new sess:bitstring;
+
+  out(c, (sta, ap, aan4, seq1, sn, sess, rsne_sk, none, none));
+
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, anR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, pidR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan4 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne_sk then
+  if pidR = none then
+
+    (* §12.11.2.5.2：PMK = HMAC-Hash(SNonce||ANonce, rMSK) *)
+    let pmk = hmac((sn, anR), rmsk) in
+    (* 无 DH，PTK 上下文为 SPA||AA||SNonce||ANonce *)
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    (* §12.11.2.6.2：Key-Auth = HMAC-Hash(ICK, SNonce||ANonce||STA-MAC||AP-BSSID) *)
+    let ka = hmac(ick, (sn, anR, sta, ap)) in
+    let aad = (sta, ap, sn, anR, sess, rsne_sk) in
+    let ct = aead((aad, ka), kek) in
+    event StaStart4(sta, ap, sess);
+    out(c, (sta, ap, sess, rsne_sk, ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+    if rsne2R = rsne_sk then
+
+      let aad2 = (ap, sta, anR, sn, sess, rsne_sk) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if kaAR = hmac(ick, (anR, sn, ap, sta)) then
+        event StaFinish4(sta, ap, sess);
+        out(c, aead((label_data, probe_tk), tk)).
+
+(* =====================================================================
+   ANA = 4：AP
+   ===================================================================== *)
+let ap_sk4(ap:bitstring, sta:bitstring, rmsk:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         snR:bitstring, sessR:bitstring, rsneR:bitstring,
+         pidR:bitstring, wrR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan4 then
+  if seqR = seq1 then
+  if pidR = none then
+
+    new an:bitstring;
+    let pmk = hmac((snR, an), rmsk) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (ap, sta, aan4, seq2, st_ok, an, snR, sessR, rsneR, none));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if rsne3R = rsneR then
+
+      let aad = (sta, ap, snR, an, sessR, rsne3R) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR, an, sta, ap)) then
+        event ApFinish4(sta, ap, sessR);
+
+        let kaap = hmac(ick, (an, snR, ap, sta)) in
+        let aad2 = (ap, sta, an, snR, sessR, rsneR) in
+        let ct2 = aead((aad2, (kaap, gtk_val)), kek) in
+        out(c, (ap, sta, sessR, st_ok, rsneR, ct2)).
+
+(* =====================================================================
+   ANA = 5（FILS Shared Key with PFS，无缓存）：STA
+   ===================================================================== *)
+let sta_sk5(sta:bitstring, ap:bitstring, rmsk:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta, ap, aan5, seq1, dhgrp, gs, sn, sess, rsne_sk, none, none));
+
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring, pidR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan5 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne_sk then
+  if pidR = none then
+
+    let dhss = exp(gaR, sS) in
+    (* §12.11.2.5.2：PMK = HMAC-Hash(SNonce||ANonce, rMSK||DHss) *)
+    let pmk = hmac((sn, anR), (rmsk, dhss)) in
+    (* 无缓存：DHss 已在 PMK 中，PTK 上下文不含 DHss *)
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = hmac(ick, (sn, anR, sta, ap, gs, gaR)) in
+    let aad = (sta, ap, sn, anR, sess, rsne_sk) in
+    let ct = aead((aad, ka), kek) in
+    event StaStart5(sta, ap, sess);
+    out(c, (sta, ap, sess, rsne_sk, ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+    if rsne2R = rsne_sk then
+
+      let aad2 = (ap, sta, anR, sn, sess, rsne_sk) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if kaAR = hmac(ick, (anR, sn, ap, sta, gaR, gs)) then
+        event StaFinish5(sta, ap, sess);
+        out(c, aead((label_data, probe_tk), tk)).
+
+(* =====================================================================
+   ANA = 5：AP
+   ===================================================================== *)
+let ap_sk5(ap:bitstring, sta:bitstring, rmsk:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, pidR:bitstring, wrR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan5 then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if pidR = none then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), (rmsk, dhss)) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (ap, sta, aan5, seq2, st_ok, dhgrp, ga, snR, sessR, rsneR, an, none));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if rsne3R = rsneR then
+
+      let aad = (sta, ap, snR, an, sessR, rsne3R) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR, an, sta, ap, gsR, ga)) then
+        event ApFinish5(sta, ap, sessR);
+
+        let kaap = hmac(ick, (an, snR, ap, sta, ga, gsR)) in
+        let aad2 = (ap, sta, an, snR, sessR, rsneR) in
+        let ct2 = aead((aad2, (kaap, gtk_val)), kek) in
+        out(c, (ap, sta, sessR, st_ok, rsneR, ct2)).
+
+(* =====================================================================
+   ANA = 5 + PMKSA caching：STA
+   ===================================================================== *)
+let sta_sk5c(sta:bitstring, ap:bitstring, pmk:bitstring, pmkid:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta, ap, aan5, seq1, dhgrp, gs, sn, sess, rsne_sk,
+          some(pmkid), none));
+
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring, pidR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan5 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne_sk then
+  if pidR = some(pmkid) then
+
+    let dhss = exp(gaR, sS) in
+    (* 缓存：PMK 来自缓存，PTK 上下文含 DHss *)
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR, dhss)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = hmac(ick, (sn, anR, sta, ap, gs, gaR)) in
+    let aad = (sta, ap, sn, anR, sess, rsne_sk) in
+    let ct = aead((aad, ka), kek) in
+    event StaStart5C(sta, ap, sess);
+    out(c, (sta, ap, sess, rsne_sk, ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+    if rsne2R = rsne_sk then
+
+      let aad2 = (ap, sta, anR, sn, sess, rsne_sk) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if kaAR = hmac(ick, (anR, sn, ap, sta, gaR, gs)) then
+        event StaFinish5C(sta, ap, sess);
+        out(c, aead((label_data, probe_tk), tk)).
+
+(* =====================================================================
+   ANA = 5 + PMKSA caching：AP
+   ===================================================================== *)
+let ap_sk5c(ap:bitstring, sta:bitstring, pmk:bitstring, pmkid:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, pidR:bitstring, wrR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan5 then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if pidR = some(pmkid) then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an, dhss)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (ap, sta, aan5, seq2, st_ok, dhgrp, ga, snR, sessR, rsneR, an,
+            some(pmkid)));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if rsne3R = rsneR then
+
+      let aad = (sta, ap, snR, an, sessR, rsne3R) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR, an, sta, ap, gsR, ga)) then
+        event ApFinish5C(sta, ap, sessR);
+
+        let kaap = hmac(ick, (an, snR, ap, sta, ga, gsR)) in
+        let aad2 = (ap, sta, an, snR, sessR, rsneR) in
+        let ct2 = aead((aad2, (kaap, gtk_val)), kek) in
+        out(c, (ap, sta, sessR, st_ok, rsneR, ct2)).
+
+(* =====================================================================
+   顶层
+   ===================================================================== *)
+process
+  (
+    ( !sta_sk4(sta1, ap1, eaprp_rmsk1) )
+    |
+    ( !ap_sk4(ap1, sta1, eaprp_rmsk1) )
+    |
+    ( !sta_sk4(sta2, ap2, eaprp_rmsk2) )
+    |
+    ( !ap_sk4(ap2, sta2, eaprp_rmsk2) )
+    |
+    ( !sta_sk5(sta1, ap1, eaprp_rmsk1) )
+    |
+    ( !ap_sk5(ap1, sta1, eaprp_rmsk1) )
+    |
+    ( !sta_sk5(sta2, ap2, eaprp_rmsk2) )
+    |
+    ( !ap_sk5(ap2, sta2, eaprp_rmsk2) )
+    |
+    ( sta_sk5c(sta1, ap1, pmk_c1, pmkid_c1)
+      |
+      ap_sk5c(ap1, sta1, pmk_c1, pmkid_c1) )
+    |
+    ( sta_sk5c(sta2, ap2, pmk_c2, pmkid_c2)
+      |
+      ap_sk5c(ap2, sta2, pmk_c2, pmkid_c2) )
+  )
