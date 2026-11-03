@@ -1,0 +1,591 @@
+(* ============================================================
+   FILS Public Key authentication — 合并分析模型
+   参考：IEEE 802.11-2024 §12.11.2.4 / §12.11.2.5 / §12.11.2.6
+
+   本文件的特点：
+   1. 同一个 STA-AP 对先完成一次无缓存 PK，得到 PMK/PMKID，
+      并把该 PMKSA 存入本地缓存。
+   2. 之后通过公开选择信道 sel 让环境/攻击者选择：
+        use_pk    : 即使已有缓存，也重新执行纯 PK 协商；
+        use_cache : 使用已有缓存 PMK，且只允许 PMKID 命中。
+   3. 因而不再固定“先无缓存、之后只能缓存”。
+   4. 顶层使用两个独立 STA-AP 对，表示多个 STA 和多个 AP 实体。
+   5. 消息经公共信道 c 传输，攻击者可拦截、重放、篡改。
+   6. 当前只建模成功路径；失败路径和 status 泄露需要额外分支及
+      equivalence 查询。
+
+   重要抽象：
+   - DH 使用固定抽象群 g^x；
+   - 签名使用 sign/checksign；
+   - AEAD 抽象为 aead(AAD || plaintext, key)；
+   - KDF/ExtractBits 用不同 label 的 kdf 抽象；
+   - 证书/CA 抽象为已认证的公开公钥参数；
+   - GTK 抽象为 Key Delivery 中的明文载荷；
+   - 为控制状态空间，第二次会话只展开一次选择，不展开无界循环。
+
+   注意：
+   - use_pk 分支会重新协商 PMK，但本模型不覆盖已有缓存；
+   - use_cache 分支只建模 PMKID 命中，miss 回退到 PK 未展开；
+   - 若要分析 cache 更新或 PMKID miss，需要额外展开状态。
+   ============================================================ *)
+
+free c:channel.
+free sel1:channel.
+free sel2:channel.
+
+(* 两个 STA 和两个 AP 的公开身份 *)
+const sta1:bitstring.
+const sta2:bitstring.
+const ap1:bitstring.
+const ap2:bitstring.
+
+(* 协议常量 *)
+const g:bitstring.
+const aan6:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const status0:bitstring.
+const status77:bitstring.
+const status112:bitstring.
+const none:bitstring.
+const rsne_nc:bitstring.
+
+(* 第二次会话的分支选择 *)
+const use_pk:bitstring.
+const use_cache:bitstring.
+
+(* KDF 标签 *)
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+
+(* ---------- 密码学原语抽象 ---------- *)
+
+(* 固定 DH 群：exp(g,x) 表示 g^x *)
+fun exp(bitstring, bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g, x), y) = exp(exp(g, y), x).
+
+(* Hash、HMAC、KDF *)
+fun h(bitstring):bitstring.
+fun trunc128(bitstring):bitstring.
+fun hmac(bitstring, bitstring):bitstring.
+fun kdf(bitstring, bitstring, bitstring):bitstring.
+
+(* 编码辅助 *)
+fun some(bitstring):bitstring.
+fun rsne(bitstring):bitstring.
+
+(* 抽象 AEAD：aead(AAD || plaintext, KEK) *)
+fun aead(bitstring, bitstring):bitstring.
+reduc forall m:bitstring, k:bitstring; adec(aead(m, k), k) = m.
+
+(* 长期签名密钥 *)
+fun pk(bitstring):bitstring.
+fun sign(bitstring, bitstring):bitstring.
+reduc forall m:bitstring, sk:bitstring;
+  checksign(sign(m, sk), pk(sk)) = m.
+
+(* ============================================================
+   事件声明
+   ============================================================ *)
+
+event SecretPMK_NC(bitstring).
+event SecretPTK_NC(bitstring).
+event SecretTK_NC(bitstring).
+event SecretGTK_NC(bitstring).
+event StaFinished_NC(bitstring, bitstring, bitstring).
+event ApFinished_NC(bitstring, bitstring, bitstring).
+
+event SecretPMK_C(bitstring).
+event SecretPTK_C(bitstring).
+event SecretTK_C(bitstring).
+event SecretGTK_C(bitstring).
+event StaFinished_C(bitstring, bitstring, bitstring).
+event ApFinished_C(bitstring, bitstring, bitstring).
+
+event CacheStored(bitstring, bitstring, bitstring).
+event CacheUsed(bitstring, bitstring, bitstring).
+
+(* ============================================================
+   安全目标
+
+   SG1  PMK 保密性（通过 Secret 事件标注）。
+   SG2  PTK / TK / GTK 保密性（通过 Secret 事件标注）。
+   SG3  双向认证与密钥确认。
+   SG4  injective agreement。
+   SG5  缓存一致性：CacheUsed 必须对应先前 CacheStored。
+   ============================================================ *)
+
+(* 无缓存分支：STA 完成则 AP 完成同一会话 *)
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinished_NC(s,a,se))
+  ==> event(ApFinished_NC(s,a,se)).
+
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinished_NC(s,a,se))
+  ==> inj-event(ApFinished_NC(s,a,se)).
+
+(* 缓存分支：STA 完成则 AP 完成同一会话 *)
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinished_C(s,a,se))
+  ==> event(ApFinished_C(s,a,se)).
+
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinished_C(s,a,se))
+  ==> inj-event(ApFinished_C(s,a,se)).
+
+(* 缓存一致性 *)
+query s:bitstring, a:bitstring, p:bitstring;
+  event(CacheUsed(s,a,p)) ==> event(CacheStored(s,a,p)).
+
+(* ============================================================
+   纯 PK 会话：无缓存分支，供第二次 use_pk 使用
+   ============================================================ *)
+
+let pk_session(sta:bitstring, ap:bitstring,
+               pkS:bitstring, skS:bitstring,
+               pkA:bitstring, skA:bitstring) =
+  (
+    (* STA 消息1 *)
+    new SNonce:bitstring;
+    new sS:bitstring;
+    let gS = exp(g, sS) in
+    new Session:bitstring;
+
+    out(c, (sta, ap, aan6, seq1, SNonce, gS, rsne_nc, Session, none));
+
+    (* AP 处理消息1，生成 AP 临时参数 *)
+    in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+           SNonceR:bitstring, gSR:bitstring, rsneR:bitstring,
+           SessionR:bitstring, listR:bitstring));
+
+    if staR = sta then
+    if apR = ap then
+    if aanR = aan6 then
+    if seqR = seq1 then
+    if listR = none then
+    if rsneR = rsne_nc then
+
+      new ANonce:bitstring;
+      new sA:bitstring;
+      let gA = exp(g, sA) in
+
+      out(c, (staR, apR, aan6, seq2, status0, ANonce, gA,
+              rsne_nc, SessionR, none));
+
+      (* STA 处理消息2 *)
+      in(c, (staR2:bitstring, apR2:bitstring, aanR2:bitstring,
+             seqR2:bitstring, statusR2:bitstring, ANonceR:bitstring,
+             gAR:bitstring, rsneAPR:bitstring, SessionR2:bitstring,
+             listR2:bitstring));
+
+      if staR2 = sta then
+      if apR2 = ap then
+      if aanR2 = aan6 then
+      if seqR2 = seq2 then
+      if statusR2 = status0 then
+      if SessionR2 = Session then
+      if listR2 = none then
+      if rsneAPR = rsne_nc then
+
+        (* STA 派生 PMK/PTK *)
+        let DHss = exp(gAR, sS) in
+        let PMK = hmac((SNonce, ANonceR), DHss) in
+        let PTK = kdf(PMK, label_ptk, (sta, ap, SNonce, ANonceR)) in
+        let ICK = kdf(PTK, label_ick, none) in
+        let KEK = kdf(PTK, label_kek, none) in
+        let TK  = kdf(PTK, label_tk, none) in
+
+        (* 纯 PK：STA 用长期私钥签名 *)
+        let KeyAuthS = sign((gS, gAR, SNonce, ANonceR, sta, ap), skS) in
+
+        let aadS = (sta, ap, SNonce, ANonceR, rsne_nc, Session) in
+        let CTS = aead((aadS, (pkS, KeyAuthS)), KEK) in
+
+        out(c, (sta, ap, Session, CTS));
+
+        (* AP 处理密钥确认请求 *)
+        in(c, (staR3:bitstring, apR3:bitstring, SessionR3:bitstring,
+               CTSR:bitstring));
+
+        if staR3 = sta then
+        if apR3 = ap then
+        if SessionR3 = SessionR then
+
+          let DHssAP = exp(gSR, sA) in
+          let PMK_AP = hmac((SNonceR, ANonce), DHssAP) in
+          let PTK_AP = kdf(PMK_AP, label_ptk,
+                           (sta, ap, SNonceR, ANonce)) in
+          let ICK_AP = kdf(PTK_AP, label_ick, none) in
+          let KEK_AP = kdf(PTK_AP, label_kek, none) in
+          let TK_AP  = kdf(PTK_AP, label_tk, none) in
+
+          let aadS_AP = (sta, ap, SNonceR, ANonce, rsne_nc, SessionR) in
+          let (aadSR:bitstring, payloadR:bitstring) = adec(CTSR, KEK_AP) in
+          let (pkSR:bitstring, KeyAuthSR:bitstring) = payloadR in
+
+          if aadSR = aadS_AP then
+          if pkSR = pkS then
+          if checksign(KeyAuthSR, pkS) =
+             (gSR, gA, SNonceR, ANonce, sta, ap) then
+
+            (* AP 生成 GTK，并用长期私钥签名 *)
+            new GTK:bitstring;
+
+            let KeyAuthAP = sign((gA, gSR, ANonce, SNonceR, ap, sta), skA) in
+            let aadAP = (ap, sta, ANonce, SNonceR, rsne_nc, SessionR) in
+            let CTAP = aead((aadAP, (pkA, (KeyAuthAP, GTK))), KEK_AP) in
+
+            event ApFinished_NC(sta, ap, SessionR);
+            out(c, (staR3, apR3, SessionR, status0, CTAP));
+
+            (* STA 处理响应 *)
+            in(c, (staR4:bitstring, apR4:bitstring, SessionR4:bitstring,
+                   statusR4:bitstring, CTAPR:bitstring));
+
+            if staR4 = sta then
+            if apR4 = ap then
+            if SessionR4 = Session then
+            if statusR4 = status0 then
+
+              let (aadAPR:bitstring, payloadAP:bitstring) = adec(CTAPR, KEK) in
+              let (pkAPR:bitstring, rest:bitstring) = payloadAP in
+              let (KeyAuthAPR:bitstring, GTKR:bitstring) = rest in
+
+              let aadAP_STA = (ap, sta, ANonceR, SNonce, rsne_nc, Session) in
+
+              if aadAPR = aadAP_STA then
+              if pkAPR = pkA then
+              if checksign(KeyAuthAPR, pkA) =
+                 (gAR, gS, ANonceR, SNonce, ap, sta) then
+
+                event StaFinished_NC(sta, ap, Session);
+                event SecretPMK_NC(PMK);
+                event SecretPTK_NC(PTK);
+                event SecretTK_NC(TK);
+                event SecretGTK_NC(GTKR)
+  ).
+
+(* ============================================================
+   缓存 PK 会话：使用已有 PMK/PMKID
+   ============================================================ *)
+
+let cache_session(sta:bitstring, ap:bitstring,
+                  pkS:bitstring, pkA:bitstring,
+                  pmk:bitstring, pmkid:bitstring) =
+  (
+    new SNonce:bitstring;
+    new sS:bitstring;
+    let gS = exp(g, sS) in
+    new Session:bitstring;
+    let rsneC = rsne(pmkid) in
+
+    (* STA 带上 PMKID List *)
+    out(c, (sta, ap, aan6, seq1, SNonce, gS, rsneC, Session,
+            some(pmkid)));
+
+    (* AP 检查 PMKID 命中 *)
+    in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+           SNonceR:bitstring, gSR:bitstring, rsneR:bitstring,
+           SessionR:bitstring, listR:bitstring));
+
+    if staR = sta then
+    if apR = ap then
+    if aanR = aan6 then
+    if seqR = seq1 then
+    if listR = some(pmkid) then
+    if rsneR = rsneC then
+
+      new ANonce:bitstring;
+      new sA:bitstring;
+      let gA = exp(g, sA) in
+
+      out(c, (staR, apR, aan6, seq2, status0, ANonce, gA,
+              rsneC, SessionR, some(pmkid)));
+
+      (* STA 处理消息2 *)
+      in(c, (staR2:bitstring, apR2:bitstring, aanR2:bitstring,
+             seqR2:bitstring, statusR2:bitstring, ANonceR:bitstring,
+             gAR:bitstring, rsneAPR:bitstring, SessionR2:bitstring,
+             listR2:bitstring));
+
+      if staR2 = sta then
+      if apR2 = ap then
+      if aanR2 = aan6 then
+      if seqR2 = seq2 then
+      if statusR2 = status0 then
+      if SessionR2 = Session then
+      if listR2 = some(pmkid) then
+      if rsneAPR = rsneC then
+
+        (* 缓存分支仍做 DH；PTK 上下文包含 DHss *)
+        let DHss = exp(gAR, sS) in
+        let PTK = kdf(pmk, label_ptk,
+                      (sta, ap, SNonce, ANonceR, DHss)) in
+        let ICK = kdf(PTK, label_ick, none) in
+        let KEK = kdf(PTK, label_kek, none) in
+        let TK  = kdf(PTK, label_tk, none) in
+
+        (* 缓存分支使用 ICK HMAC *)
+        let KeyAuthS = hmac(ICK,
+                           (SNonce, ANonceR, sta, ap, gS, gAR)) in
+
+        let aadS = (sta, ap, SNonce, ANonceR, rsneC, Session) in
+        let CTS = aead((aadS, (pkS, KeyAuthS)), KEK) in
+
+        out(c, (sta, ap, Session, CTS));
+
+        (* AP 处理密钥确认请求 *)
+        in(c, (staR3:bitstring, apR3:bitstring, SessionR3:bitstring,
+               CTSR:bitstring));
+
+        if staR3 = sta then
+        if apR3 = ap then
+        if SessionR3 = SessionR then
+
+          let DHssAP = exp(gSR, sA) in
+          let PTK_AP = kdf(pmk, label_ptk,
+                           (sta, ap, SNonceR, ANonce, DHssAP)) in
+          let ICK_AP = kdf(PTK_AP, label_ick, none) in
+          let KEK_AP = kdf(PTK_AP, label_kek, none) in
+          let TK_AP  = kdf(PTK_AP, label_tk, none) in
+
+          let aadS_AP = (sta, ap, SNonceR, ANonce, rsneC, SessionR) in
+          let (aadSR:bitstring, payloadR:bitstring) = adec(CTSR, KEK_AP) in
+          let (pkSR:bitstring, KeyAuthSR:bitstring) = payloadR in
+
+          if aadSR = aadS_AP then
+          if pkSR = pkS then
+          if KeyAuthSR = hmac(ICK_AP,
+                              (SNonceR, ANonce, sta, ap, gSR, gA)) then
+
+            new GTK:bitstring;
+
+            let KeyAuthAP = hmac(ICK_AP,
+                                 (ANonce, SNonceR, ap, sta, gA, gSR)) in
+            let aadAP = (ap, sta, ANonce, SNonceR, rsneC, SessionR) in
+            let CTAP = aead((aadAP, (pkA, (KeyAuthAP, GTK))), KEK_AP) in
+
+            event ApFinished_C(sta, ap, SessionR);
+            out(c, (staR3, apR3, SessionR, status0, CTAP));
+
+            (* STA 处理响应 *)
+            in(c, (staR4:bitstring, apR4:bitstring, SessionR4:bitstring,
+                   statusR4:bitstring, CTAPR:bitstring));
+
+            if staR4 = sta then
+            if apR4 = ap then
+            if SessionR4 = Session then
+            if statusR4 = status0 then
+
+              let (aadAPR:bitstring, payloadAP:bitstring) = adec(CTAPR, KEK) in
+              let (pkAPR:bitstring, rest:bitstring) = payloadAP in
+              let (KeyAuthAPR:bitstring, GTKR:bitstring) = rest in
+
+              let aadAP_STA = (ap, sta, ANonceR, SNonce, rsneC, Session) in
+
+              if aadAPR = aadAP_STA then
+              if pkAPR = pkA then
+              if KeyAuthAPR = hmac(ICK,
+                                   (ANonceR, SNonce, ap, sta, gAR, gS)) then
+
+                event StaFinished_C(sta, ap, Session);
+                event SecretPMK_C(pmk);
+                event SecretPTK_C(PTK);
+                event SecretTK_C(TK);
+                event SecretGTK_C(GTKR);
+                event CacheUsed(sta, ap, pmkid)
+  ).
+
+(* ============================================================
+   一个 STA-AP 对：首次无缓存 + 第二次任意选择
+   ============================================================ *)
+
+let pair_session(sel:channel, sta:bitstring, ap:bitstring,
+                 pkS:bitstring, skS:bitstring,
+                 pkA:bitstring, skA:bitstring) =
+  (
+    (* ========================================================
+       首次：无缓存 PK，用于建立 PMKSA
+       ======================================================== *)
+
+    new SNonce:bitstring;
+    new sS:bitstring;
+    let gS = exp(g, sS) in
+    new Session:bitstring;
+
+    out(c, (sta, ap, aan6, seq1, SNonce, gS, rsne_nc, Session, none));
+
+    in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+           SNonceR:bitstring, gSR:bitstring, rsneR:bitstring,
+           SessionR:bitstring, listR:bitstring));
+
+    if staR = sta then
+    if apR = ap then
+    if aanR = aan6 then
+    if seqR = seq1 then
+    if listR = none then
+    if rsneR = rsne_nc then
+
+      new ANonce:bitstring;
+      new sA:bitstring;
+      let gA = exp(g, sA) in
+
+      out(c, (staR, apR, aan6, seq2, status0, ANonce, gA,
+              rsne_nc, SessionR, none));
+
+      in(c, (staR2:bitstring, apR2:bitstring, aanR2:bitstring,
+             seqR2:bitstring, statusR2:bitstring, ANonceR:bitstring,
+             gAR:bitstring, rsneAPR:bitstring, SessionR2:bitstring,
+             listR2:bitstring));
+
+      if staR2 = sta then
+      if apR2 = ap then
+      if aanR2 = aan6 then
+      if seqR2 = seq2 then
+      if statusR2 = status0 then
+      if SessionR2 = Session then
+      if listR2 = none then
+      if rsneAPR = rsne_nc then
+
+        let DHss = exp(gAR, sS) in
+        let PMK = hmac((SNonce, ANonceR), DHss) in
+        let PMKID = trunc128(h((gS, gAR))) in
+        let PTK = kdf(PMK, label_ptk, (sta, ap, SNonce, ANonceR)) in
+        let ICK = kdf(PTK, label_ick, none) in
+        let KEK = kdf(PTK, label_kek, none) in
+        let TK  = kdf(PTK, label_tk, none) in
+
+        let KeyAuthS = sign((gS, gAR, SNonce, ANonceR, sta, ap), skS) in
+        let aadS = (sta, ap, SNonce, ANonceR, rsne_nc, Session) in
+        let CTS = aead((aadS, (pkS, KeyAuthS)), KEK) in
+
+        out(c, (sta, ap, Session, CTS));
+
+        in(c, (staR3:bitstring, apR3:bitstring, SessionR3:bitstring,
+               CTSR:bitstring));
+
+        if staR3 = sta then
+        if apR3 = ap then
+        if SessionR3 = SessionR then
+
+          let DHssAP = exp(gSR, sA) in
+          let PMK_AP = hmac((SNonceR, ANonce), DHssAP) in
+          let PTK_AP = kdf(PMK_AP, label_ptk,
+                           (sta, ap, SNonceR, ANonce)) in
+          let ICK_AP = kdf(PTK_AP, label_ick, none) in
+          let KEK_AP = kdf(PTK_AP, label_kek, none) in
+          let TK_AP  = kdf(PTK_AP, label_tk, none) in
+
+          let aadS_AP = (sta, ap, SNonceR, ANonce, rsne_nc, SessionR) in
+          let (aadSR:bitstring, payloadR:bitstring) = adec(CTSR, KEK_AP) in
+          let (pkSR:bitstring, KeyAuthSR:bitstring) = payloadR in
+
+          if aadSR = aadS_AP then
+          if pkSR = pkS then
+          if checksign(KeyAuthSR, pkS) =
+             (gSR, gA, SNonceR, ANonce, sta, ap) then
+
+            new GTK:bitstring;
+
+            let KeyAuthAP = sign((gA, gSR, ANonce, SNonceR, ap, sta), skA) in
+            let aadAP = (ap, sta, ANonce, SNonceR, rsne_nc, SessionR) in
+            let CTAP = aead((aadAP, (pkA, (KeyAuthAP, GTK))), KEK_AP) in
+
+            event ApFinished_NC(sta, ap, SessionR);
+            out(c, (staR3, apR3, SessionR, status0, CTAP));
+
+            in(c, (staR4:bitstring, apR4:bitstring, SessionR4:bitstring,
+                   statusR4:bitstring, CTAPR:bitstring));
+
+            if staR4 = sta then
+            if apR4 = ap then
+            if SessionR4 = Session then
+            if statusR4 = status0 then
+
+              let (aadAPR:bitstring, payloadAP:bitstring) = adec(CTAPR, KEK) in
+              let (pkAPR:bitstring, rest:bitstring) = payloadAP in
+              let (KeyAuthAPR:bitstring, GTKR:bitstring) = rest in
+
+              let aadAP_STA = (ap, sta, ANonceR, SNonce, rsne_nc, Session) in
+
+              if aadAPR = aadAP_STA then
+              if pkAPR = pkA then
+              if checksign(KeyAuthAPR, pkA) =
+                 (gAR, gS, ANonceR, SNonce, ap, sta) then
+
+                event StaFinished_NC(sta, ap, Session);
+                event SecretPMK_NC(PMK);
+                event SecretPTK_NC(PTK);
+                event SecretTK_NC(TK);
+                event SecretGTK_NC(GTKR);
+
+                event CacheStored(sta, ap, PMKID);
+
+                (* ==================================================
+                   第二次会话：由环境/攻击者在 sel 上选择
+                   ================================================== *)
+                in(sel, seltag:bitstring);
+
+                if seltag = use_pk then
+                  pk_session(sta, ap, pkS, skS, pkA, skA)
+                else
+                  if seltag = use_cache then
+                    cache_session(sta, ap, pkS, pkA, PMK, PMKID)
+  ).
+
+(* ============================================================
+   顶层：两个独立 STA-AP 对
+   ============================================================ *)
+
+process
+  new skS1:bitstring;
+  new skS2:bitstring;
+  new skA1:bitstring;
+  new skA2:bitstring;
+
+  let pkS1 = pk(skS1) in
+  let pkS2 = pk(skS2) in
+  let pkA1 = pk(skA1) in
+  let pkA2 = pk(skA2) in
+
+  out(c, pkS1);
+  out(c, pkS2);
+  out(c, pkA1);
+  out(c, pkA2);
+
+  (
+    pair_session(sel1, sta1, ap1, pkS1, skS1, pkA1, skA1)
+    |
+    pair_session(sel2, sta2, ap2, pkS2, skS2, pkA2, skA2)
+  )
+
+(* ============================================================
+   说明与扩展
+
+   1. 首次无缓存协商用于建立缓存；第二次会话由 sel 选择
+      use_pk 或 use_cache，不再固定“先无缓存、之后只能缓存”。
+
+   2. use_pk 分支即使已有缓存，也重新执行纯 PK 协商。
+      为控制状态空间，本模型不把新 PMK 覆盖旧缓存。
+
+   3. use_cache 分支检查 PMKID 命中后才使用缓存的 PMK。
+      PMKID miss 回退到 PK 的分支未建模。
+
+   4. 当前只展开两次会话。若要做无界多次会话，可在
+      CacheStored 之后使用 ! 复制选择过程；这会使 ProVerif
+      状态空间显著增大。
+
+   5. 失败路径中 AP 应返回 Authentication frame，Status=112；
+      若 status 依赖缓存状态或验签结果，应显式输出 status，
+      并使用 equivalence 查询分析状态泄露。
+
+   6. 多个 STA/AP 通过顶层多个 pair_session 实例表示。
+      一个 AP 同时服务多个 STA 并共享同一 cache table 的场景
+      需要把 AP 拆成独立缓存表进程。
+
+   7. 若要分析 PFS，需要增加长期私钥泄露分支；
+      若要分析 PMKID 链接性，需要使用 observational equivalence。
+   ============================================================ *)
