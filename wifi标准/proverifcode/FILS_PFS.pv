@@ -16,6 +16,28 @@
          新开会话、从而误报。
    ===================================================================== *)
 
+(* ---------------------------------------------------------------------
+   本文件与输出文件 FILS_PFS.out.txt 的对应关系（验证结论）：
+     - not attacker_p1(probe_pk[])  is true  → FILS PK 具备 PFS：即使长期
+       签名私钥在 phase 1 泄露，也恢复不了 phase 0 会话的 TK。
+     - not attacker_p1(probe_sk5[]) is true  → FILS SK（ANA=5，带 DH）具备 PFS：
+       即使 rMSK 在 phase 1 泄露，也恢复不了旧会话的 TK。
+     - not attacker_p1(probe_sk4[]) is false → FILS SK（ANA=4，无 DH）没有 PFS：
+       rMSK 一旦泄露，攻击者可推出旧会话 TK 并解开数据帧。这是标准允许的
+       设计取舍，作为“无 PFS”的对照组，不是实现漏洞（输出含完整攻击轨迹）。
+
+   探针（probe_*）怎么用：
+     每个会话在成功结束时，把“关联后第一条受 TK 保护的数据帧”
+     aead((label_data, probe_x), TK) 输出到公共信道；probe_x 是 [private]
+     私有不变量。若攻击者能解出 probe_x，说明它求出了 TK，即 PFS 失败；
+     否则说明旧会话 TK 仍保密。
+
+   为什么所有会话都不加 !（不复制）：
+     phase 1 会泄露长期密钥/rMSK。若允许会话在 phase 1 继续新建，攻击者
+     可用泄露的密钥正常“新建”会话，从而产生与 PFS 无关的假攻击。因此每个
+     协议只在 phase 0 跑一次，phase 1 只做泄露。
+   --------------------------------------------------------------------- *)
+
 free c:channel.
 
 const sta1:bitstring.
@@ -104,6 +126,7 @@ let sta_pk(sta:bitstring, ap:bitstring, skS:bitstring, pkA:bitstring) =
       let (pkaR:bitstring, kaAR:bitstring) = adec(ct2R, aad2, kek) in
       if pkaR = pkA then
       if checksign(kaAR, pkA) = (gaR, gs, anR, sn, ap, sta) then
+        (* PFS 探针：若 probe_pk 可被解出，说明长期私钥泄露后旧会话 TK 被恢复 *)
         out(c, aead((label_data, probe_pk), tk)).
 
 let ap_pk(ap:bitstring, sta:bitstring, skA:bitstring, pkS:bitstring) =
@@ -165,6 +188,7 @@ let sta_sk5(sta:bitstring, ap:bitstring, rmsk:bitstring) =
       let aad2 = (ap, sta, anR, sn, sess, rsne) in
       let kaAR:bitstring = adec(ct2R, aad2, kek) in
       if kaAR = hmac(ick, (anR, sn, ap, sta, gaR, gs)) then
+        (* PFS 探针：若 probe_sk5 可被解出，说明 rMSK 泄露后旧会话 TK 被恢复 *)
         out(c, aead((label_data, probe_sk5), tk)).
 
 let ap_sk5(ap:bitstring, sta:bitstring, rmsk:bitstring) =
@@ -222,6 +246,7 @@ let sta_sk4(sta:bitstring, ap:bitstring, rmsk:bitstring) =
       let aad2 = (ap, sta, anR, sn, sess, rsne) in
       let kaAR:bitstring = adec(ct2R, aad2, kek) in
       if kaAR = hmac(ick, (anR, sn, ap, sta)) then
+        (* PFS 探针：期望攻击者能解出（ANA=4 无 DH ⇒ 无 PFS，标准允许） *)
         out(c, aead((label_data, probe_sk4), tk)).
 
 let ap_sk4(ap:bitstring, sta:bitstring, rmsk:bitstring) =
@@ -258,6 +283,7 @@ process
   out(c, pkA1);
 
   (
+    (* phase 0：三组会话各跑一次，成功时各自输出一个受 TK 保护的探针 *)
     ( sta_pk(sta1, ap1, skS1, pkA1) | ap_pk(ap1, sta1, skA1, pkS1) )
     |
     ( sta_sk5(sta2, ap2, rmsk2) | ap_sk5(ap2, sta2, rmsk2) )

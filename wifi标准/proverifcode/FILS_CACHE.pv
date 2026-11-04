@@ -1,0 +1,93 @@
+(* =====================================================================
+   FILS PMKSA 缓存一致性 / 不同步专项测试
+   场景（两对并行）：
+     - 对 1：STA 与 AP 缓存一致（都用 pmkA）  -> 会话可完成；
+     - 对 2：缓存不同步（STA 用 pmkA，AP 用 pmkB）-> KeyAuth 校验失败，
+             会话无法完成。
+   目标：
+     1) StaFinishC ==> ApFinishC（STA 完成则 AP 完成同一会话）；
+     2) StaPTK ==> ApPTK（若 STA 完成，双方 PTK 必须一致）；
+     3) CacheUse ==> CacheStore（使用的缓存条目必须此前存储过）。
+   预期：全部 true。含义：
+     - 缓存不同步只会导致会话失败（可用性/DoS 层面），
+       不会导致“双方接受不同 PTK”的密钥不一致；
+     - 缓存条目使用与存储的对应关系成立。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta1:bitstring.
+const sta2:bitstring.
+const ap1:bitstring.
+const ap2:bitstring.
+
+const none:bitstring.
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const pmkid:bitstring.
+
+(* 缓存中的 PMK：pmkA 正常；pmkB 用于制造不同步 *)
+free pmkA:bitstring [private].
+free pmkB:bitstring [private].
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+event ApFinishC(bitstring,bitstring,bitstring).
+event StaFinishC(bitstring,bitstring,bitstring).
+event ApPTK(bitstring,bitstring,bitstring,bitstring).
+event StaPTK(bitstring,bitstring,bitstring,bitstring).
+event CacheStore(bitstring,bitstring,bitstring).
+event CacheUse(bitstring,bitstring,bitstring).
+
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinishC(s,a,se)) ==> event(ApFinishC(s,a,se)).
+
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)).
+
+query s:bitstring, a:bitstring, p:bitstring;
+  event(CacheUse(s,a,p)) ==> event(CacheStore(s,a,p)).
+
+(* 一次 PMKSA 缓存会话：pmk_s 为 STA 侧缓存，pmk_a 为 AP 侧缓存 *)
+let cache_session(sta:bitstring, ap:bitstring,
+                  pmk_s:bitstring, pmk_a:bitstring) =
+  event CacheStore(sta, ap, pmkid);
+
+  new sn:bitstring;
+  new an:bitstring;
+  new sess:bitstring;
+
+  (* M1：STA 发 SNonce + PMKID *)
+  out(c, (sta, ap, sn, sess, pmkid));
+
+  (* AP 侧：读取 M1，命中 PMKID，用 AP 缓存 pmk_a 派生 PTK *)
+  in(c, (staR:bitstring, apR:bitstring, snR:bitstring,
+         sessR:bitstring, pmkidR:bitstring));
+  if staR = sta then
+  if apR = ap then
+  if snR = sn then
+  if sessR = sess then
+  if pmkidR = pmkid then
+
+    let ptk_a = kdf(pmk_a, label_ptk, (sta,ap,sn,an)) in
+    let ick_a = kdf(ptk_a, label_ick, none) in
+    let kaap = hmac(ick_a, (an, sn, ap, sta)) in
+    event ApFinishC(sta, ap, sess);
+    event ApPTK(sta, ap, sess, ptk_a);
+    out(c, (sess, kaap));
+
+    (* STA 侧：用 STA 缓存 pmk_s 验证 AP 的 KeyAuth *)
+    in(c, (sess2R:bitstring, kaapR:bitstring));
+    if sess2R = sess then
+      let ptk_s = kdf(pmk_s, label_ptk, (sta,ap,sn,an)) in
+      let ick_s = kdf(ptk_s, label_ick, none) in
+      if kaapR = hmac(ick_s, (an, sn, sta, ap)) then
+        event StaFinishC(sta, ap, sess);
+        event StaPTK(sta, ap, sess, ptk_s);
+        event CacheUse(sta, ap, pmkid).
+
+process
+  ( cache_session(sta1, ap1, pmkA, pmkA)     (* 缓存一致 *)
+    |
+    cache_session(sta2, ap2, pmkA, pmkB) )   (* 缓存不同步 *)

@@ -1,0 +1,45 @@
+(* =====================================================================
+   FILS GTK rekey 重放测试（错误实现：STA 不校验 KeyID/epoch）
+   GTK 帧用 KEK 做 AEAD 保护，攻击者不能伪造内容，但可以重放旧帧。
+   场景：攻击者把旧 epoch 的帧 aead((kid1,gtk1),kek) 重放两次；
+        错误 STA 只看内容不校验 epoch，两次都接受。
+        而 AP 只发送过 kid1 一次 -> injective 查询失败。
+   预期：StaAccept ==> ApSend 为 true；inj-event 版本为 false（重放被接受）。
+   ===================================================================== *)
+
+free c:channel.
+fun aead(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, k:bitstring; adec(aead(m,k),k) = m.
+
+free kek:bitstring [private].
+const kid1:bitstring.
+const kid2:bitstring.
+free gtk1:bitstring [private].
+free gtk2:bitstring [private].
+
+event ApSend(bitstring,bitstring).
+event StaAccept(bitstring,bitstring).
+
+query k:bitstring, g:bitstring;
+  event(StaAccept(k,g)) ==> event(ApSend(k,g)).
+
+query k:bitstring, g:bitstring;
+  inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)).
+
+process
+  out(c, aead((kid1,gtk1), kek));
+  event ApSend(kid1, gtk1);
+
+  out(c, aead((kid2,gtk2), kek));
+  event ApSend(kid2, gtk2);
+
+  (* 错误 STA：不校验 epoch，只要解密出 kid1 就接受 *)
+  in(c, ct1:bitstring);
+  let (k1R:bitstring, g1R:bitstring) = adec(ct1, kek) in
+  if k1R = kid1 then
+    event StaAccept(k1R, g1R);
+
+  in(c, ct2:bitstring);
+  let (k2R:bitstring, g2R:bitstring) = adec(ct2, kek) in
+  if k2R = kid1 then
+    event StaAccept(k2R, g2R)

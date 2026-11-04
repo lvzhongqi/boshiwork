@@ -1,0 +1,58 @@
+(* =====================================================================
+   FILS 密钥重用专项测试（RNG 失效场景）
+   目的：验证“当 SNonce / ANonce / 临时 DH 私钥 / Session 被重复使用”时，
+        PTK 是否会重复（即密钥重用）。
+   设计：
+     - 同一 STA-AP 对连续跑两次会话；
+     - 第二次会话“RNG 失效”，完全重用第一次的 sn/sS/an/sA；
+     - 每次会话用独立的 run-id 标记；
+     - 若两次会话派生出相同 PTK，则唯一性查询会失败。
+   预期：唯一性查询为 false（PTK 重用），说明 FILS 的 PTK 唯一性
+        完全依赖 nonce/临时密钥的新鲜性。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta:bitstring.
+const ap:bitstring.
+const g:bitstring.
+const label_ptk:bitstring.
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+fun h(bitstring):bitstring.
+
+(* run-id, ptk *)
+event Used(bitstring,bitstring).
+
+(* 同一 PTK 只能属于同一个 run；若两次不同 run 得到同一 PTK 则查询失败 *)
+query r1:bitstring, r2:bitstring, k:bitstring;
+  event(Used(r1,k)) && event(Used(r2,k)) ==> r1 = r2.
+
+process
+  (* 第一次会话：本应新生成的随机量（这里只生成一次） *)
+  new sn:bitstring;        (* SNonce *)
+  new sS:bitstring;        (* STA 临时 DH 私钥 *)
+  new an:bitstring;        (* ANonce *)
+  new sA:bitstring;        (* AP 临时 DH 私钥 *)
+
+  let gs = exp(g,sS) in
+  let ga = exp(g,sA) in
+  let dh = exp(ga,sS) in
+  let pmk = hmac((sn,an), dh) in
+  let ptk = kdf(pmk, label_ptk, (sta,ap,sn,an)) in
+  new r1:bitstring;
+  event Used(r1, ptk);
+  out(c, h((gs,ga,ptk)));
+
+  (* 第二次会话：RNG 失效，重用 sn/sS/an/sA，重新计算 PTK *)
+  let dh2 = exp(ga,sS) in
+  let pmk2 = hmac((sn,an), dh2) in
+  let ptk2 = kdf(pmk2, label_ptk, (sta,ap,sn,an)) in
+  new r2:bitstring;
+  event Used(r2, ptk2);
+  out(c, h((gs,ga,ptk2)))

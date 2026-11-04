@@ -1,0 +1,59 @@
+(* =====================================================================
+   FILS SK / EAP-RP：WrappedData 中的 PMK SEQ 重放测试（正确校验 SEQ）
+   背景：FILS SK 的 WrappedData 承载 EAP-Initiate/Reauth 与
+         EAP-Finish/Reauth（RFC 6696），其中含 SEQ 与 KeyName/PMKID。
+         SEQ 用于防重放；AP 必须只接受“当前/下一个”SEQ。
+   建模：
+     - 会话 A 使用旧 SEQ=seq1，派生 PMK_A；
+     - 攻击者把旧的 (seq1, wrapped_data) 重放到“期望 seq2”的 AP 实例；
+     - 正确实现检查 seqR = seq2，旧 SEQ 被拒绝，不产生 PMK 重用。
+   查询：同一 PMK 不得出现在不同会话 -> 预期 true（无重用）。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta:bitstring.
+const ap:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const ok:bitstring.
+const pmkid:bitstring.
+const label_pmk:bitstring.
+
+free rmsk:bitstring [private].
+
+(* 两次不同的会话标签 *)
+const sessA:bitstring.
+const sessB:bitstring.
+
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+event UsePMK(bitstring,bitstring).   (* session, pmk *)
+
+(* 同一 PMK 不得出现在不同会话 *)
+query s1:bitstring, s2:bitstring, k:bitstring;
+  event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2.
+
+(* 后端 rMSK 保密 *)
+query attacker(rmsk).
+
+process
+  new wd1:bitstring;   (* 会话 A 的 WrappedData *)
+
+  (* 会话 A：STA 发出旧 SEQ=seq1 的 WrappedData *)
+  out(c, (sta, ap, seq1, wd1));
+
+  (* AP A：期望 seq1，接受并派生 PMK_A *)
+  in(c, (staA:bitstring, apA:bitstring, seqA:bitstring, wdA:bitstring));
+  if staA = sta then
+  if apA = ap then
+  if seqA = seq1 then
+    event UsePMK(sessA, kdf(rmsk, label_pmk, (seqA, wdA)));
+  out(c, ok);
+
+  (* 会话 B：AP 期望 seq2；攻击者重放旧的 (seq1, wd1) *)
+  in(c, (staB:bitstring, apB:bitstring, seqB:bitstring, wdB:bitstring));
+  if staB = sta then
+  if apB = ap then
+  if seqB = seq2 then
+    event UsePMK(sessB, kdf(rmsk, label_pmk, (seqB, wdB)))

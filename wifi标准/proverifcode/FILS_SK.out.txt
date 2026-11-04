@@ -44,421 +44,433 @@ Process 0 (that is, the initial process):
     {36}let (kaAR: bitstring,gtkR: bitstring) = pl2 in
     {37}if (kaAR = hmac(ick,(anR,sn,ap,sta))) then
     {38}event StaFinish4(sta,ap,sess);
-    {39}out(c, aead((label_data,probe_tk),tk))
+    {39}event StaPTK(aan4,sta,ap,sess,ptk);
+    {40}out(c, aead((label_data,probe_tk),tk))
 ) | (
-    {40}!
-    {41}let ap_1: bitstring = ap1 in
-    {42}let sta_1: bitstring = sta1 in
-    {43}let rmsk_1: bitstring = eaprp_rmsk1 in
-    {44}in(c, (staR_1: bitstring,apR_1: bitstring,aanR_1: bitstring,seqR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,pidR_1: bitstring,wrR: bitstring));
-    {45}if (apR_1 = ap_1) then
-    {46}if (staR_1 = sta_1) then
-    {47}if (aanR_1 = aan4) then
-    {48}if (seqR_1 = seq1) then
-    {49}if (pidR_1 = none) then
-    {50}new an: bitstring;
-    {51}let pmk_1: bitstring = hmac((snR_1,an),rmsk_1) in
-    {52}let ptk_1: bitstring = kdf(pmk_1,label_ptk,(sta_1,ap_1,snR_1,an)) in
-    {53}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
-    {54}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
-    {55}let tk_1: bitstring = kdf(ptk_1,label_tk,none) in
-    {56}out(c, (ap_1,sta_1,aan4,seq2,st_ok,an,snR_1,sessR_1,rsneR_1,none));
-    {57}in(c, (sta2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,rsne3R: bitstring,ctR: bitstring));
-    {58}if (sta2R_1 = sta_1) then
-    {59}if (ap2R_1 = ap_1) then
-    {60}if (sess2R_1 = sessR_1) then
-    {61}if (rsne3R = rsneR_1) then
-    {62}let aad_1: bitstring = (sta_1,ap_1,snR_1,an,sessR_1,rsne3R) in
-    {63}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
-    {64}if (kaR = hmac(ick_1,(snR_1,an,sta_1,ap_1))) then
-    {65}event ApFinish4(sta_1,ap_1,sessR_1);
-    {66}let kaap: bitstring = hmac(ick_1,(an,snR_1,ap_1,sta_1)) in
-    {67}let aad2_1: bitstring = (ap_1,sta_1,an,snR_1,sessR_1,rsneR_1) in
-    {68}let ct2: bitstring = aead((aad2_1,(kaap,gtk_val)),kek_1) in
-    {69}out(c, (ap_1,sta_1,sessR_1,st_ok,rsneR_1,ct2))
+    {41}!
+    {42}let ap_1: bitstring = ap1 in
+    {43}let sta_1: bitstring = sta1 in
+    {44}let rmsk_1: bitstring = eaprp_rmsk1 in
+    {45}in(c, (staR_1: bitstring,apR_1: bitstring,aanR_1: bitstring,seqR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,pidR_1: bitstring,wrR: bitstring));
+    {46}if (apR_1 = ap_1) then
+    {47}if (staR_1 = sta_1) then
+    {48}if (aanR_1 = aan4) then
+    {49}if (seqR_1 = seq1) then
+    {50}if (pidR_1 = none) then
+    {51}new an: bitstring;
+    {52}let pmk_1: bitstring = hmac((snR_1,an),rmsk_1) in
+    {53}let ptk_1: bitstring = kdf(pmk_1,label_ptk,(sta_1,ap_1,snR_1,an)) in
+    {54}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
+    {55}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
+    {56}let tk_1: bitstring = kdf(ptk_1,label_tk,none) in
+    {57}out(c, (ap_1,sta_1,aan4,seq2,st_ok,an,snR_1,sessR_1,rsneR_1,none));
+    {58}in(c, (sta2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,rsne3R: bitstring,ctR: bitstring));
+    {59}if (sta2R_1 = sta_1) then
+    {60}if (ap2R_1 = ap_1) then
+    {61}if (sess2R_1 = sessR_1) then
+    {62}if (rsne3R = rsneR_1) then
+    {63}let aad_1: bitstring = (sta_1,ap_1,snR_1,an,sessR_1,rsne3R) in
+    {64}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
+    {65}if (kaR = hmac(ick_1,(snR_1,an,sta_1,ap_1))) then
+    {66}event ApFinish4(sta_1,ap_1,sessR_1);
+    {67}event ApPTK(aan4,sta_1,ap_1,sessR_1,ptk_1);
+    {68}let kaap: bitstring = hmac(ick_1,(an,snR_1,ap_1,sta_1)) in
+    {69}let aad2_1: bitstring = (ap_1,sta_1,an,snR_1,sessR_1,rsneR_1) in
+    {70}let ct2: bitstring = aead((aad2_1,(kaap,gtk_val)),kek_1) in
+    {71}out(c, (ap_1,sta_1,sessR_1,st_ok,rsneR_1,ct2))
 ) | (
-    {70}!
-    {71}let sta_2: bitstring = sta2 in
-    {72}let ap_2: bitstring = ap2 in
-    {73}let rmsk_2: bitstring = eaprp_rmsk2 in
-    {74}new sn_1: bitstring;
-    {75}new sess_1: bitstring;
-    {76}out(c, (sta_2,ap_2,aan4,seq1,sn_1,sess_1,rsne_sk,none,none));
-    {77}in(c, (apR_2: bitstring,staR_2: bitstring,aanR_2: bitstring,seqR_2: bitstring,stR_1: bitstring,anR_1: bitstring,snR_2: bitstring,sessR_2: bitstring,rsneR_2: bitstring,pidR_2: bitstring));
-    {78}if (apR_2 = ap_2) then
-    {79}if (staR_2 = sta_2) then
-    {80}if (aanR_2 = aan4) then
-    {81}if (seqR_2 = seq2) then
-    {82}if (stR_1 = st_ok) then
-    {83}if (snR_2 = sn_1) then
-    {84}if (sessR_2 = sess_1) then
-    {85}if (rsneR_2 = rsne_sk) then
-    {86}if (pidR_2 = none) then
-    {87}let pmk_2: bitstring = hmac((sn_1,anR_1),rmsk_2) in
-    {88}let ptk_2: bitstring = kdf(pmk_2,label_ptk,(sta_2,ap_2,sn_1,anR_1)) in
-    {89}let ick_2: bitstring = kdf(ptk_2,label_ick,none) in
-    {90}let kek_2: bitstring = kdf(ptk_2,label_kek,none) in
-    {91}let tk_2: bitstring = kdf(ptk_2,label_tk,none) in
-    {92}let ka_1: bitstring = hmac(ick_2,(sn_1,anR_1,sta_2,ap_2)) in
-    {93}let aad_2: bitstring = (sta_2,ap_2,sn_1,anR_1,sess_1,rsne_sk) in
-    {94}let ct_1: bitstring = aead((aad_2,ka_1),kek_2) in
-    {95}event StaStart4(sta_2,ap_2,sess_1);
-    {96}out(c, (sta_2,ap_2,sess_1,rsne_sk,ct_1));
-    {97}in(c, (ap2R_2: bitstring,sta2R_2: bitstring,sess2R_2: bitstring,st2R_1: bitstring,rsne2R_1: bitstring,ct2R_1: bitstring));
-    {98}if (ap2R_2 = ap_2) then
-    {99}if (sta2R_2 = sta_2) then
-    {100}if (sess2R_2 = sess_1) then
-    {101}if (st2R_1 = st_ok) then
-    {102}if (rsne2R_1 = rsne_sk) then
-    {103}let aad2_2: bitstring = (ap_2,sta_2,anR_1,sn_1,sess_1,rsne_sk) in
-    {104}let pl2_1: bitstring = adec(ct2R_1,aad2_2,kek_2) in
-    {105}let (kaAR_1: bitstring,gtkR_1: bitstring) = pl2_1 in
-    {106}if (kaAR_1 = hmac(ick_2,(anR_1,sn_1,ap_2,sta_2))) then
-    {107}event StaFinish4(sta_2,ap_2,sess_1);
-    {108}out(c, aead((label_data,probe_tk),tk_2))
+    {72}!
+    {73}let sta_2: bitstring = sta2 in
+    {74}let ap_2: bitstring = ap2 in
+    {75}let rmsk_2: bitstring = eaprp_rmsk2 in
+    {76}new sn_1: bitstring;
+    {77}new sess_1: bitstring;
+    {78}out(c, (sta_2,ap_2,aan4,seq1,sn_1,sess_1,rsne_sk,none,none));
+    {79}in(c, (apR_2: bitstring,staR_2: bitstring,aanR_2: bitstring,seqR_2: bitstring,stR_1: bitstring,anR_1: bitstring,snR_2: bitstring,sessR_2: bitstring,rsneR_2: bitstring,pidR_2: bitstring));
+    {80}if (apR_2 = ap_2) then
+    {81}if (staR_2 = sta_2) then
+    {82}if (aanR_2 = aan4) then
+    {83}if (seqR_2 = seq2) then
+    {84}if (stR_1 = st_ok) then
+    {85}if (snR_2 = sn_1) then
+    {86}if (sessR_2 = sess_1) then
+    {87}if (rsneR_2 = rsne_sk) then
+    {88}if (pidR_2 = none) then
+    {89}let pmk_2: bitstring = hmac((sn_1,anR_1),rmsk_2) in
+    {90}let ptk_2: bitstring = kdf(pmk_2,label_ptk,(sta_2,ap_2,sn_1,anR_1)) in
+    {91}let ick_2: bitstring = kdf(ptk_2,label_ick,none) in
+    {92}let kek_2: bitstring = kdf(ptk_2,label_kek,none) in
+    {93}let tk_2: bitstring = kdf(ptk_2,label_tk,none) in
+    {94}let ka_1: bitstring = hmac(ick_2,(sn_1,anR_1,sta_2,ap_2)) in
+    {95}let aad_2: bitstring = (sta_2,ap_2,sn_1,anR_1,sess_1,rsne_sk) in
+    {96}let ct_1: bitstring = aead((aad_2,ka_1),kek_2) in
+    {97}event StaStart4(sta_2,ap_2,sess_1);
+    {98}out(c, (sta_2,ap_2,sess_1,rsne_sk,ct_1));
+    {99}in(c, (ap2R_2: bitstring,sta2R_2: bitstring,sess2R_2: bitstring,st2R_1: bitstring,rsne2R_1: bitstring,ct2R_1: bitstring));
+    {100}if (ap2R_2 = ap_2) then
+    {101}if (sta2R_2 = sta_2) then
+    {102}if (sess2R_2 = sess_1) then
+    {103}if (st2R_1 = st_ok) then
+    {104}if (rsne2R_1 = rsne_sk) then
+    {105}let aad2_2: bitstring = (ap_2,sta_2,anR_1,sn_1,sess_1,rsne_sk) in
+    {106}let pl2_1: bitstring = adec(ct2R_1,aad2_2,kek_2) in
+    {107}let (kaAR_1: bitstring,gtkR_1: bitstring) = pl2_1 in
+    {108}if (kaAR_1 = hmac(ick_2,(anR_1,sn_1,ap_2,sta_2))) then
+    {109}event StaFinish4(sta_2,ap_2,sess_1);
+    {110}event StaPTK(aan4,sta_2,ap_2,sess_1,ptk_2);
+    {111}out(c, aead((label_data,probe_tk),tk_2))
 ) | (
-    {109}!
-    {110}let ap_3: bitstring = ap2 in
-    {111}let sta_3: bitstring = sta2 in
-    {112}let rmsk_3: bitstring = eaprp_rmsk2 in
-    {113}in(c, (staR_3: bitstring,apR_3: bitstring,aanR_3: bitstring,seqR_3: bitstring,snR_3: bitstring,sessR_3: bitstring,rsneR_3: bitstring,pidR_3: bitstring,wrR_1: bitstring));
-    {114}if (apR_3 = ap_3) then
-    {115}if (staR_3 = sta_3) then
-    {116}if (aanR_3 = aan4) then
-    {117}if (seqR_3 = seq1) then
-    {118}if (pidR_3 = none) then
-    {119}new an_1: bitstring;
-    {120}let pmk_3: bitstring = hmac((snR_3,an_1),rmsk_3) in
-    {121}let ptk_3: bitstring = kdf(pmk_3,label_ptk,(sta_3,ap_3,snR_3,an_1)) in
-    {122}let ick_3: bitstring = kdf(ptk_3,label_ick,none) in
-    {123}let kek_3: bitstring = kdf(ptk_3,label_kek,none) in
-    {124}let tk_3: bitstring = kdf(ptk_3,label_tk,none) in
-    {125}out(c, (ap_3,sta_3,aan4,seq2,st_ok,an_1,snR_3,sessR_3,rsneR_3,none));
-    {126}in(c, (sta2R_3: bitstring,ap2R_3: bitstring,sess2R_3: bitstring,rsne3R_1: bitstring,ctR_1: bitstring));
-    {127}if (sta2R_3 = sta_3) then
-    {128}if (ap2R_3 = ap_3) then
-    {129}if (sess2R_3 = sessR_3) then
-    {130}if (rsne3R_1 = rsneR_3) then
-    {131}let aad_3: bitstring = (sta_3,ap_3,snR_3,an_1,sessR_3,rsne3R_1) in
-    {132}let kaR_1: bitstring = adec(ctR_1,aad_3,kek_3) in
-    {133}if (kaR_1 = hmac(ick_3,(snR_3,an_1,sta_3,ap_3))) then
-    {134}event ApFinish4(sta_3,ap_3,sessR_3);
-    {135}let kaap_1: bitstring = hmac(ick_3,(an_1,snR_3,ap_3,sta_3)) in
-    {136}let aad2_3: bitstring = (ap_3,sta_3,an_1,snR_3,sessR_3,rsneR_3) in
-    {137}let ct2_1: bitstring = aead((aad2_3,(kaap_1,gtk_val)),kek_3) in
-    {138}out(c, (ap_3,sta_3,sessR_3,st_ok,rsneR_3,ct2_1))
+    {112}!
+    {113}let ap_3: bitstring = ap2 in
+    {114}let sta_3: bitstring = sta2 in
+    {115}let rmsk_3: bitstring = eaprp_rmsk2 in
+    {116}in(c, (staR_3: bitstring,apR_3: bitstring,aanR_3: bitstring,seqR_3: bitstring,snR_3: bitstring,sessR_3: bitstring,rsneR_3: bitstring,pidR_3: bitstring,wrR_1: bitstring));
+    {117}if (apR_3 = ap_3) then
+    {118}if (staR_3 = sta_3) then
+    {119}if (aanR_3 = aan4) then
+    {120}if (seqR_3 = seq1) then
+    {121}if (pidR_3 = none) then
+    {122}new an_1: bitstring;
+    {123}let pmk_3: bitstring = hmac((snR_3,an_1),rmsk_3) in
+    {124}let ptk_3: bitstring = kdf(pmk_3,label_ptk,(sta_3,ap_3,snR_3,an_1)) in
+    {125}let ick_3: bitstring = kdf(ptk_3,label_ick,none) in
+    {126}let kek_3: bitstring = kdf(ptk_3,label_kek,none) in
+    {127}let tk_3: bitstring = kdf(ptk_3,label_tk,none) in
+    {128}out(c, (ap_3,sta_3,aan4,seq2,st_ok,an_1,snR_3,sessR_3,rsneR_3,none));
+    {129}in(c, (sta2R_3: bitstring,ap2R_3: bitstring,sess2R_3: bitstring,rsne3R_1: bitstring,ctR_1: bitstring));
+    {130}if (sta2R_3 = sta_3) then
+    {131}if (ap2R_3 = ap_3) then
+    {132}if (sess2R_3 = sessR_3) then
+    {133}if (rsne3R_1 = rsneR_3) then
+    {134}let aad_3: bitstring = (sta_3,ap_3,snR_3,an_1,sessR_3,rsne3R_1) in
+    {135}let kaR_1: bitstring = adec(ctR_1,aad_3,kek_3) in
+    {136}if (kaR_1 = hmac(ick_3,(snR_3,an_1,sta_3,ap_3))) then
+    {137}event ApFinish4(sta_3,ap_3,sessR_3);
+    {138}event ApPTK(aan4,sta_3,ap_3,sessR_3,ptk_3);
+    {139}let kaap_1: bitstring = hmac(ick_3,(an_1,snR_3,ap_3,sta_3)) in
+    {140}let aad2_3: bitstring = (ap_3,sta_3,an_1,snR_3,sessR_3,rsneR_3) in
+    {141}let ct2_1: bitstring = aead((aad2_3,(kaap_1,gtk_val)),kek_3) in
+    {142}out(c, (ap_3,sta_3,sessR_3,st_ok,rsneR_3,ct2_1))
 ) | (
-    {139}!
-    {140}let sta_4: bitstring = sta1 in
-    {141}let ap_4: bitstring = ap1 in
-    {142}let rmsk_4: bitstring = eaprp_rmsk1 in
-    {143}new sn_2: bitstring;
-    {144}new sS: bitstring;
-    {145}let gs: bitstring = exp(g,sS) in
-    {146}new sess_2: bitstring;
-    {147}out(c, (sta_4,ap_4,aan5,seq1,dhgrp,gs,sn_2,sess_2,rsne_sk,none,none));
-    {148}in(c, (apR_4: bitstring,staR_4: bitstring,aanR_4: bitstring,seqR_4: bitstring,stR_2: bitstring,dhR: bitstring,gaR: bitstring,snR_4: bitstring,sessR_4: bitstring,rsneR_4: bitstring,anR_2: bitstring,pidR_4: bitstring));
-    {149}if (apR_4 = ap_4) then
-    {150}if (staR_4 = sta_4) then
-    {151}if (aanR_4 = aan5) then
-    {152}if (seqR_4 = seq2) then
-    {153}if (stR_2 = st_ok) then
-    {154}if (dhR = dhgrp) then
-    {155}if (snR_4 = sn_2) then
-    {156}if (sessR_4 = sess_2) then
-    {157}if (rsneR_4 = rsne_sk) then
-    {158}if (pidR_4 = none) then
-    {159}let dhss: bitstring = exp(gaR,sS) in
-    {160}let pmk_4: bitstring = hmac((sn_2,anR_2),(rmsk_4,dhss)) in
-    {161}let ptk_4: bitstring = kdf(pmk_4,label_ptk,(sta_4,ap_4,sn_2,anR_2)) in
-    {162}let ick_4: bitstring = kdf(ptk_4,label_ick,none) in
-    {163}let kek_4: bitstring = kdf(ptk_4,label_kek,none) in
-    {164}let tk_4: bitstring = kdf(ptk_4,label_tk,none) in
-    {165}let ka_2: bitstring = hmac(ick_4,(sn_2,anR_2,sta_4,ap_4,gs,gaR)) in
-    {166}let aad_4: bitstring = (sta_4,ap_4,sn_2,anR_2,sess_2,rsne_sk) in
-    {167}let ct_2: bitstring = aead((aad_4,ka_2),kek_4) in
-    {168}event StaStart5(sta_4,ap_4,sess_2);
-    {169}out(c, (sta_4,ap_4,sess_2,rsne_sk,ct_2));
-    {170}in(c, (ap2R_4: bitstring,sta2R_4: bitstring,sess2R_4: bitstring,st2R_2: bitstring,rsne2R_2: bitstring,ct2R_2: bitstring));
-    {171}if (ap2R_4 = ap_4) then
-    {172}if (sta2R_4 = sta_4) then
-    {173}if (sess2R_4 = sess_2) then
-    {174}if (st2R_2 = st_ok) then
-    {175}if (rsne2R_2 = rsne_sk) then
-    {176}let aad2_4: bitstring = (ap_4,sta_4,anR_2,sn_2,sess_2,rsne_sk) in
-    {177}let pl2_2: bitstring = adec(ct2R_2,aad2_4,kek_4) in
-    {178}let (kaAR_2: bitstring,gtkR_2: bitstring) = pl2_2 in
-    {179}if (kaAR_2 = hmac(ick_4,(anR_2,sn_2,ap_4,sta_4,gaR,gs))) then
-    {180}event StaFinish5(sta_4,ap_4,sess_2);
-    {181}out(c, aead((label_data,probe_tk),tk_4))
+    {143}!
+    {144}let sta_4: bitstring = sta1 in
+    {145}let ap_4: bitstring = ap1 in
+    {146}let rmsk_4: bitstring = eaprp_rmsk1 in
+    {147}new sn_2: bitstring;
+    {148}new sS: bitstring;
+    {149}let gs: bitstring = exp(g,sS) in
+    {150}new sess_2: bitstring;
+    {151}out(c, (sta_4,ap_4,aan5,seq1,dhgrp,gs,sn_2,sess_2,rsne_sk,none,none));
+    {152}in(c, (apR_4: bitstring,staR_4: bitstring,aanR_4: bitstring,seqR_4: bitstring,stR_2: bitstring,dhR: bitstring,gaR: bitstring,snR_4: bitstring,sessR_4: bitstring,rsneR_4: bitstring,anR_2: bitstring,pidR_4: bitstring));
+    {153}if (apR_4 = ap_4) then
+    {154}if (staR_4 = sta_4) then
+    {155}if (aanR_4 = aan5) then
+    {156}if (seqR_4 = seq2) then
+    {157}if (stR_2 = st_ok) then
+    {158}if (dhR = dhgrp) then
+    {159}if (snR_4 = sn_2) then
+    {160}if (sessR_4 = sess_2) then
+    {161}if (rsneR_4 = rsne_sk) then
+    {162}if (pidR_4 = none) then
+    {163}let dhss: bitstring = exp(gaR,sS) in
+    {164}let pmk_4: bitstring = hmac((sn_2,anR_2),(rmsk_4,dhss)) in
+    {165}let ptk_4: bitstring = kdf(pmk_4,label_ptk,(sta_4,ap_4,sn_2,anR_2)) in
+    {166}let ick_4: bitstring = kdf(ptk_4,label_ick,none) in
+    {167}let kek_4: bitstring = kdf(ptk_4,label_kek,none) in
+    {168}let tk_4: bitstring = kdf(ptk_4,label_tk,none) in
+    {169}let ka_2: bitstring = hmac(ick_4,(sn_2,anR_2,sta_4,ap_4,gs,gaR)) in
+    {170}let aad_4: bitstring = (sta_4,ap_4,sn_2,anR_2,sess_2,rsne_sk) in
+    {171}let ct_2: bitstring = aead((aad_4,ka_2),kek_4) in
+    {172}event StaStart5(sta_4,ap_4,sess_2);
+    {173}out(c, (sta_4,ap_4,sess_2,rsne_sk,ct_2));
+    {174}in(c, (ap2R_4: bitstring,sta2R_4: bitstring,sess2R_4: bitstring,st2R_2: bitstring,rsne2R_2: bitstring,ct2R_2: bitstring));
+    {175}if (ap2R_4 = ap_4) then
+    {176}if (sta2R_4 = sta_4) then
+    {177}if (sess2R_4 = sess_2) then
+    {178}if (st2R_2 = st_ok) then
+    {179}if (rsne2R_2 = rsne_sk) then
+    {180}let aad2_4: bitstring = (ap_4,sta_4,anR_2,sn_2,sess_2,rsne_sk) in
+    {181}let pl2_2: bitstring = adec(ct2R_2,aad2_4,kek_4) in
+    {182}let (kaAR_2: bitstring,gtkR_2: bitstring) = pl2_2 in
+    {183}if (kaAR_2 = hmac(ick_4,(anR_2,sn_2,ap_4,sta_4,gaR,gs))) then
+    {184}event StaFinish5(sta_4,ap_4,sess_2);
+    {185}event StaPTK(aan5,sta_4,ap_4,sess_2,ptk_4);
+    {186}out(c, aead((label_data,probe_tk),tk_4))
 ) | (
-    {182}!
-    {183}let ap_5: bitstring = ap1 in
-    {184}let sta_5: bitstring = sta1 in
-    {185}let rmsk_5: bitstring = eaprp_rmsk1 in
-    {186}in(c, (staR_5: bitstring,apR_5: bitstring,aanR_5: bitstring,seqR_5: bitstring,dhR_1: bitstring,gsR: bitstring,snR_5: bitstring,sessR_5: bitstring,rsneR_5: bitstring,pidR_5: bitstring,wrR_2: bitstring));
-    {187}if (apR_5 = ap_5) then
-    {188}if (staR_5 = sta_5) then
-    {189}if (aanR_5 = aan5) then
-    {190}if (seqR_5 = seq1) then
-    {191}if (dhR_1 = dhgrp) then
-    {192}if (pidR_5 = none) then
-    {193}new an_2: bitstring;
-    {194}new sA: bitstring;
-    {195}let ga: bitstring = exp(g,sA) in
-    {196}let dhss_1: bitstring = exp(gsR,sA) in
-    {197}let pmk_5: bitstring = hmac((snR_5,an_2),(rmsk_5,dhss_1)) in
-    {198}let ptk_5: bitstring = kdf(pmk_5,label_ptk,(sta_5,ap_5,snR_5,an_2)) in
-    {199}let ick_5: bitstring = kdf(ptk_5,label_ick,none) in
-    {200}let kek_5: bitstring = kdf(ptk_5,label_kek,none) in
-    {201}let tk_5: bitstring = kdf(ptk_5,label_tk,none) in
-    {202}out(c, (ap_5,sta_5,aan5,seq2,st_ok,dhgrp,ga,snR_5,sessR_5,rsneR_5,an_2,none));
-    {203}in(c, (sta2R_5: bitstring,ap2R_5: bitstring,sess2R_5: bitstring,rsne3R_2: bitstring,ctR_2: bitstring));
-    {204}if (sta2R_5 = sta_5) then
-    {205}if (ap2R_5 = ap_5) then
-    {206}if (sess2R_5 = sessR_5) then
-    {207}if (rsne3R_2 = rsneR_5) then
-    {208}let aad_5: bitstring = (sta_5,ap_5,snR_5,an_2,sessR_5,rsne3R_2) in
-    {209}let kaR_2: bitstring = adec(ctR_2,aad_5,kek_5) in
-    {210}if (kaR_2 = hmac(ick_5,(snR_5,an_2,sta_5,ap_5,gsR,ga))) then
-    {211}event ApFinish5(sta_5,ap_5,sessR_5);
-    {212}let kaap_2: bitstring = hmac(ick_5,(an_2,snR_5,ap_5,sta_5,ga,gsR)) in
-    {213}let aad2_5: bitstring = (ap_5,sta_5,an_2,snR_5,sessR_5,rsneR_5) in
-    {214}let ct2_2: bitstring = aead((aad2_5,(kaap_2,gtk_val)),kek_5) in
-    {215}out(c, (ap_5,sta_5,sessR_5,st_ok,rsneR_5,ct2_2))
+    {187}!
+    {188}let ap_5: bitstring = ap1 in
+    {189}let sta_5: bitstring = sta1 in
+    {190}let rmsk_5: bitstring = eaprp_rmsk1 in
+    {191}in(c, (staR_5: bitstring,apR_5: bitstring,aanR_5: bitstring,seqR_5: bitstring,dhR_1: bitstring,gsR: bitstring,snR_5: bitstring,sessR_5: bitstring,rsneR_5: bitstring,pidR_5: bitstring,wrR_2: bitstring));
+    {192}if (apR_5 = ap_5) then
+    {193}if (staR_5 = sta_5) then
+    {194}if (aanR_5 = aan5) then
+    {195}if (seqR_5 = seq1) then
+    {196}if (dhR_1 = dhgrp) then
+    {197}if (pidR_5 = none) then
+    {198}new an_2: bitstring;
+    {199}new sA: bitstring;
+    {200}let ga: bitstring = exp(g,sA) in
+    {201}let dhss_1: bitstring = exp(gsR,sA) in
+    {202}let pmk_5: bitstring = hmac((snR_5,an_2),(rmsk_5,dhss_1)) in
+    {203}let ptk_5: bitstring = kdf(pmk_5,label_ptk,(sta_5,ap_5,snR_5,an_2)) in
+    {204}let ick_5: bitstring = kdf(ptk_5,label_ick,none) in
+    {205}let kek_5: bitstring = kdf(ptk_5,label_kek,none) in
+    {206}let tk_5: bitstring = kdf(ptk_5,label_tk,none) in
+    {207}out(c, (ap_5,sta_5,aan5,seq2,st_ok,dhgrp,ga,snR_5,sessR_5,rsneR_5,an_2,none));
+    {208}in(c, (sta2R_5: bitstring,ap2R_5: bitstring,sess2R_5: bitstring,rsne3R_2: bitstring,ctR_2: bitstring));
+    {209}if (sta2R_5 = sta_5) then
+    {210}if (ap2R_5 = ap_5) then
+    {211}if (sess2R_5 = sessR_5) then
+    {212}if (rsne3R_2 = rsneR_5) then
+    {213}let aad_5: bitstring = (sta_5,ap_5,snR_5,an_2,sessR_5,rsne3R_2) in
+    {214}let kaR_2: bitstring = adec(ctR_2,aad_5,kek_5) in
+    {215}if (kaR_2 = hmac(ick_5,(snR_5,an_2,sta_5,ap_5,gsR,ga))) then
+    {216}event ApFinish5(sta_5,ap_5,sessR_5);
+    {217}event ApPTK(aan5,sta_5,ap_5,sessR_5,ptk_5);
+    {218}let kaap_2: bitstring = hmac(ick_5,(an_2,snR_5,ap_5,sta_5,ga,gsR)) in
+    {219}let aad2_5: bitstring = (ap_5,sta_5,an_2,snR_5,sessR_5,rsneR_5) in
+    {220}let ct2_2: bitstring = aead((aad2_5,(kaap_2,gtk_val)),kek_5) in
+    {221}out(c, (ap_5,sta_5,sessR_5,st_ok,rsneR_5,ct2_2))
 ) | (
-    {216}!
-    {217}let sta_6: bitstring = sta2 in
-    {218}let ap_6: bitstring = ap2 in
-    {219}let rmsk_6: bitstring = eaprp_rmsk2 in
-    {220}new sn_3: bitstring;
-    {221}new sS_1: bitstring;
-    {222}let gs_1: bitstring = exp(g,sS_1) in
-    {223}new sess_3: bitstring;
-    {224}out(c, (sta_6,ap_6,aan5,seq1,dhgrp,gs_1,sn_3,sess_3,rsne_sk,none,none));
-    {225}in(c, (apR_6: bitstring,staR_6: bitstring,aanR_6: bitstring,seqR_6: bitstring,stR_3: bitstring,dhR_2: bitstring,gaR_1: bitstring,snR_6: bitstring,sessR_6: bitstring,rsneR_6: bitstring,anR_3: bitstring,pidR_6: bitstring));
-    {226}if (apR_6 = ap_6) then
-    {227}if (staR_6 = sta_6) then
-    {228}if (aanR_6 = aan5) then
-    {229}if (seqR_6 = seq2) then
-    {230}if (stR_3 = st_ok) then
-    {231}if (dhR_2 = dhgrp) then
-    {232}if (snR_6 = sn_3) then
-    {233}if (sessR_6 = sess_3) then
-    {234}if (rsneR_6 = rsne_sk) then
-    {235}if (pidR_6 = none) then
-    {236}let dhss_2: bitstring = exp(gaR_1,sS_1) in
-    {237}let pmk_6: bitstring = hmac((sn_3,anR_3),(rmsk_6,dhss_2)) in
-    {238}let ptk_6: bitstring = kdf(pmk_6,label_ptk,(sta_6,ap_6,sn_3,anR_3)) in
-    {239}let ick_6: bitstring = kdf(ptk_6,label_ick,none) in
-    {240}let kek_6: bitstring = kdf(ptk_6,label_kek,none) in
-    {241}let tk_6: bitstring = kdf(ptk_6,label_tk,none) in
-    {242}let ka_3: bitstring = hmac(ick_6,(sn_3,anR_3,sta_6,ap_6,gs_1,gaR_1)) in
-    {243}let aad_6: bitstring = (sta_6,ap_6,sn_3,anR_3,sess_3,rsne_sk) in
-    {244}let ct_3: bitstring = aead((aad_6,ka_3),kek_6) in
-    {245}event StaStart5(sta_6,ap_6,sess_3);
-    {246}out(c, (sta_6,ap_6,sess_3,rsne_sk,ct_3));
-    {247}in(c, (ap2R_6: bitstring,sta2R_6: bitstring,sess2R_6: bitstring,st2R_3: bitstring,rsne2R_3: bitstring,ct2R_3: bitstring));
-    {248}if (ap2R_6 = ap_6) then
-    {249}if (sta2R_6 = sta_6) then
-    {250}if (sess2R_6 = sess_3) then
-    {251}if (st2R_3 = st_ok) then
-    {252}if (rsne2R_3 = rsne_sk) then
-    {253}let aad2_6: bitstring = (ap_6,sta_6,anR_3,sn_3,sess_3,rsne_sk) in
-    {254}let pl2_3: bitstring = adec(ct2R_3,aad2_6,kek_6) in
-    {255}let (kaAR_3: bitstring,gtkR_3: bitstring) = pl2_3 in
-    {256}if (kaAR_3 = hmac(ick_6,(anR_3,sn_3,ap_6,sta_6,gaR_1,gs_1))) then
-    {257}event StaFinish5(sta_6,ap_6,sess_3);
-    {258}out(c, aead((label_data,probe_tk),tk_6))
+    {222}!
+    {223}let sta_6: bitstring = sta2 in
+    {224}let ap_6: bitstring = ap2 in
+    {225}let rmsk_6: bitstring = eaprp_rmsk2 in
+    {226}new sn_3: bitstring;
+    {227}new sS_1: bitstring;
+    {228}let gs_1: bitstring = exp(g,sS_1) in
+    {229}new sess_3: bitstring;
+    {230}out(c, (sta_6,ap_6,aan5,seq1,dhgrp,gs_1,sn_3,sess_3,rsne_sk,none,none));
+    {231}in(c, (apR_6: bitstring,staR_6: bitstring,aanR_6: bitstring,seqR_6: bitstring,stR_3: bitstring,dhR_2: bitstring,gaR_1: bitstring,snR_6: bitstring,sessR_6: bitstring,rsneR_6: bitstring,anR_3: bitstring,pidR_6: bitstring));
+    {232}if (apR_6 = ap_6) then
+    {233}if (staR_6 = sta_6) then
+    {234}if (aanR_6 = aan5) then
+    {235}if (seqR_6 = seq2) then
+    {236}if (stR_3 = st_ok) then
+    {237}if (dhR_2 = dhgrp) then
+    {238}if (snR_6 = sn_3) then
+    {239}if (sessR_6 = sess_3) then
+    {240}if (rsneR_6 = rsne_sk) then
+    {241}if (pidR_6 = none) then
+    {242}let dhss_2: bitstring = exp(gaR_1,sS_1) in
+    {243}let pmk_6: bitstring = hmac((sn_3,anR_3),(rmsk_6,dhss_2)) in
+    {244}let ptk_6: bitstring = kdf(pmk_6,label_ptk,(sta_6,ap_6,sn_3,anR_3)) in
+    {245}let ick_6: bitstring = kdf(ptk_6,label_ick,none) in
+    {246}let kek_6: bitstring = kdf(ptk_6,label_kek,none) in
+    {247}let tk_6: bitstring = kdf(ptk_6,label_tk,none) in
+    {248}let ka_3: bitstring = hmac(ick_6,(sn_3,anR_3,sta_6,ap_6,gs_1,gaR_1)) in
+    {249}let aad_6: bitstring = (sta_6,ap_6,sn_3,anR_3,sess_3,rsne_sk) in
+    {250}let ct_3: bitstring = aead((aad_6,ka_3),kek_6) in
+    {251}event StaStart5(sta_6,ap_6,sess_3);
+    {252}out(c, (sta_6,ap_6,sess_3,rsne_sk,ct_3));
+    {253}in(c, (ap2R_6: bitstring,sta2R_6: bitstring,sess2R_6: bitstring,st2R_3: bitstring,rsne2R_3: bitstring,ct2R_3: bitstring));
+    {254}if (ap2R_6 = ap_6) then
+    {255}if (sta2R_6 = sta_6) then
+    {256}if (sess2R_6 = sess_3) then
+    {257}if (st2R_3 = st_ok) then
+    {258}if (rsne2R_3 = rsne_sk) then
+    {259}let aad2_6: bitstring = (ap_6,sta_6,anR_3,sn_3,sess_3,rsne_sk) in
+    {260}let pl2_3: bitstring = adec(ct2R_3,aad2_6,kek_6) in
+    {261}let (kaAR_3: bitstring,gtkR_3: bitstring) = pl2_3 in
+    {262}if (kaAR_3 = hmac(ick_6,(anR_3,sn_3,ap_6,sta_6,gaR_1,gs_1))) then
+    {263}event StaFinish5(sta_6,ap_6,sess_3);
+    {264}event StaPTK(aan5,sta_6,ap_6,sess_3,ptk_6);
+    {265}out(c, aead((label_data,probe_tk),tk_6))
 ) | (
-    {259}!
-    {260}let ap_7: bitstring = ap2 in
-    {261}let sta_7: bitstring = sta2 in
-    {262}let rmsk_7: bitstring = eaprp_rmsk2 in
-    {263}in(c, (staR_7: bitstring,apR_7: bitstring,aanR_7: bitstring,seqR_7: bitstring,dhR_3: bitstring,gsR_1: bitstring,snR_7: bitstring,sessR_7: bitstring,rsneR_7: bitstring,pidR_7: bitstring,wrR_3: bitstring));
-    {264}if (apR_7 = ap_7) then
-    {265}if (staR_7 = sta_7) then
-    {266}if (aanR_7 = aan5) then
-    {267}if (seqR_7 = seq1) then
-    {268}if (dhR_3 = dhgrp) then
-    {269}if (pidR_7 = none) then
-    {270}new an_3: bitstring;
-    {271}new sA_1: bitstring;
-    {272}let ga_1: bitstring = exp(g,sA_1) in
-    {273}let dhss_3: bitstring = exp(gsR_1,sA_1) in
-    {274}let pmk_7: bitstring = hmac((snR_7,an_3),(rmsk_7,dhss_3)) in
-    {275}let ptk_7: bitstring = kdf(pmk_7,label_ptk,(sta_7,ap_7,snR_7,an_3)) in
-    {276}let ick_7: bitstring = kdf(ptk_7,label_ick,none) in
-    {277}let kek_7: bitstring = kdf(ptk_7,label_kek,none) in
-    {278}let tk_7: bitstring = kdf(ptk_7,label_tk,none) in
-    {279}out(c, (ap_7,sta_7,aan5,seq2,st_ok,dhgrp,ga_1,snR_7,sessR_7,rsneR_7,an_3,none));
-    {280}in(c, (sta2R_7: bitstring,ap2R_7: bitstring,sess2R_7: bitstring,rsne3R_3: bitstring,ctR_3: bitstring));
-    {281}if (sta2R_7 = sta_7) then
-    {282}if (ap2R_7 = ap_7) then
-    {283}if (sess2R_7 = sessR_7) then
-    {284}if (rsne3R_3 = rsneR_7) then
-    {285}let aad_7: bitstring = (sta_7,ap_7,snR_7,an_3,sessR_7,rsne3R_3) in
-    {286}let kaR_3: bitstring = adec(ctR_3,aad_7,kek_7) in
-    {287}if (kaR_3 = hmac(ick_7,(snR_7,an_3,sta_7,ap_7,gsR_1,ga_1))) then
-    {288}event ApFinish5(sta_7,ap_7,sessR_7);
-    {289}let kaap_3: bitstring = hmac(ick_7,(an_3,snR_7,ap_7,sta_7,ga_1,gsR_1)) in
-    {290}let aad2_7: bitstring = (ap_7,sta_7,an_3,snR_7,sessR_7,rsneR_7) in
-    {291}let ct2_3: bitstring = aead((aad2_7,(kaap_3,gtk_val)),kek_7) in
-    {292}out(c, (ap_7,sta_7,sessR_7,st_ok,rsneR_7,ct2_3))
+    {266}!
+    {267}let ap_7: bitstring = ap2 in
+    {268}let sta_7: bitstring = sta2 in
+    {269}let rmsk_7: bitstring = eaprp_rmsk2 in
+    {270}in(c, (staR_7: bitstring,apR_7: bitstring,aanR_7: bitstring,seqR_7: bitstring,dhR_3: bitstring,gsR_1: bitstring,snR_7: bitstring,sessR_7: bitstring,rsneR_7: bitstring,pidR_7: bitstring,wrR_3: bitstring));
+    {271}if (apR_7 = ap_7) then
+    {272}if (staR_7 = sta_7) then
+    {273}if (aanR_7 = aan5) then
+    {274}if (seqR_7 = seq1) then
+    {275}if (dhR_3 = dhgrp) then
+    {276}if (pidR_7 = none) then
+    {277}new an_3: bitstring;
+    {278}new sA_1: bitstring;
+    {279}let ga_1: bitstring = exp(g,sA_1) in
+    {280}let dhss_3: bitstring = exp(gsR_1,sA_1) in
+    {281}let pmk_7: bitstring = hmac((snR_7,an_3),(rmsk_7,dhss_3)) in
+    {282}let ptk_7: bitstring = kdf(pmk_7,label_ptk,(sta_7,ap_7,snR_7,an_3)) in
+    {283}let ick_7: bitstring = kdf(ptk_7,label_ick,none) in
+    {284}let kek_7: bitstring = kdf(ptk_7,label_kek,none) in
+    {285}let tk_7: bitstring = kdf(ptk_7,label_tk,none) in
+    {286}out(c, (ap_7,sta_7,aan5,seq2,st_ok,dhgrp,ga_1,snR_7,sessR_7,rsneR_7,an_3,none));
+    {287}in(c, (sta2R_7: bitstring,ap2R_7: bitstring,sess2R_7: bitstring,rsne3R_3: bitstring,ctR_3: bitstring));
+    {288}if (sta2R_7 = sta_7) then
+    {289}if (ap2R_7 = ap_7) then
+    {290}if (sess2R_7 = sessR_7) then
+    {291}if (rsne3R_3 = rsneR_7) then
+    {292}let aad_7: bitstring = (sta_7,ap_7,snR_7,an_3,sessR_7,rsne3R_3) in
+    {293}let kaR_3: bitstring = adec(ctR_3,aad_7,kek_7) in
+    {294}if (kaR_3 = hmac(ick_7,(snR_7,an_3,sta_7,ap_7,gsR_1,ga_1))) then
+    {295}event ApFinish5(sta_7,ap_7,sessR_7);
+    {296}event ApPTK(aan5,sta_7,ap_7,sessR_7,ptk_7);
+    {297}let kaap_3: bitstring = hmac(ick_7,(an_3,snR_7,ap_7,sta_7,ga_1,gsR_1)) in
+    {298}let aad2_7: bitstring = (ap_7,sta_7,an_3,snR_7,sessR_7,rsneR_7) in
+    {299}let ct2_3: bitstring = aead((aad2_7,(kaap_3,gtk_val)),kek_7) in
+    {300}out(c, (ap_7,sta_7,sessR_7,st_ok,rsneR_7,ct2_3))
 ) | (
-    {293}let sta_8: bitstring = sta1 in
-    {294}let ap_8: bitstring = ap1 in
-    {295}let pmk_8: bitstring = pmk_c1 in
-    {296}let pmkid: bitstring = pmkid_c1 in
-    {297}new sn_4: bitstring;
-    {298}new sS_2: bitstring;
-    {299}let gs_2: bitstring = exp(g,sS_2) in
-    {300}new sess_4: bitstring;
-    {301}out(c, (sta_8,ap_8,aan5,seq1,dhgrp,gs_2,sn_4,sess_4,rsne_sk,some(pmkid),none));
-    {302}in(c, (apR_8: bitstring,staR_8: bitstring,aanR_8: bitstring,seqR_8: bitstring,stR_4: bitstring,dhR_4: bitstring,gaR_2: bitstring,snR_8: bitstring,sessR_8: bitstring,rsneR_8: bitstring,anR_4: bitstring,pidR_8: bitstring));
-    {303}if (apR_8 = ap_8) then
-    {304}if (staR_8 = sta_8) then
-    {305}if (aanR_8 = aan5) then
-    {306}if (seqR_8 = seq2) then
-    {307}if (stR_4 = st_ok) then
-    {308}if (dhR_4 = dhgrp) then
-    {309}if (snR_8 = sn_4) then
-    {310}if (sessR_8 = sess_4) then
-    {311}if (rsneR_8 = rsne_sk) then
-    {312}if (pidR_8 = some(pmkid)) then
-    {313}let dhss_4: bitstring = exp(gaR_2,sS_2) in
-    {314}let ptk_8: bitstring = kdf(pmk_8,label_ptk,(sta_8,ap_8,sn_4,anR_4,dhss_4)) in
-    {315}let ick_8: bitstring = kdf(ptk_8,label_ick,none) in
-    {316}let kek_8: bitstring = kdf(ptk_8,label_kek,none) in
-    {317}let tk_8: bitstring = kdf(ptk_8,label_tk,none) in
-    {318}let ka_4: bitstring = hmac(ick_8,(sn_4,anR_4,sta_8,ap_8,gs_2,gaR_2)) in
-    {319}let aad_8: bitstring = (sta_8,ap_8,sn_4,anR_4,sess_4,rsne_sk) in
-    {320}let ct_4: bitstring = aead((aad_8,ka_4),kek_8) in
-    {321}event StaStart5C(sta_8,ap_8,sess_4);
-    {322}out(c, (sta_8,ap_8,sess_4,rsne_sk,ct_4));
-    {323}in(c, (ap2R_8: bitstring,sta2R_8: bitstring,sess2R_8: bitstring,st2R_4: bitstring,rsne2R_4: bitstring,ct2R_4: bitstring));
-    {324}if (ap2R_8 = ap_8) then
-    {325}if (sta2R_8 = sta_8) then
-    {326}if (sess2R_8 = sess_4) then
-    {327}if (st2R_4 = st_ok) then
-    {328}if (rsne2R_4 = rsne_sk) then
-    {329}let aad2_8: bitstring = (ap_8,sta_8,anR_4,sn_4,sess_4,rsne_sk) in
-    {330}let pl2_4: bitstring = adec(ct2R_4,aad2_8,kek_8) in
-    {331}let (kaAR_4: bitstring,gtkR_4: bitstring) = pl2_4 in
-    {332}if (kaAR_4 = hmac(ick_8,(anR_4,sn_4,ap_8,sta_8,gaR_2,gs_2))) then
-    {333}event StaFinish5C(sta_8,ap_8,sess_4);
-    {334}out(c, aead((label_data,probe_tk),tk_8))
+    {301}let sta_8: bitstring = sta1 in
+    {302}let ap_8: bitstring = ap1 in
+    {303}let pmk_8: bitstring = pmk_c1 in
+    {304}let pmkid: bitstring = pmkid_c1 in
+    {305}new sn_4: bitstring;
+    {306}new sS_2: bitstring;
+    {307}let gs_2: bitstring = exp(g,sS_2) in
+    {308}new sess_4: bitstring;
+    {309}out(c, (sta_8,ap_8,aan5,seq1,dhgrp,gs_2,sn_4,sess_4,rsne_sk,some(pmkid),none));
+    {310}in(c, (apR_8: bitstring,staR_8: bitstring,aanR_8: bitstring,seqR_8: bitstring,stR_4: bitstring,dhR_4: bitstring,gaR_2: bitstring,snR_8: bitstring,sessR_8: bitstring,rsneR_8: bitstring,anR_4: bitstring,pidR_8: bitstring));
+    {311}if (apR_8 = ap_8) then
+    {312}if (staR_8 = sta_8) then
+    {313}if (aanR_8 = aan5) then
+    {314}if (seqR_8 = seq2) then
+    {315}if (stR_4 = st_ok) then
+    {316}if (dhR_4 = dhgrp) then
+    {317}if (snR_8 = sn_4) then
+    {318}if (sessR_8 = sess_4) then
+    {319}if (rsneR_8 = rsne_sk) then
+    {320}if (pidR_8 = some(pmkid)) then
+    {321}let dhss_4: bitstring = exp(gaR_2,sS_2) in
+    {322}let ptk_8: bitstring = kdf(pmk_8,label_ptk,(sta_8,ap_8,sn_4,anR_4,dhss_4)) in
+    {323}let ick_8: bitstring = kdf(ptk_8,label_ick,none) in
+    {324}let kek_8: bitstring = kdf(ptk_8,label_kek,none) in
+    {325}let tk_8: bitstring = kdf(ptk_8,label_tk,none) in
+    {326}let ka_4: bitstring = hmac(ick_8,(sn_4,anR_4,sta_8,ap_8,gs_2,gaR_2)) in
+    {327}let aad_8: bitstring = (sta_8,ap_8,sn_4,anR_4,sess_4,rsne_sk) in
+    {328}let ct_4: bitstring = aead((aad_8,ka_4),kek_8) in
+    {329}event StaStart5C(sta_8,ap_8,sess_4);
+    {330}out(c, (sta_8,ap_8,sess_4,rsne_sk,ct_4));
+    {331}in(c, (ap2R_8: bitstring,sta2R_8: bitstring,sess2R_8: bitstring,st2R_4: bitstring,rsne2R_4: bitstring,ct2R_4: bitstring));
+    {332}if (ap2R_8 = ap_8) then
+    {333}if (sta2R_8 = sta_8) then
+    {334}if (sess2R_8 = sess_4) then
+    {335}if (st2R_4 = st_ok) then
+    {336}if (rsne2R_4 = rsne_sk) then
+    {337}let aad2_8: bitstring = (ap_8,sta_8,anR_4,sn_4,sess_4,rsne_sk) in
+    {338}let pl2_4: bitstring = adec(ct2R_4,aad2_8,kek_8) in
+    {339}let (kaAR_4: bitstring,gtkR_4: bitstring) = pl2_4 in
+    {340}if (kaAR_4 = hmac(ick_8,(anR_4,sn_4,ap_8,sta_8,gaR_2,gs_2))) then
+    {341}event StaFinish5C(sta_8,ap_8,sess_4);
+    {342}event StaPTK(aan5,sta_8,ap_8,sess_4,ptk_8);
+    {343}out(c, aead((label_data,probe_tk),tk_8))
 ) | (
-    {335}let ap_9: bitstring = ap1 in
-    {336}let sta_9: bitstring = sta1 in
-    {337}let pmk_9: bitstring = pmk_c1 in
-    {338}let pmkid_1: bitstring = pmkid_c1 in
-    {339}in(c, (staR_9: bitstring,apR_9: bitstring,aanR_9: bitstring,seqR_9: bitstring,dhR_5: bitstring,gsR_2: bitstring,snR_9: bitstring,sessR_9: bitstring,rsneR_9: bitstring,pidR_9: bitstring,wrR_4: bitstring));
-    {340}if (apR_9 = ap_9) then
-    {341}if (staR_9 = sta_9) then
-    {342}if (aanR_9 = aan5) then
-    {343}if (seqR_9 = seq1) then
-    {344}if (dhR_5 = dhgrp) then
-    {345}if (pidR_9 = some(pmkid_1)) then
-    {346}new an_4: bitstring;
-    {347}new sA_2: bitstring;
-    {348}let ga_2: bitstring = exp(g,sA_2) in
-    {349}let dhss_5: bitstring = exp(gsR_2,sA_2) in
-    {350}let ptk_9: bitstring = kdf(pmk_9,label_ptk,(sta_9,ap_9,snR_9,an_4,dhss_5)) in
-    {351}let ick_9: bitstring = kdf(ptk_9,label_ick,none) in
-    {352}let kek_9: bitstring = kdf(ptk_9,label_kek,none) in
-    {353}let tk_9: bitstring = kdf(ptk_9,label_tk,none) in
-    {354}out(c, (ap_9,sta_9,aan5,seq2,st_ok,dhgrp,ga_2,snR_9,sessR_9,rsneR_9,an_4,some(pmkid_1)));
-    {355}in(c, (sta2R_9: bitstring,ap2R_9: bitstring,sess2R_9: bitstring,rsne3R_4: bitstring,ctR_4: bitstring));
-    {356}if (sta2R_9 = sta_9) then
-    {357}if (ap2R_9 = ap_9) then
-    {358}if (sess2R_9 = sessR_9) then
-    {359}if (rsne3R_4 = rsneR_9) then
-    {360}let aad_9: bitstring = (sta_9,ap_9,snR_9,an_4,sessR_9,rsne3R_4) in
-    {361}let kaR_4: bitstring = adec(ctR_4,aad_9,kek_9) in
-    {362}if (kaR_4 = hmac(ick_9,(snR_9,an_4,sta_9,ap_9,gsR_2,ga_2))) then
-    {363}event ApFinish5C(sta_9,ap_9,sessR_9);
-    {364}let kaap_4: bitstring = hmac(ick_9,(an_4,snR_9,ap_9,sta_9,ga_2,gsR_2)) in
-    {365}let aad2_9: bitstring = (ap_9,sta_9,an_4,snR_9,sessR_9,rsneR_9) in
-    {366}let ct2_4: bitstring = aead((aad2_9,(kaap_4,gtk_val)),kek_9) in
-    {367}out(c, (ap_9,sta_9,sessR_9,st_ok,rsneR_9,ct2_4))
+    {344}let ap_9: bitstring = ap1 in
+    {345}let sta_9: bitstring = sta1 in
+    {346}let pmk_9: bitstring = pmk_c1 in
+    {347}let pmkid_1: bitstring = pmkid_c1 in
+    {348}in(c, (staR_9: bitstring,apR_9: bitstring,aanR_9: bitstring,seqR_9: bitstring,dhR_5: bitstring,gsR_2: bitstring,snR_9: bitstring,sessR_9: bitstring,rsneR_9: bitstring,pidR_9: bitstring,wrR_4: bitstring));
+    {349}if (apR_9 = ap_9) then
+    {350}if (staR_9 = sta_9) then
+    {351}if (aanR_9 = aan5) then
+    {352}if (seqR_9 = seq1) then
+    {353}if (dhR_5 = dhgrp) then
+    {354}if (pidR_9 = some(pmkid_1)) then
+    {355}new an_4: bitstring;
+    {356}new sA_2: bitstring;
+    {357}let ga_2: bitstring = exp(g,sA_2) in
+    {358}let dhss_5: bitstring = exp(gsR_2,sA_2) in
+    {359}let ptk_9: bitstring = kdf(pmk_9,label_ptk,(sta_9,ap_9,snR_9,an_4,dhss_5)) in
+    {360}let ick_9: bitstring = kdf(ptk_9,label_ick,none) in
+    {361}let kek_9: bitstring = kdf(ptk_9,label_kek,none) in
+    {362}let tk_9: bitstring = kdf(ptk_9,label_tk,none) in
+    {363}out(c, (ap_9,sta_9,aan5,seq2,st_ok,dhgrp,ga_2,snR_9,sessR_9,rsneR_9,an_4,some(pmkid_1)));
+    {364}in(c, (sta2R_9: bitstring,ap2R_9: bitstring,sess2R_9: bitstring,rsne3R_4: bitstring,ctR_4: bitstring));
+    {365}if (sta2R_9 = sta_9) then
+    {366}if (ap2R_9 = ap_9) then
+    {367}if (sess2R_9 = sessR_9) then
+    {368}if (rsne3R_4 = rsneR_9) then
+    {369}let aad_9: bitstring = (sta_9,ap_9,snR_9,an_4,sessR_9,rsne3R_4) in
+    {370}let kaR_4: bitstring = adec(ctR_4,aad_9,kek_9) in
+    {371}if (kaR_4 = hmac(ick_9,(snR_9,an_4,sta_9,ap_9,gsR_2,ga_2))) then
+    {372}event ApFinish5C(sta_9,ap_9,sessR_9);
+    {373}event ApPTK(aan5,sta_9,ap_9,sessR_9,ptk_9);
+    {374}let kaap_4: bitstring = hmac(ick_9,(an_4,snR_9,ap_9,sta_9,ga_2,gsR_2)) in
+    {375}let aad2_9: bitstring = (ap_9,sta_9,an_4,snR_9,sessR_9,rsneR_9) in
+    {376}let ct2_4: bitstring = aead((aad2_9,(kaap_4,gtk_val)),kek_9) in
+    {377}out(c, (ap_9,sta_9,sessR_9,st_ok,rsneR_9,ct2_4))
 ) | (
-    {368}let sta_10: bitstring = sta2 in
-    {369}let ap_10: bitstring = ap2 in
-    {370}let pmk_10: bitstring = pmk_c2 in
-    {371}let pmkid_2: bitstring = pmkid_c2 in
-    {372}new sn_5: bitstring;
-    {373}new sS_3: bitstring;
-    {374}let gs_3: bitstring = exp(g,sS_3) in
-    {375}new sess_5: bitstring;
-    {376}out(c, (sta_10,ap_10,aan5,seq1,dhgrp,gs_3,sn_5,sess_5,rsne_sk,some(pmkid_2),none));
-    {377}in(c, (apR_10: bitstring,staR_10: bitstring,aanR_10: bitstring,seqR_10: bitstring,stR_5: bitstring,dhR_6: bitstring,gaR_3: bitstring,snR_10: bitstring,sessR_10: bitstring,rsneR_10: bitstring,anR_5: bitstring,pidR_10: bitstring));
-    {378}if (apR_10 = ap_10) then
-    {379}if (staR_10 = sta_10) then
-    {380}if (aanR_10 = aan5) then
-    {381}if (seqR_10 = seq2) then
-    {382}if (stR_5 = st_ok) then
-    {383}if (dhR_6 = dhgrp) then
-    {384}if (snR_10 = sn_5) then
-    {385}if (sessR_10 = sess_5) then
-    {386}if (rsneR_10 = rsne_sk) then
-    {387}if (pidR_10 = some(pmkid_2)) then
-    {388}let dhss_6: bitstring = exp(gaR_3,sS_3) in
-    {389}let ptk_10: bitstring = kdf(pmk_10,label_ptk,(sta_10,ap_10,sn_5,anR_5,dhss_6)) in
-    {390}let ick_10: bitstring = kdf(ptk_10,label_ick,none) in
-    {391}let kek_10: bitstring = kdf(ptk_10,label_kek,none) in
-    {392}let tk_10: bitstring = kdf(ptk_10,label_tk,none) in
-    {393}let ka_5: bitstring = hmac(ick_10,(sn_5,anR_5,sta_10,ap_10,gs_3,gaR_3)) in
-    {394}let aad_10: bitstring = (sta_10,ap_10,sn_5,anR_5,sess_5,rsne_sk) in
-    {395}let ct_5: bitstring = aead((aad_10,ka_5),kek_10) in
-    {396}event StaStart5C(sta_10,ap_10,sess_5);
-    {397}out(c, (sta_10,ap_10,sess_5,rsne_sk,ct_5));
-    {398}in(c, (ap2R_10: bitstring,sta2R_10: bitstring,sess2R_10: bitstring,st2R_5: bitstring,rsne2R_5: bitstring,ct2R_5: bitstring));
-    {399}if (ap2R_10 = ap_10) then
-    {400}if (sta2R_10 = sta_10) then
-    {401}if (sess2R_10 = sess_5) then
-    {402}if (st2R_5 = st_ok) then
-    {403}if (rsne2R_5 = rsne_sk) then
-    {404}let aad2_10: bitstring = (ap_10,sta_10,anR_5,sn_5,sess_5,rsne_sk) in
-    {405}let pl2_5: bitstring = adec(ct2R_5,aad2_10,kek_10) in
-    {406}let (kaAR_5: bitstring,gtkR_5: bitstring) = pl2_5 in
-    {407}if (kaAR_5 = hmac(ick_10,(anR_5,sn_5,ap_10,sta_10,gaR_3,gs_3))) then
-    {408}event StaFinish5C(sta_10,ap_10,sess_5);
-    {409}out(c, aead((label_data,probe_tk),tk_10))
+    {378}let sta_10: bitstring = sta2 in
+    {379}let ap_10: bitstring = ap2 in
+    {380}let pmk_10: bitstring = pmk_c2 in
+    {381}let pmkid_2: bitstring = pmkid_c2 in
+    {382}new sn_5: bitstring;
+    {383}new sS_3: bitstring;
+    {384}let gs_3: bitstring = exp(g,sS_3) in
+    {385}new sess_5: bitstring;
+    {386}out(c, (sta_10,ap_10,aan5,seq1,dhgrp,gs_3,sn_5,sess_5,rsne_sk,some(pmkid_2),none));
+    {387}in(c, (apR_10: bitstring,staR_10: bitstring,aanR_10: bitstring,seqR_10: bitstring,stR_5: bitstring,dhR_6: bitstring,gaR_3: bitstring,snR_10: bitstring,sessR_10: bitstring,rsneR_10: bitstring,anR_5: bitstring,pidR_10: bitstring));
+    {388}if (apR_10 = ap_10) then
+    {389}if (staR_10 = sta_10) then
+    {390}if (aanR_10 = aan5) then
+    {391}if (seqR_10 = seq2) then
+    {392}if (stR_5 = st_ok) then
+    {393}if (dhR_6 = dhgrp) then
+    {394}if (snR_10 = sn_5) then
+    {395}if (sessR_10 = sess_5) then
+    {396}if (rsneR_10 = rsne_sk) then
+    {397}if (pidR_10 = some(pmkid_2)) then
+    {398}let dhss_6: bitstring = exp(gaR_3,sS_3) in
+    {399}let ptk_10: bitstring = kdf(pmk_10,label_ptk,(sta_10,ap_10,sn_5,anR_5,dhss_6)) in
+    {400}let ick_10: bitstring = kdf(ptk_10,label_ick,none) in
+    {401}let kek_10: bitstring = kdf(ptk_10,label_kek,none) in
+    {402}let tk_10: bitstring = kdf(ptk_10,label_tk,none) in
+    {403}let ka_5: bitstring = hmac(ick_10,(sn_5,anR_5,sta_10,ap_10,gs_3,gaR_3)) in
+    {404}let aad_10: bitstring = (sta_10,ap_10,sn_5,anR_5,sess_5,rsne_sk) in
+    {405}let ct_5: bitstring = aead((aad_10,ka_5),kek_10) in
+    {406}event StaStart5C(sta_10,ap_10,sess_5);
+    {407}out(c, (sta_10,ap_10,sess_5,rsne_sk,ct_5));
+    {408}in(c, (ap2R_10: bitstring,sta2R_10: bitstring,sess2R_10: bitstring,st2R_5: bitstring,rsne2R_5: bitstring,ct2R_5: bitstring));
+    {409}if (ap2R_10 = ap_10) then
+    {410}if (sta2R_10 = sta_10) then
+    {411}if (sess2R_10 = sess_5) then
+    {412}if (st2R_5 = st_ok) then
+    {413}if (rsne2R_5 = rsne_sk) then
+    {414}let aad2_10: bitstring = (ap_10,sta_10,anR_5,sn_5,sess_5,rsne_sk) in
+    {415}let pl2_5: bitstring = adec(ct2R_5,aad2_10,kek_10) in
+    {416}let (kaAR_5: bitstring,gtkR_5: bitstring) = pl2_5 in
+    {417}if (kaAR_5 = hmac(ick_10,(anR_5,sn_5,ap_10,sta_10,gaR_3,gs_3))) then
+    {418}event StaFinish5C(sta_10,ap_10,sess_5);
+    {419}event StaPTK(aan5,sta_10,ap_10,sess_5,ptk_10);
+    {420}out(c, aead((label_data,probe_tk),tk_10))
 ) | (
-    {410}let ap_11: bitstring = ap2 in
-    {411}let sta_11: bitstring = sta2 in
-    {412}let pmk_11: bitstring = pmk_c2 in
-    {413}let pmkid_3: bitstring = pmkid_c2 in
-    {414}in(c, (staR_11: bitstring,apR_11: bitstring,aanR_11: bitstring,seqR_11: bitstring,dhR_7: bitstring,gsR_3: bitstring,snR_11: bitstring,sessR_11: bitstring,rsneR_11: bitstring,pidR_11: bitstring,wrR_5: bitstring));
-    {415}if (apR_11 = ap_11) then
-    {416}if (staR_11 = sta_11) then
-    {417}if (aanR_11 = aan5) then
-    {418}if (seqR_11 = seq1) then
-    {419}if (dhR_7 = dhgrp) then
-    {420}if (pidR_11 = some(pmkid_3)) then
-    {421}new an_5: bitstring;
-    {422}new sA_3: bitstring;
-    {423}let ga_3: bitstring = exp(g,sA_3) in
-    {424}let dhss_7: bitstring = exp(gsR_3,sA_3) in
-    {425}let ptk_11: bitstring = kdf(pmk_11,label_ptk,(sta_11,ap_11,snR_11,an_5,dhss_7)) in
-    {426}let ick_11: bitstring = kdf(ptk_11,label_ick,none) in
-    {427}let kek_11: bitstring = kdf(ptk_11,label_kek,none) in
-    {428}let tk_11: bitstring = kdf(ptk_11,label_tk,none) in
-    {429}out(c, (ap_11,sta_11,aan5,seq2,st_ok,dhgrp,ga_3,snR_11,sessR_11,rsneR_11,an_5,some(pmkid_3)));
-    {430}in(c, (sta2R_11: bitstring,ap2R_11: bitstring,sess2R_11: bitstring,rsne3R_5: bitstring,ctR_5: bitstring));
-    {431}if (sta2R_11 = sta_11) then
-    {432}if (ap2R_11 = ap_11) then
-    {433}if (sess2R_11 = sessR_11) then
-    {434}if (rsne3R_5 = rsneR_11) then
-    {435}let aad_11: bitstring = (sta_11,ap_11,snR_11,an_5,sessR_11,rsne3R_5) in
-    {436}let kaR_5: bitstring = adec(ctR_5,aad_11,kek_11) in
-    {437}if (kaR_5 = hmac(ick_11,(snR_11,an_5,sta_11,ap_11,gsR_3,ga_3))) then
-    {438}event ApFinish5C(sta_11,ap_11,sessR_11);
-    {439}let kaap_5: bitstring = hmac(ick_11,(an_5,snR_11,ap_11,sta_11,ga_3,gsR_3)) in
-    {440}let aad2_11: bitstring = (ap_11,sta_11,an_5,snR_11,sessR_11,rsneR_11) in
-    {441}let ct2_5: bitstring = aead((aad2_11,(kaap_5,gtk_val)),kek_11) in
-    {442}out(c, (ap_11,sta_11,sessR_11,st_ok,rsneR_11,ct2_5))
+    {421}let ap_11: bitstring = ap2 in
+    {422}let sta_11: bitstring = sta2 in
+    {423}let pmk_11: bitstring = pmk_c2 in
+    {424}let pmkid_3: bitstring = pmkid_c2 in
+    {425}in(c, (staR_11: bitstring,apR_11: bitstring,aanR_11: bitstring,seqR_11: bitstring,dhR_7: bitstring,gsR_3: bitstring,snR_11: bitstring,sessR_11: bitstring,rsneR_11: bitstring,pidR_11: bitstring,wrR_5: bitstring));
+    {426}if (apR_11 = ap_11) then
+    {427}if (staR_11 = sta_11) then
+    {428}if (aanR_11 = aan5) then
+    {429}if (seqR_11 = seq1) then
+    {430}if (dhR_7 = dhgrp) then
+    {431}if (pidR_11 = some(pmkid_3)) then
+    {432}new an_5: bitstring;
+    {433}new sA_3: bitstring;
+    {434}let ga_3: bitstring = exp(g,sA_3) in
+    {435}let dhss_7: bitstring = exp(gsR_3,sA_3) in
+    {436}let ptk_11: bitstring = kdf(pmk_11,label_ptk,(sta_11,ap_11,snR_11,an_5,dhss_7)) in
+    {437}let ick_11: bitstring = kdf(ptk_11,label_ick,none) in
+    {438}let kek_11: bitstring = kdf(ptk_11,label_kek,none) in
+    {439}let tk_11: bitstring = kdf(ptk_11,label_tk,none) in
+    {440}out(c, (ap_11,sta_11,aan5,seq2,st_ok,dhgrp,ga_3,snR_11,sessR_11,rsneR_11,an_5,some(pmkid_3)));
+    {441}in(c, (sta2R_11: bitstring,ap2R_11: bitstring,sess2R_11: bitstring,rsne3R_5: bitstring,ctR_5: bitstring));
+    {442}if (sta2R_11 = sta_11) then
+    {443}if (ap2R_11 = ap_11) then
+    {444}if (sess2R_11 = sessR_11) then
+    {445}if (rsne3R_5 = rsneR_11) then
+    {446}let aad_11: bitstring = (sta_11,ap_11,snR_11,an_5,sessR_11,rsne3R_5) in
+    {447}let kaR_5: bitstring = adec(ctR_5,aad_11,kek_11) in
+    {448}if (kaR_5 = hmac(ick_11,(snR_11,an_5,sta_11,ap_11,gsR_3,ga_3))) then
+    {449}event ApFinish5C(sta_11,ap_11,sessR_11);
+    {450}event ApPTK(aan5,sta_11,ap_11,sessR_11,ptk_11);
+    {451}let kaap_5: bitstring = hmac(ick_11,(an_5,snR_11,ap_11,sta_11,ga_3,gsR_3)) in
+    {452}let aad2_11: bitstring = (ap_11,sta_11,an_5,snR_11,sessR_11,rsneR_11) in
+    {453}let ct2_5: bitstring = aead((aad2_11,(kaap_5,gtk_val)),kek_11) in
+    {454}out(c, (ap_11,sta_11,sessR_11,st_ok,rsneR_11,ct2_5))
 )
 
 --  Process 1 (that is, process 0, with let moved downwards):
@@ -500,416 +512,428 @@ Process 0 (that is, the initial process):
     {36}let (kaAR: bitstring,gtkR: bitstring) = pl2 in
     {37}if (kaAR = hmac(ick,(anR,sn,ap,sta))) then
     {38}event StaFinish4(sta,ap,sess);
+    {39}event StaPTK(aan4,sta,ap,sess,ptk);
     {22}let tk: bitstring = kdf(ptk,label_tk,none) in
-    {39}out(c, aead((label_data,probe_tk),tk))
+    {40}out(c, aead((label_data,probe_tk),tk))
 ) | (
-    {40}!
-    {44}in(c, (staR_1: bitstring,apR_1: bitstring,aanR_1: bitstring,seqR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,pidR_1: bitstring,wrR: bitstring));
-    {41}let ap_1: bitstring = ap1 in
-    {45}if (apR_1 = ap_1) then
-    {42}let sta_1: bitstring = sta1 in
-    {46}if (staR_1 = sta_1) then
-    {47}if (aanR_1 = aan4) then
-    {48}if (seqR_1 = seq1) then
-    {49}if (pidR_1 = none) then
-    {50}new an: bitstring;
-    {56}out(c, (ap_1,sta_1,aan4,seq2,st_ok,an,snR_1,sessR_1,rsneR_1,none));
-    {57}in(c, (sta2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,rsne3R: bitstring,ctR: bitstring));
-    {58}if (sta2R_1 = sta_1) then
-    {59}if (ap2R_1 = ap_1) then
-    {60}if (sess2R_1 = sessR_1) then
-    {61}if (rsne3R = rsneR_1) then
-    {62}let aad_1: bitstring = (sta_1,ap_1,snR_1,an,sessR_1,rsne3R) in
-    {43}let rmsk_1: bitstring = eaprp_rmsk1 in
-    {51}let pmk_1: bitstring = hmac((snR_1,an),rmsk_1) in
-    {52}let ptk_1: bitstring = kdf(pmk_1,label_ptk,(sta_1,ap_1,snR_1,an)) in
-    {54}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
-    {63}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
-    {53}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
-    {64}if (kaR = hmac(ick_1,(snR_1,an,sta_1,ap_1))) then
-    {65}event ApFinish4(sta_1,ap_1,sessR_1);
-    {67}let aad2_1: bitstring = (ap_1,sta_1,an,snR_1,sessR_1,rsneR_1) in
-    {66}let kaap: bitstring = hmac(ick_1,(an,snR_1,ap_1,sta_1)) in
-    {68}let ct2: bitstring = aead((aad2_1,(kaap,gtk_val)),kek_1) in
-    {69}out(c, (ap_1,sta_1,sessR_1,st_ok,rsneR_1,ct2))
+    {41}!
+    {45}in(c, (staR_1: bitstring,apR_1: bitstring,aanR_1: bitstring,seqR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,pidR_1: bitstring,wrR: bitstring));
+    {42}let ap_1: bitstring = ap1 in
+    {46}if (apR_1 = ap_1) then
+    {43}let sta_1: bitstring = sta1 in
+    {47}if (staR_1 = sta_1) then
+    {48}if (aanR_1 = aan4) then
+    {49}if (seqR_1 = seq1) then
+    {50}if (pidR_1 = none) then
+    {51}new an: bitstring;
+    {57}out(c, (ap_1,sta_1,aan4,seq2,st_ok,an,snR_1,sessR_1,rsneR_1,none));
+    {58}in(c, (sta2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,rsne3R: bitstring,ctR: bitstring));
+    {59}if (sta2R_1 = sta_1) then
+    {60}if (ap2R_1 = ap_1) then
+    {61}if (sess2R_1 = sessR_1) then
+    {62}if (rsne3R = rsneR_1) then
+    {63}let aad_1: bitstring = (sta_1,ap_1,snR_1,an,sessR_1,rsne3R) in
+    {44}let rmsk_1: bitstring = eaprp_rmsk1 in
+    {52}let pmk_1: bitstring = hmac((snR_1,an),rmsk_1) in
+    {53}let ptk_1: bitstring = kdf(pmk_1,label_ptk,(sta_1,ap_1,snR_1,an)) in
+    {55}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
+    {64}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
+    {54}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
+    {65}if (kaR = hmac(ick_1,(snR_1,an,sta_1,ap_1))) then
+    {66}event ApFinish4(sta_1,ap_1,sessR_1);
+    {67}event ApPTK(aan4,sta_1,ap_1,sessR_1,ptk_1);
+    {69}let aad2_1: bitstring = (ap_1,sta_1,an,snR_1,sessR_1,rsneR_1) in
+    {68}let kaap: bitstring = hmac(ick_1,(an,snR_1,ap_1,sta_1)) in
+    {70}let ct2: bitstring = aead((aad2_1,(kaap,gtk_val)),kek_1) in
+    {71}out(c, (ap_1,sta_1,sessR_1,st_ok,rsneR_1,ct2))
 ) | (
-    {70}!
-    {74}new sn_1: bitstring;
-    {75}new sess_1: bitstring;
-    {72}let ap_2: bitstring = ap2 in
-    {71}let sta_2: bitstring = sta2 in
-    {76}out(c, (sta_2,ap_2,aan4,seq1,sn_1,sess_1,rsne_sk,none,none));
-    {77}in(c, (apR_2: bitstring,staR_2: bitstring,aanR_2: bitstring,seqR_2: bitstring,stR_1: bitstring,anR_1: bitstring,snR_2: bitstring,sessR_2: bitstring,rsneR_2: bitstring,pidR_2: bitstring));
-    {78}if (apR_2 = ap_2) then
-    {79}if (staR_2 = sta_2) then
-    {80}if (aanR_2 = aan4) then
-    {81}if (seqR_2 = seq2) then
-    {82}if (stR_1 = st_ok) then
-    {83}if (snR_2 = sn_1) then
-    {84}if (sessR_2 = sess_1) then
-    {85}if (rsneR_2 = rsne_sk) then
-    {86}if (pidR_2 = none) then
-    {95}event StaStart4(sta_2,ap_2,sess_1);
-    {93}let aad_2: bitstring = (sta_2,ap_2,sn_1,anR_1,sess_1,rsne_sk) in
-    {73}let rmsk_2: bitstring = eaprp_rmsk2 in
-    {87}let pmk_2: bitstring = hmac((sn_1,anR_1),rmsk_2) in
-    {88}let ptk_2: bitstring = kdf(pmk_2,label_ptk,(sta_2,ap_2,sn_1,anR_1)) in
-    {89}let ick_2: bitstring = kdf(ptk_2,label_ick,none) in
-    {92}let ka_1: bitstring = hmac(ick_2,(sn_1,anR_1,sta_2,ap_2)) in
-    {90}let kek_2: bitstring = kdf(ptk_2,label_kek,none) in
-    {94}let ct_1: bitstring = aead((aad_2,ka_1),kek_2) in
-    {96}out(c, (sta_2,ap_2,sess_1,rsne_sk,ct_1));
-    {97}in(c, (ap2R_2: bitstring,sta2R_2: bitstring,sess2R_2: bitstring,st2R_1: bitstring,rsne2R_1: bitstring,ct2R_1: bitstring));
-    {98}if (ap2R_2 = ap_2) then
-    {99}if (sta2R_2 = sta_2) then
-    {100}if (sess2R_2 = sess_1) then
-    {101}if (st2R_1 = st_ok) then
-    {102}if (rsne2R_1 = rsne_sk) then
-    {103}let aad2_2: bitstring = (ap_2,sta_2,anR_1,sn_1,sess_1,rsne_sk) in
-    {104}let pl2_1: bitstring = adec(ct2R_1,aad2_2,kek_2) in
-    {105}let (kaAR_1: bitstring,gtkR_1: bitstring) = pl2_1 in
-    {106}if (kaAR_1 = hmac(ick_2,(anR_1,sn_1,ap_2,sta_2))) then
-    {107}event StaFinish4(sta_2,ap_2,sess_1);
-    {91}let tk_2: bitstring = kdf(ptk_2,label_tk,none) in
-    {108}out(c, aead((label_data,probe_tk),tk_2))
+    {72}!
+    {76}new sn_1: bitstring;
+    {77}new sess_1: bitstring;
+    {74}let ap_2: bitstring = ap2 in
+    {73}let sta_2: bitstring = sta2 in
+    {78}out(c, (sta_2,ap_2,aan4,seq1,sn_1,sess_1,rsne_sk,none,none));
+    {79}in(c, (apR_2: bitstring,staR_2: bitstring,aanR_2: bitstring,seqR_2: bitstring,stR_1: bitstring,anR_1: bitstring,snR_2: bitstring,sessR_2: bitstring,rsneR_2: bitstring,pidR_2: bitstring));
+    {80}if (apR_2 = ap_2) then
+    {81}if (staR_2 = sta_2) then
+    {82}if (aanR_2 = aan4) then
+    {83}if (seqR_2 = seq2) then
+    {84}if (stR_1 = st_ok) then
+    {85}if (snR_2 = sn_1) then
+    {86}if (sessR_2 = sess_1) then
+    {87}if (rsneR_2 = rsne_sk) then
+    {88}if (pidR_2 = none) then
+    {97}event StaStart4(sta_2,ap_2,sess_1);
+    {95}let aad_2: bitstring = (sta_2,ap_2,sn_1,anR_1,sess_1,rsne_sk) in
+    {75}let rmsk_2: bitstring = eaprp_rmsk2 in
+    {89}let pmk_2: bitstring = hmac((sn_1,anR_1),rmsk_2) in
+    {90}let ptk_2: bitstring = kdf(pmk_2,label_ptk,(sta_2,ap_2,sn_1,anR_1)) in
+    {91}let ick_2: bitstring = kdf(ptk_2,label_ick,none) in
+    {94}let ka_1: bitstring = hmac(ick_2,(sn_1,anR_1,sta_2,ap_2)) in
+    {92}let kek_2: bitstring = kdf(ptk_2,label_kek,none) in
+    {96}let ct_1: bitstring = aead((aad_2,ka_1),kek_2) in
+    {98}out(c, (sta_2,ap_2,sess_1,rsne_sk,ct_1));
+    {99}in(c, (ap2R_2: bitstring,sta2R_2: bitstring,sess2R_2: bitstring,st2R_1: bitstring,rsne2R_1: bitstring,ct2R_1: bitstring));
+    {100}if (ap2R_2 = ap_2) then
+    {101}if (sta2R_2 = sta_2) then
+    {102}if (sess2R_2 = sess_1) then
+    {103}if (st2R_1 = st_ok) then
+    {104}if (rsne2R_1 = rsne_sk) then
+    {105}let aad2_2: bitstring = (ap_2,sta_2,anR_1,sn_1,sess_1,rsne_sk) in
+    {106}let pl2_1: bitstring = adec(ct2R_1,aad2_2,kek_2) in
+    {107}let (kaAR_1: bitstring,gtkR_1: bitstring) = pl2_1 in
+    {108}if (kaAR_1 = hmac(ick_2,(anR_1,sn_1,ap_2,sta_2))) then
+    {109}event StaFinish4(sta_2,ap_2,sess_1);
+    {110}event StaPTK(aan4,sta_2,ap_2,sess_1,ptk_2);
+    {93}let tk_2: bitstring = kdf(ptk_2,label_tk,none) in
+    {111}out(c, aead((label_data,probe_tk),tk_2))
 ) | (
-    {109}!
-    {113}in(c, (staR_3: bitstring,apR_3: bitstring,aanR_3: bitstring,seqR_3: bitstring,snR_3: bitstring,sessR_3: bitstring,rsneR_3: bitstring,pidR_3: bitstring,wrR_1: bitstring));
-    {110}let ap_3: bitstring = ap2 in
-    {114}if (apR_3 = ap_3) then
-    {111}let sta_3: bitstring = sta2 in
-    {115}if (staR_3 = sta_3) then
-    {116}if (aanR_3 = aan4) then
-    {117}if (seqR_3 = seq1) then
-    {118}if (pidR_3 = none) then
-    {119}new an_1: bitstring;
-    {125}out(c, (ap_3,sta_3,aan4,seq2,st_ok,an_1,snR_3,sessR_3,rsneR_3,none));
-    {126}in(c, (sta2R_3: bitstring,ap2R_3: bitstring,sess2R_3: bitstring,rsne3R_1: bitstring,ctR_1: bitstring));
-    {127}if (sta2R_3 = sta_3) then
-    {128}if (ap2R_3 = ap_3) then
-    {129}if (sess2R_3 = sessR_3) then
-    {130}if (rsne3R_1 = rsneR_3) then
-    {131}let aad_3: bitstring = (sta_3,ap_3,snR_3,an_1,sessR_3,rsne3R_1) in
-    {112}let rmsk_3: bitstring = eaprp_rmsk2 in
-    {120}let pmk_3: bitstring = hmac((snR_3,an_1),rmsk_3) in
-    {121}let ptk_3: bitstring = kdf(pmk_3,label_ptk,(sta_3,ap_3,snR_3,an_1)) in
-    {123}let kek_3: bitstring = kdf(ptk_3,label_kek,none) in
-    {132}let kaR_1: bitstring = adec(ctR_1,aad_3,kek_3) in
-    {122}let ick_3: bitstring = kdf(ptk_3,label_ick,none) in
-    {133}if (kaR_1 = hmac(ick_3,(snR_3,an_1,sta_3,ap_3))) then
-    {134}event ApFinish4(sta_3,ap_3,sessR_3);
-    {136}let aad2_3: bitstring = (ap_3,sta_3,an_1,snR_3,sessR_3,rsneR_3) in
-    {135}let kaap_1: bitstring = hmac(ick_3,(an_1,snR_3,ap_3,sta_3)) in
-    {137}let ct2_1: bitstring = aead((aad2_3,(kaap_1,gtk_val)),kek_3) in
-    {138}out(c, (ap_3,sta_3,sessR_3,st_ok,rsneR_3,ct2_1))
+    {112}!
+    {116}in(c, (staR_3: bitstring,apR_3: bitstring,aanR_3: bitstring,seqR_3: bitstring,snR_3: bitstring,sessR_3: bitstring,rsneR_3: bitstring,pidR_3: bitstring,wrR_1: bitstring));
+    {113}let ap_3: bitstring = ap2 in
+    {117}if (apR_3 = ap_3) then
+    {114}let sta_3: bitstring = sta2 in
+    {118}if (staR_3 = sta_3) then
+    {119}if (aanR_3 = aan4) then
+    {120}if (seqR_3 = seq1) then
+    {121}if (pidR_3 = none) then
+    {122}new an_1: bitstring;
+    {128}out(c, (ap_3,sta_3,aan4,seq2,st_ok,an_1,snR_3,sessR_3,rsneR_3,none));
+    {129}in(c, (sta2R_3: bitstring,ap2R_3: bitstring,sess2R_3: bitstring,rsne3R_1: bitstring,ctR_1: bitstring));
+    {130}if (sta2R_3 = sta_3) then
+    {131}if (ap2R_3 = ap_3) then
+    {132}if (sess2R_3 = sessR_3) then
+    {133}if (rsne3R_1 = rsneR_3) then
+    {134}let aad_3: bitstring = (sta_3,ap_3,snR_3,an_1,sessR_3,rsne3R_1) in
+    {115}let rmsk_3: bitstring = eaprp_rmsk2 in
+    {123}let pmk_3: bitstring = hmac((snR_3,an_1),rmsk_3) in
+    {124}let ptk_3: bitstring = kdf(pmk_3,label_ptk,(sta_3,ap_3,snR_3,an_1)) in
+    {126}let kek_3: bitstring = kdf(ptk_3,label_kek,none) in
+    {135}let kaR_1: bitstring = adec(ctR_1,aad_3,kek_3) in
+    {125}let ick_3: bitstring = kdf(ptk_3,label_ick,none) in
+    {136}if (kaR_1 = hmac(ick_3,(snR_3,an_1,sta_3,ap_3))) then
+    {137}event ApFinish4(sta_3,ap_3,sessR_3);
+    {138}event ApPTK(aan4,sta_3,ap_3,sessR_3,ptk_3);
+    {140}let aad2_3: bitstring = (ap_3,sta_3,an_1,snR_3,sessR_3,rsneR_3) in
+    {139}let kaap_1: bitstring = hmac(ick_3,(an_1,snR_3,ap_3,sta_3)) in
+    {141}let ct2_1: bitstring = aead((aad2_3,(kaap_1,gtk_val)),kek_3) in
+    {142}out(c, (ap_3,sta_3,sessR_3,st_ok,rsneR_3,ct2_1))
 ) | (
-    {139}!
-    {143}new sn_2: bitstring;
-    {144}new sS: bitstring;
-    {146}new sess_2: bitstring;
-    {145}let gs: bitstring = exp(g,sS) in
-    {141}let ap_4: bitstring = ap1 in
-    {140}let sta_4: bitstring = sta1 in
-    {147}out(c, (sta_4,ap_4,aan5,seq1,dhgrp,gs,sn_2,sess_2,rsne_sk,none,none));
-    {148}in(c, (apR_4: bitstring,staR_4: bitstring,aanR_4: bitstring,seqR_4: bitstring,stR_2: bitstring,dhR: bitstring,gaR: bitstring,snR_4: bitstring,sessR_4: bitstring,rsneR_4: bitstring,anR_2: bitstring,pidR_4: bitstring));
-    {149}if (apR_4 = ap_4) then
-    {150}if (staR_4 = sta_4) then
-    {151}if (aanR_4 = aan5) then
-    {152}if (seqR_4 = seq2) then
-    {153}if (stR_2 = st_ok) then
-    {154}if (dhR = dhgrp) then
-    {155}if (snR_4 = sn_2) then
-    {156}if (sessR_4 = sess_2) then
-    {157}if (rsneR_4 = rsne_sk) then
-    {158}if (pidR_4 = none) then
-    {168}event StaStart5(sta_4,ap_4,sess_2);
-    {166}let aad_4: bitstring = (sta_4,ap_4,sn_2,anR_2,sess_2,rsne_sk) in
-    {159}let dhss: bitstring = exp(gaR,sS) in
-    {142}let rmsk_4: bitstring = eaprp_rmsk1 in
-    {160}let pmk_4: bitstring = hmac((sn_2,anR_2),(rmsk_4,dhss)) in
-    {161}let ptk_4: bitstring = kdf(pmk_4,label_ptk,(sta_4,ap_4,sn_2,anR_2)) in
-    {162}let ick_4: bitstring = kdf(ptk_4,label_ick,none) in
-    {165}let ka_2: bitstring = hmac(ick_4,(sn_2,anR_2,sta_4,ap_4,gs,gaR)) in
-    {163}let kek_4: bitstring = kdf(ptk_4,label_kek,none) in
-    {167}let ct_2: bitstring = aead((aad_4,ka_2),kek_4) in
-    {169}out(c, (sta_4,ap_4,sess_2,rsne_sk,ct_2));
-    {170}in(c, (ap2R_4: bitstring,sta2R_4: bitstring,sess2R_4: bitstring,st2R_2: bitstring,rsne2R_2: bitstring,ct2R_2: bitstring));
-    {171}if (ap2R_4 = ap_4) then
-    {172}if (sta2R_4 = sta_4) then
-    {173}if (sess2R_4 = sess_2) then
-    {174}if (st2R_2 = st_ok) then
-    {175}if (rsne2R_2 = rsne_sk) then
-    {176}let aad2_4: bitstring = (ap_4,sta_4,anR_2,sn_2,sess_2,rsne_sk) in
-    {177}let pl2_2: bitstring = adec(ct2R_2,aad2_4,kek_4) in
-    {178}let (kaAR_2: bitstring,gtkR_2: bitstring) = pl2_2 in
-    {179}if (kaAR_2 = hmac(ick_4,(anR_2,sn_2,ap_4,sta_4,gaR,gs))) then
-    {180}event StaFinish5(sta_4,ap_4,sess_2);
-    {164}let tk_4: bitstring = kdf(ptk_4,label_tk,none) in
-    {181}out(c, aead((label_data,probe_tk),tk_4))
+    {143}!
+    {147}new sn_2: bitstring;
+    {148}new sS: bitstring;
+    {150}new sess_2: bitstring;
+    {149}let gs: bitstring = exp(g,sS) in
+    {145}let ap_4: bitstring = ap1 in
+    {144}let sta_4: bitstring = sta1 in
+    {151}out(c, (sta_4,ap_4,aan5,seq1,dhgrp,gs,sn_2,sess_2,rsne_sk,none,none));
+    {152}in(c, (apR_4: bitstring,staR_4: bitstring,aanR_4: bitstring,seqR_4: bitstring,stR_2: bitstring,dhR: bitstring,gaR: bitstring,snR_4: bitstring,sessR_4: bitstring,rsneR_4: bitstring,anR_2: bitstring,pidR_4: bitstring));
+    {153}if (apR_4 = ap_4) then
+    {154}if (staR_4 = sta_4) then
+    {155}if (aanR_4 = aan5) then
+    {156}if (seqR_4 = seq2) then
+    {157}if (stR_2 = st_ok) then
+    {158}if (dhR = dhgrp) then
+    {159}if (snR_4 = sn_2) then
+    {160}if (sessR_4 = sess_2) then
+    {161}if (rsneR_4 = rsne_sk) then
+    {162}if (pidR_4 = none) then
+    {172}event StaStart5(sta_4,ap_4,sess_2);
+    {170}let aad_4: bitstring = (sta_4,ap_4,sn_2,anR_2,sess_2,rsne_sk) in
+    {163}let dhss: bitstring = exp(gaR,sS) in
+    {146}let rmsk_4: bitstring = eaprp_rmsk1 in
+    {164}let pmk_4: bitstring = hmac((sn_2,anR_2),(rmsk_4,dhss)) in
+    {165}let ptk_4: bitstring = kdf(pmk_4,label_ptk,(sta_4,ap_4,sn_2,anR_2)) in
+    {166}let ick_4: bitstring = kdf(ptk_4,label_ick,none) in
+    {169}let ka_2: bitstring = hmac(ick_4,(sn_2,anR_2,sta_4,ap_4,gs,gaR)) in
+    {167}let kek_4: bitstring = kdf(ptk_4,label_kek,none) in
+    {171}let ct_2: bitstring = aead((aad_4,ka_2),kek_4) in
+    {173}out(c, (sta_4,ap_4,sess_2,rsne_sk,ct_2));
+    {174}in(c, (ap2R_4: bitstring,sta2R_4: bitstring,sess2R_4: bitstring,st2R_2: bitstring,rsne2R_2: bitstring,ct2R_2: bitstring));
+    {175}if (ap2R_4 = ap_4) then
+    {176}if (sta2R_4 = sta_4) then
+    {177}if (sess2R_4 = sess_2) then
+    {178}if (st2R_2 = st_ok) then
+    {179}if (rsne2R_2 = rsne_sk) then
+    {180}let aad2_4: bitstring = (ap_4,sta_4,anR_2,sn_2,sess_2,rsne_sk) in
+    {181}let pl2_2: bitstring = adec(ct2R_2,aad2_4,kek_4) in
+    {182}let (kaAR_2: bitstring,gtkR_2: bitstring) = pl2_2 in
+    {183}if (kaAR_2 = hmac(ick_4,(anR_2,sn_2,ap_4,sta_4,gaR,gs))) then
+    {184}event StaFinish5(sta_4,ap_4,sess_2);
+    {185}event StaPTK(aan5,sta_4,ap_4,sess_2,ptk_4);
+    {168}let tk_4: bitstring = kdf(ptk_4,label_tk,none) in
+    {186}out(c, aead((label_data,probe_tk),tk_4))
 ) | (
-    {182}!
-    {186}in(c, (staR_5: bitstring,apR_5: bitstring,aanR_5: bitstring,seqR_5: bitstring,dhR_1: bitstring,gsR: bitstring,snR_5: bitstring,sessR_5: bitstring,rsneR_5: bitstring,pidR_5: bitstring,wrR_2: bitstring));
-    {183}let ap_5: bitstring = ap1 in
-    {187}if (apR_5 = ap_5) then
-    {184}let sta_5: bitstring = sta1 in
-    {188}if (staR_5 = sta_5) then
-    {189}if (aanR_5 = aan5) then
-    {190}if (seqR_5 = seq1) then
-    {191}if (dhR_1 = dhgrp) then
-    {192}if (pidR_5 = none) then
-    {193}new an_2: bitstring;
-    {194}new sA: bitstring;
-    {195}let ga: bitstring = exp(g,sA) in
-    {202}out(c, (ap_5,sta_5,aan5,seq2,st_ok,dhgrp,ga,snR_5,sessR_5,rsneR_5,an_2,none));
-    {203}in(c, (sta2R_5: bitstring,ap2R_5: bitstring,sess2R_5: bitstring,rsne3R_2: bitstring,ctR_2: bitstring));
-    {204}if (sta2R_5 = sta_5) then
-    {205}if (ap2R_5 = ap_5) then
-    {206}if (sess2R_5 = sessR_5) then
-    {207}if (rsne3R_2 = rsneR_5) then
-    {208}let aad_5: bitstring = (sta_5,ap_5,snR_5,an_2,sessR_5,rsne3R_2) in
-    {196}let dhss_1: bitstring = exp(gsR,sA) in
-    {185}let rmsk_5: bitstring = eaprp_rmsk1 in
-    {197}let pmk_5: bitstring = hmac((snR_5,an_2),(rmsk_5,dhss_1)) in
-    {198}let ptk_5: bitstring = kdf(pmk_5,label_ptk,(sta_5,ap_5,snR_5,an_2)) in
-    {200}let kek_5: bitstring = kdf(ptk_5,label_kek,none) in
-    {209}let kaR_2: bitstring = adec(ctR_2,aad_5,kek_5) in
-    {199}let ick_5: bitstring = kdf(ptk_5,label_ick,none) in
-    {210}if (kaR_2 = hmac(ick_5,(snR_5,an_2,sta_5,ap_5,gsR,ga))) then
-    {211}event ApFinish5(sta_5,ap_5,sessR_5);
-    {213}let aad2_5: bitstring = (ap_5,sta_5,an_2,snR_5,sessR_5,rsneR_5) in
-    {212}let kaap_2: bitstring = hmac(ick_5,(an_2,snR_5,ap_5,sta_5,ga,gsR)) in
-    {214}let ct2_2: bitstring = aead((aad2_5,(kaap_2,gtk_val)),kek_5) in
-    {215}out(c, (ap_5,sta_5,sessR_5,st_ok,rsneR_5,ct2_2))
+    {187}!
+    {191}in(c, (staR_5: bitstring,apR_5: bitstring,aanR_5: bitstring,seqR_5: bitstring,dhR_1: bitstring,gsR: bitstring,snR_5: bitstring,sessR_5: bitstring,rsneR_5: bitstring,pidR_5: bitstring,wrR_2: bitstring));
+    {188}let ap_5: bitstring = ap1 in
+    {192}if (apR_5 = ap_5) then
+    {189}let sta_5: bitstring = sta1 in
+    {193}if (staR_5 = sta_5) then
+    {194}if (aanR_5 = aan5) then
+    {195}if (seqR_5 = seq1) then
+    {196}if (dhR_1 = dhgrp) then
+    {197}if (pidR_5 = none) then
+    {198}new an_2: bitstring;
+    {199}new sA: bitstring;
+    {200}let ga: bitstring = exp(g,sA) in
+    {207}out(c, (ap_5,sta_5,aan5,seq2,st_ok,dhgrp,ga,snR_5,sessR_5,rsneR_5,an_2,none));
+    {208}in(c, (sta2R_5: bitstring,ap2R_5: bitstring,sess2R_5: bitstring,rsne3R_2: bitstring,ctR_2: bitstring));
+    {209}if (sta2R_5 = sta_5) then
+    {210}if (ap2R_5 = ap_5) then
+    {211}if (sess2R_5 = sessR_5) then
+    {212}if (rsne3R_2 = rsneR_5) then
+    {213}let aad_5: bitstring = (sta_5,ap_5,snR_5,an_2,sessR_5,rsne3R_2) in
+    {201}let dhss_1: bitstring = exp(gsR,sA) in
+    {190}let rmsk_5: bitstring = eaprp_rmsk1 in
+    {202}let pmk_5: bitstring = hmac((snR_5,an_2),(rmsk_5,dhss_1)) in
+    {203}let ptk_5: bitstring = kdf(pmk_5,label_ptk,(sta_5,ap_5,snR_5,an_2)) in
+    {205}let kek_5: bitstring = kdf(ptk_5,label_kek,none) in
+    {214}let kaR_2: bitstring = adec(ctR_2,aad_5,kek_5) in
+    {204}let ick_5: bitstring = kdf(ptk_5,label_ick,none) in
+    {215}if (kaR_2 = hmac(ick_5,(snR_5,an_2,sta_5,ap_5,gsR,ga))) then
+    {216}event ApFinish5(sta_5,ap_5,sessR_5);
+    {217}event ApPTK(aan5,sta_5,ap_5,sessR_5,ptk_5);
+    {219}let aad2_5: bitstring = (ap_5,sta_5,an_2,snR_5,sessR_5,rsneR_5) in
+    {218}let kaap_2: bitstring = hmac(ick_5,(an_2,snR_5,ap_5,sta_5,ga,gsR)) in
+    {220}let ct2_2: bitstring = aead((aad2_5,(kaap_2,gtk_val)),kek_5) in
+    {221}out(c, (ap_5,sta_5,sessR_5,st_ok,rsneR_5,ct2_2))
 ) | (
-    {216}!
-    {220}new sn_3: bitstring;
-    {221}new sS_1: bitstring;
-    {223}new sess_3: bitstring;
-    {222}let gs_1: bitstring = exp(g,sS_1) in
-    {218}let ap_6: bitstring = ap2 in
-    {217}let sta_6: bitstring = sta2 in
-    {224}out(c, (sta_6,ap_6,aan5,seq1,dhgrp,gs_1,sn_3,sess_3,rsne_sk,none,none));
-    {225}in(c, (apR_6: bitstring,staR_6: bitstring,aanR_6: bitstring,seqR_6: bitstring,stR_3: bitstring,dhR_2: bitstring,gaR_1: bitstring,snR_6: bitstring,sessR_6: bitstring,rsneR_6: bitstring,anR_3: bitstring,pidR_6: bitstring));
-    {226}if (apR_6 = ap_6) then
-    {227}if (staR_6 = sta_6) then
-    {228}if (aanR_6 = aan5) then
-    {229}if (seqR_6 = seq2) then
-    {230}if (stR_3 = st_ok) then
-    {231}if (dhR_2 = dhgrp) then
-    {232}if (snR_6 = sn_3) then
-    {233}if (sessR_6 = sess_3) then
-    {234}if (rsneR_6 = rsne_sk) then
-    {235}if (pidR_6 = none) then
-    {245}event StaStart5(sta_6,ap_6,sess_3);
-    {243}let aad_6: bitstring = (sta_6,ap_6,sn_3,anR_3,sess_3,rsne_sk) in
-    {236}let dhss_2: bitstring = exp(gaR_1,sS_1) in
-    {219}let rmsk_6: bitstring = eaprp_rmsk2 in
-    {237}let pmk_6: bitstring = hmac((sn_3,anR_3),(rmsk_6,dhss_2)) in
-    {238}let ptk_6: bitstring = kdf(pmk_6,label_ptk,(sta_6,ap_6,sn_3,anR_3)) in
-    {239}let ick_6: bitstring = kdf(ptk_6,label_ick,none) in
-    {242}let ka_3: bitstring = hmac(ick_6,(sn_3,anR_3,sta_6,ap_6,gs_1,gaR_1)) in
-    {240}let kek_6: bitstring = kdf(ptk_6,label_kek,none) in
-    {244}let ct_3: bitstring = aead((aad_6,ka_3),kek_6) in
-    {246}out(c, (sta_6,ap_6,sess_3,rsne_sk,ct_3));
-    {247}in(c, (ap2R_6: bitstring,sta2R_6: bitstring,sess2R_6: bitstring,st2R_3: bitstring,rsne2R_3: bitstring,ct2R_3: bitstring));
-    {248}if (ap2R_6 = ap_6) then
-    {249}if (sta2R_6 = sta_6) then
-    {250}if (sess2R_6 = sess_3) then
-    {251}if (st2R_3 = st_ok) then
-    {252}if (rsne2R_3 = rsne_sk) then
-    {253}let aad2_6: bitstring = (ap_6,sta_6,anR_3,sn_3,sess_3,rsne_sk) in
-    {254}let pl2_3: bitstring = adec(ct2R_3,aad2_6,kek_6) in
-    {255}let (kaAR_3: bitstring,gtkR_3: bitstring) = pl2_3 in
-    {256}if (kaAR_3 = hmac(ick_6,(anR_3,sn_3,ap_6,sta_6,gaR_1,gs_1))) then
-    {257}event StaFinish5(sta_6,ap_6,sess_3);
-    {241}let tk_6: bitstring = kdf(ptk_6,label_tk,none) in
-    {258}out(c, aead((label_data,probe_tk),tk_6))
+    {222}!
+    {226}new sn_3: bitstring;
+    {227}new sS_1: bitstring;
+    {229}new sess_3: bitstring;
+    {228}let gs_1: bitstring = exp(g,sS_1) in
+    {224}let ap_6: bitstring = ap2 in
+    {223}let sta_6: bitstring = sta2 in
+    {230}out(c, (sta_6,ap_6,aan5,seq1,dhgrp,gs_1,sn_3,sess_3,rsne_sk,none,none));
+    {231}in(c, (apR_6: bitstring,staR_6: bitstring,aanR_6: bitstring,seqR_6: bitstring,stR_3: bitstring,dhR_2: bitstring,gaR_1: bitstring,snR_6: bitstring,sessR_6: bitstring,rsneR_6: bitstring,anR_3: bitstring,pidR_6: bitstring));
+    {232}if (apR_6 = ap_6) then
+    {233}if (staR_6 = sta_6) then
+    {234}if (aanR_6 = aan5) then
+    {235}if (seqR_6 = seq2) then
+    {236}if (stR_3 = st_ok) then
+    {237}if (dhR_2 = dhgrp) then
+    {238}if (snR_6 = sn_3) then
+    {239}if (sessR_6 = sess_3) then
+    {240}if (rsneR_6 = rsne_sk) then
+    {241}if (pidR_6 = none) then
+    {251}event StaStart5(sta_6,ap_6,sess_3);
+    {249}let aad_6: bitstring = (sta_6,ap_6,sn_3,anR_3,sess_3,rsne_sk) in
+    {242}let dhss_2: bitstring = exp(gaR_1,sS_1) in
+    {225}let rmsk_6: bitstring = eaprp_rmsk2 in
+    {243}let pmk_6: bitstring = hmac((sn_3,anR_3),(rmsk_6,dhss_2)) in
+    {244}let ptk_6: bitstring = kdf(pmk_6,label_ptk,(sta_6,ap_6,sn_3,anR_3)) in
+    {245}let ick_6: bitstring = kdf(ptk_6,label_ick,none) in
+    {248}let ka_3: bitstring = hmac(ick_6,(sn_3,anR_3,sta_6,ap_6,gs_1,gaR_1)) in
+    {246}let kek_6: bitstring = kdf(ptk_6,label_kek,none) in
+    {250}let ct_3: bitstring = aead((aad_6,ka_3),kek_6) in
+    {252}out(c, (sta_6,ap_6,sess_3,rsne_sk,ct_3));
+    {253}in(c, (ap2R_6: bitstring,sta2R_6: bitstring,sess2R_6: bitstring,st2R_3: bitstring,rsne2R_3: bitstring,ct2R_3: bitstring));
+    {254}if (ap2R_6 = ap_6) then
+    {255}if (sta2R_6 = sta_6) then
+    {256}if (sess2R_6 = sess_3) then
+    {257}if (st2R_3 = st_ok) then
+    {258}if (rsne2R_3 = rsne_sk) then
+    {259}let aad2_6: bitstring = (ap_6,sta_6,anR_3,sn_3,sess_3,rsne_sk) in
+    {260}let pl2_3: bitstring = adec(ct2R_3,aad2_6,kek_6) in
+    {261}let (kaAR_3: bitstring,gtkR_3: bitstring) = pl2_3 in
+    {262}if (kaAR_3 = hmac(ick_6,(anR_3,sn_3,ap_6,sta_6,gaR_1,gs_1))) then
+    {263}event StaFinish5(sta_6,ap_6,sess_3);
+    {264}event StaPTK(aan5,sta_6,ap_6,sess_3,ptk_6);
+    {247}let tk_6: bitstring = kdf(ptk_6,label_tk,none) in
+    {265}out(c, aead((label_data,probe_tk),tk_6))
 ) | (
-    {259}!
-    {263}in(c, (staR_7: bitstring,apR_7: bitstring,aanR_7: bitstring,seqR_7: bitstring,dhR_3: bitstring,gsR_1: bitstring,snR_7: bitstring,sessR_7: bitstring,rsneR_7: bitstring,pidR_7: bitstring,wrR_3: bitstring));
-    {260}let ap_7: bitstring = ap2 in
-    {264}if (apR_7 = ap_7) then
-    {261}let sta_7: bitstring = sta2 in
-    {265}if (staR_7 = sta_7) then
-    {266}if (aanR_7 = aan5) then
-    {267}if (seqR_7 = seq1) then
-    {268}if (dhR_3 = dhgrp) then
-    {269}if (pidR_7 = none) then
-    {270}new an_3: bitstring;
-    {271}new sA_1: bitstring;
-    {272}let ga_1: bitstring = exp(g,sA_1) in
-    {279}out(c, (ap_7,sta_7,aan5,seq2,st_ok,dhgrp,ga_1,snR_7,sessR_7,rsneR_7,an_3,none));
-    {280}in(c, (sta2R_7: bitstring,ap2R_7: bitstring,sess2R_7: bitstring,rsne3R_3: bitstring,ctR_3: bitstring));
-    {281}if (sta2R_7 = sta_7) then
-    {282}if (ap2R_7 = ap_7) then
-    {283}if (sess2R_7 = sessR_7) then
-    {284}if (rsne3R_3 = rsneR_7) then
-    {285}let aad_7: bitstring = (sta_7,ap_7,snR_7,an_3,sessR_7,rsne3R_3) in
-    {273}let dhss_3: bitstring = exp(gsR_1,sA_1) in
-    {262}let rmsk_7: bitstring = eaprp_rmsk2 in
-    {274}let pmk_7: bitstring = hmac((snR_7,an_3),(rmsk_7,dhss_3)) in
-    {275}let ptk_7: bitstring = kdf(pmk_7,label_ptk,(sta_7,ap_7,snR_7,an_3)) in
-    {277}let kek_7: bitstring = kdf(ptk_7,label_kek,none) in
-    {286}let kaR_3: bitstring = adec(ctR_3,aad_7,kek_7) in
-    {276}let ick_7: bitstring = kdf(ptk_7,label_ick,none) in
-    {287}if (kaR_3 = hmac(ick_7,(snR_7,an_3,sta_7,ap_7,gsR_1,ga_1))) then
-    {288}event ApFinish5(sta_7,ap_7,sessR_7);
-    {290}let aad2_7: bitstring = (ap_7,sta_7,an_3,snR_7,sessR_7,rsneR_7) in
-    {289}let kaap_3: bitstring = hmac(ick_7,(an_3,snR_7,ap_7,sta_7,ga_1,gsR_1)) in
-    {291}let ct2_3: bitstring = aead((aad2_7,(kaap_3,gtk_val)),kek_7) in
-    {292}out(c, (ap_7,sta_7,sessR_7,st_ok,rsneR_7,ct2_3))
+    {266}!
+    {270}in(c, (staR_7: bitstring,apR_7: bitstring,aanR_7: bitstring,seqR_7: bitstring,dhR_3: bitstring,gsR_1: bitstring,snR_7: bitstring,sessR_7: bitstring,rsneR_7: bitstring,pidR_7: bitstring,wrR_3: bitstring));
+    {267}let ap_7: bitstring = ap2 in
+    {271}if (apR_7 = ap_7) then
+    {268}let sta_7: bitstring = sta2 in
+    {272}if (staR_7 = sta_7) then
+    {273}if (aanR_7 = aan5) then
+    {274}if (seqR_7 = seq1) then
+    {275}if (dhR_3 = dhgrp) then
+    {276}if (pidR_7 = none) then
+    {277}new an_3: bitstring;
+    {278}new sA_1: bitstring;
+    {279}let ga_1: bitstring = exp(g,sA_1) in
+    {286}out(c, (ap_7,sta_7,aan5,seq2,st_ok,dhgrp,ga_1,snR_7,sessR_7,rsneR_7,an_3,none));
+    {287}in(c, (sta2R_7: bitstring,ap2R_7: bitstring,sess2R_7: bitstring,rsne3R_3: bitstring,ctR_3: bitstring));
+    {288}if (sta2R_7 = sta_7) then
+    {289}if (ap2R_7 = ap_7) then
+    {290}if (sess2R_7 = sessR_7) then
+    {291}if (rsne3R_3 = rsneR_7) then
+    {292}let aad_7: bitstring = (sta_7,ap_7,snR_7,an_3,sessR_7,rsne3R_3) in
+    {280}let dhss_3: bitstring = exp(gsR_1,sA_1) in
+    {269}let rmsk_7: bitstring = eaprp_rmsk2 in
+    {281}let pmk_7: bitstring = hmac((snR_7,an_3),(rmsk_7,dhss_3)) in
+    {282}let ptk_7: bitstring = kdf(pmk_7,label_ptk,(sta_7,ap_7,snR_7,an_3)) in
+    {284}let kek_7: bitstring = kdf(ptk_7,label_kek,none) in
+    {293}let kaR_3: bitstring = adec(ctR_3,aad_7,kek_7) in
+    {283}let ick_7: bitstring = kdf(ptk_7,label_ick,none) in
+    {294}if (kaR_3 = hmac(ick_7,(snR_7,an_3,sta_7,ap_7,gsR_1,ga_1))) then
+    {295}event ApFinish5(sta_7,ap_7,sessR_7);
+    {296}event ApPTK(aan5,sta_7,ap_7,sessR_7,ptk_7);
+    {298}let aad2_7: bitstring = (ap_7,sta_7,an_3,snR_7,sessR_7,rsneR_7) in
+    {297}let kaap_3: bitstring = hmac(ick_7,(an_3,snR_7,ap_7,sta_7,ga_1,gsR_1)) in
+    {299}let ct2_3: bitstring = aead((aad2_7,(kaap_3,gtk_val)),kek_7) in
+    {300}out(c, (ap_7,sta_7,sessR_7,st_ok,rsneR_7,ct2_3))
 ) | (
-    {297}new sn_4: bitstring;
-    {298}new sS_2: bitstring;
-    {300}new sess_4: bitstring;
-    {299}let gs_2: bitstring = exp(g,sS_2) in
-    {296}let pmkid: bitstring = pmkid_c1 in
-    {294}let ap_8: bitstring = ap1 in
-    {293}let sta_8: bitstring = sta1 in
-    {301}out(c, (sta_8,ap_8,aan5,seq1,dhgrp,gs_2,sn_4,sess_4,rsne_sk,some(pmkid),none));
-    {302}in(c, (apR_8: bitstring,staR_8: bitstring,aanR_8: bitstring,seqR_8: bitstring,stR_4: bitstring,dhR_4: bitstring,gaR_2: bitstring,snR_8: bitstring,sessR_8: bitstring,rsneR_8: bitstring,anR_4: bitstring,pidR_8: bitstring));
-    {303}if (apR_8 = ap_8) then
-    {304}if (staR_8 = sta_8) then
-    {305}if (aanR_8 = aan5) then
-    {306}if (seqR_8 = seq2) then
-    {307}if (stR_4 = st_ok) then
-    {308}if (dhR_4 = dhgrp) then
-    {309}if (snR_8 = sn_4) then
-    {310}if (sessR_8 = sess_4) then
-    {311}if (rsneR_8 = rsne_sk) then
-    {312}if (pidR_8 = some(pmkid)) then
-    {321}event StaStart5C(sta_8,ap_8,sess_4);
-    {319}let aad_8: bitstring = (sta_8,ap_8,sn_4,anR_4,sess_4,rsne_sk) in
-    {313}let dhss_4: bitstring = exp(gaR_2,sS_2) in
-    {295}let pmk_8: bitstring = pmk_c1 in
-    {314}let ptk_8: bitstring = kdf(pmk_8,label_ptk,(sta_8,ap_8,sn_4,anR_4,dhss_4)) in
-    {315}let ick_8: bitstring = kdf(ptk_8,label_ick,none) in
-    {318}let ka_4: bitstring = hmac(ick_8,(sn_4,anR_4,sta_8,ap_8,gs_2,gaR_2)) in
-    {316}let kek_8: bitstring = kdf(ptk_8,label_kek,none) in
-    {320}let ct_4: bitstring = aead((aad_8,ka_4),kek_8) in
-    {322}out(c, (sta_8,ap_8,sess_4,rsne_sk,ct_4));
-    {323}in(c, (ap2R_8: bitstring,sta2R_8: bitstring,sess2R_8: bitstring,st2R_4: bitstring,rsne2R_4: bitstring,ct2R_4: bitstring));
-    {324}if (ap2R_8 = ap_8) then
-    {325}if (sta2R_8 = sta_8) then
-    {326}if (sess2R_8 = sess_4) then
-    {327}if (st2R_4 = st_ok) then
-    {328}if (rsne2R_4 = rsne_sk) then
-    {329}let aad2_8: bitstring = (ap_8,sta_8,anR_4,sn_4,sess_4,rsne_sk) in
-    {330}let pl2_4: bitstring = adec(ct2R_4,aad2_8,kek_8) in
-    {331}let (kaAR_4: bitstring,gtkR_4: bitstring) = pl2_4 in
-    {332}if (kaAR_4 = hmac(ick_8,(anR_4,sn_4,ap_8,sta_8,gaR_2,gs_2))) then
-    {333}event StaFinish5C(sta_8,ap_8,sess_4);
-    {317}let tk_8: bitstring = kdf(ptk_8,label_tk,none) in
-    {334}out(c, aead((label_data,probe_tk),tk_8))
+    {305}new sn_4: bitstring;
+    {306}new sS_2: bitstring;
+    {308}new sess_4: bitstring;
+    {307}let gs_2: bitstring = exp(g,sS_2) in
+    {304}let pmkid: bitstring = pmkid_c1 in
+    {302}let ap_8: bitstring = ap1 in
+    {301}let sta_8: bitstring = sta1 in
+    {309}out(c, (sta_8,ap_8,aan5,seq1,dhgrp,gs_2,sn_4,sess_4,rsne_sk,some(pmkid),none));
+    {310}in(c, (apR_8: bitstring,staR_8: bitstring,aanR_8: bitstring,seqR_8: bitstring,stR_4: bitstring,dhR_4: bitstring,gaR_2: bitstring,snR_8: bitstring,sessR_8: bitstring,rsneR_8: bitstring,anR_4: bitstring,pidR_8: bitstring));
+    {311}if (apR_8 = ap_8) then
+    {312}if (staR_8 = sta_8) then
+    {313}if (aanR_8 = aan5) then
+    {314}if (seqR_8 = seq2) then
+    {315}if (stR_4 = st_ok) then
+    {316}if (dhR_4 = dhgrp) then
+    {317}if (snR_8 = sn_4) then
+    {318}if (sessR_8 = sess_4) then
+    {319}if (rsneR_8 = rsne_sk) then
+    {320}if (pidR_8 = some(pmkid)) then
+    {329}event StaStart5C(sta_8,ap_8,sess_4);
+    {327}let aad_8: bitstring = (sta_8,ap_8,sn_4,anR_4,sess_4,rsne_sk) in
+    {321}let dhss_4: bitstring = exp(gaR_2,sS_2) in
+    {303}let pmk_8: bitstring = pmk_c1 in
+    {322}let ptk_8: bitstring = kdf(pmk_8,label_ptk,(sta_8,ap_8,sn_4,anR_4,dhss_4)) in
+    {323}let ick_8: bitstring = kdf(ptk_8,label_ick,none) in
+    {326}let ka_4: bitstring = hmac(ick_8,(sn_4,anR_4,sta_8,ap_8,gs_2,gaR_2)) in
+    {324}let kek_8: bitstring = kdf(ptk_8,label_kek,none) in
+    {328}let ct_4: bitstring = aead((aad_8,ka_4),kek_8) in
+    {330}out(c, (sta_8,ap_8,sess_4,rsne_sk,ct_4));
+    {331}in(c, (ap2R_8: bitstring,sta2R_8: bitstring,sess2R_8: bitstring,st2R_4: bitstring,rsne2R_4: bitstring,ct2R_4: bitstring));
+    {332}if (ap2R_8 = ap_8) then
+    {333}if (sta2R_8 = sta_8) then
+    {334}if (sess2R_8 = sess_4) then
+    {335}if (st2R_4 = st_ok) then
+    {336}if (rsne2R_4 = rsne_sk) then
+    {337}let aad2_8: bitstring = (ap_8,sta_8,anR_4,sn_4,sess_4,rsne_sk) in
+    {338}let pl2_4: bitstring = adec(ct2R_4,aad2_8,kek_8) in
+    {339}let (kaAR_4: bitstring,gtkR_4: bitstring) = pl2_4 in
+    {340}if (kaAR_4 = hmac(ick_8,(anR_4,sn_4,ap_8,sta_8,gaR_2,gs_2))) then
+    {341}event StaFinish5C(sta_8,ap_8,sess_4);
+    {342}event StaPTK(aan5,sta_8,ap_8,sess_4,ptk_8);
+    {325}let tk_8: bitstring = kdf(ptk_8,label_tk,none) in
+    {343}out(c, aead((label_data,probe_tk),tk_8))
 ) | (
-    {339}in(c, (staR_9: bitstring,apR_9: bitstring,aanR_9: bitstring,seqR_9: bitstring,dhR_5: bitstring,gsR_2: bitstring,snR_9: bitstring,sessR_9: bitstring,rsneR_9: bitstring,pidR_9: bitstring,wrR_4: bitstring));
-    {335}let ap_9: bitstring = ap1 in
-    {340}if (apR_9 = ap_9) then
-    {336}let sta_9: bitstring = sta1 in
-    {341}if (staR_9 = sta_9) then
-    {342}if (aanR_9 = aan5) then
-    {343}if (seqR_9 = seq1) then
-    {344}if (dhR_5 = dhgrp) then
-    {338}let pmkid_1: bitstring = pmkid_c1 in
-    {345}if (pidR_9 = some(pmkid_1)) then
-    {346}new an_4: bitstring;
-    {347}new sA_2: bitstring;
-    {348}let ga_2: bitstring = exp(g,sA_2) in
-    {354}out(c, (ap_9,sta_9,aan5,seq2,st_ok,dhgrp,ga_2,snR_9,sessR_9,rsneR_9,an_4,some(pmkid_1)));
-    {355}in(c, (sta2R_9: bitstring,ap2R_9: bitstring,sess2R_9: bitstring,rsne3R_4: bitstring,ctR_4: bitstring));
-    {356}if (sta2R_9 = sta_9) then
-    {357}if (ap2R_9 = ap_9) then
-    {358}if (sess2R_9 = sessR_9) then
-    {359}if (rsne3R_4 = rsneR_9) then
-    {360}let aad_9: bitstring = (sta_9,ap_9,snR_9,an_4,sessR_9,rsne3R_4) in
-    {349}let dhss_5: bitstring = exp(gsR_2,sA_2) in
-    {337}let pmk_9: bitstring = pmk_c1 in
-    {350}let ptk_9: bitstring = kdf(pmk_9,label_ptk,(sta_9,ap_9,snR_9,an_4,dhss_5)) in
-    {352}let kek_9: bitstring = kdf(ptk_9,label_kek,none) in
-    {361}let kaR_4: bitstring = adec(ctR_4,aad_9,kek_9) in
-    {351}let ick_9: bitstring = kdf(ptk_9,label_ick,none) in
-    {362}if (kaR_4 = hmac(ick_9,(snR_9,an_4,sta_9,ap_9,gsR_2,ga_2))) then
-    {363}event ApFinish5C(sta_9,ap_9,sessR_9);
-    {365}let aad2_9: bitstring = (ap_9,sta_9,an_4,snR_9,sessR_9,rsneR_9) in
-    {364}let kaap_4: bitstring = hmac(ick_9,(an_4,snR_9,ap_9,sta_9,ga_2,gsR_2)) in
-    {366}let ct2_4: bitstring = aead((aad2_9,(kaap_4,gtk_val)),kek_9) in
-    {367}out(c, (ap_9,sta_9,sessR_9,st_ok,rsneR_9,ct2_4))
+    {348}in(c, (staR_9: bitstring,apR_9: bitstring,aanR_9: bitstring,seqR_9: bitstring,dhR_5: bitstring,gsR_2: bitstring,snR_9: bitstring,sessR_9: bitstring,rsneR_9: bitstring,pidR_9: bitstring,wrR_4: bitstring));
+    {344}let ap_9: bitstring = ap1 in
+    {349}if (apR_9 = ap_9) then
+    {345}let sta_9: bitstring = sta1 in
+    {350}if (staR_9 = sta_9) then
+    {351}if (aanR_9 = aan5) then
+    {352}if (seqR_9 = seq1) then
+    {353}if (dhR_5 = dhgrp) then
+    {347}let pmkid_1: bitstring = pmkid_c1 in
+    {354}if (pidR_9 = some(pmkid_1)) then
+    {355}new an_4: bitstring;
+    {356}new sA_2: bitstring;
+    {357}let ga_2: bitstring = exp(g,sA_2) in
+    {363}out(c, (ap_9,sta_9,aan5,seq2,st_ok,dhgrp,ga_2,snR_9,sessR_9,rsneR_9,an_4,some(pmkid_1)));
+    {364}in(c, (sta2R_9: bitstring,ap2R_9: bitstring,sess2R_9: bitstring,rsne3R_4: bitstring,ctR_4: bitstring));
+    {365}if (sta2R_9 = sta_9) then
+    {366}if (ap2R_9 = ap_9) then
+    {367}if (sess2R_9 = sessR_9) then
+    {368}if (rsne3R_4 = rsneR_9) then
+    {369}let aad_9: bitstring = (sta_9,ap_9,snR_9,an_4,sessR_9,rsne3R_4) in
+    {358}let dhss_5: bitstring = exp(gsR_2,sA_2) in
+    {346}let pmk_9: bitstring = pmk_c1 in
+    {359}let ptk_9: bitstring = kdf(pmk_9,label_ptk,(sta_9,ap_9,snR_9,an_4,dhss_5)) in
+    {361}let kek_9: bitstring = kdf(ptk_9,label_kek,none) in
+    {370}let kaR_4: bitstring = adec(ctR_4,aad_9,kek_9) in
+    {360}let ick_9: bitstring = kdf(ptk_9,label_ick,none) in
+    {371}if (kaR_4 = hmac(ick_9,(snR_9,an_4,sta_9,ap_9,gsR_2,ga_2))) then
+    {372}event ApFinish5C(sta_9,ap_9,sessR_9);
+    {373}event ApPTK(aan5,sta_9,ap_9,sessR_9,ptk_9);
+    {375}let aad2_9: bitstring = (ap_9,sta_9,an_4,snR_9,sessR_9,rsneR_9) in
+    {374}let kaap_4: bitstring = hmac(ick_9,(an_4,snR_9,ap_9,sta_9,ga_2,gsR_2)) in
+    {376}let ct2_4: bitstring = aead((aad2_9,(kaap_4,gtk_val)),kek_9) in
+    {377}out(c, (ap_9,sta_9,sessR_9,st_ok,rsneR_9,ct2_4))
 ) | (
-    {372}new sn_5: bitstring;
-    {373}new sS_3: bitstring;
-    {375}new sess_5: bitstring;
-    {374}let gs_3: bitstring = exp(g,sS_3) in
-    {371}let pmkid_2: bitstring = pmkid_c2 in
-    {369}let ap_10: bitstring = ap2 in
-    {368}let sta_10: bitstring = sta2 in
-    {376}out(c, (sta_10,ap_10,aan5,seq1,dhgrp,gs_3,sn_5,sess_5,rsne_sk,some(pmkid_2),none));
-    {377}in(c, (apR_10: bitstring,staR_10: bitstring,aanR_10: bitstring,seqR_10: bitstring,stR_5: bitstring,dhR_6: bitstring,gaR_3: bitstring,snR_10: bitstring,sessR_10: bitstring,rsneR_10: bitstring,anR_5: bitstring,pidR_10: bitstring));
-    {378}if (apR_10 = ap_10) then
-    {379}if (staR_10 = sta_10) then
-    {380}if (aanR_10 = aan5) then
-    {381}if (seqR_10 = seq2) then
-    {382}if (stR_5 = st_ok) then
-    {383}if (dhR_6 = dhgrp) then
-    {384}if (snR_10 = sn_5) then
-    {385}if (sessR_10 = sess_5) then
-    {386}if (rsneR_10 = rsne_sk) then
-    {387}if (pidR_10 = some(pmkid_2)) then
-    {396}event StaStart5C(sta_10,ap_10,sess_5);
-    {394}let aad_10: bitstring = (sta_10,ap_10,sn_5,anR_5,sess_5,rsne_sk) in
-    {388}let dhss_6: bitstring = exp(gaR_3,sS_3) in
-    {370}let pmk_10: bitstring = pmk_c2 in
-    {389}let ptk_10: bitstring = kdf(pmk_10,label_ptk,(sta_10,ap_10,sn_5,anR_5,dhss_6)) in
-    {390}let ick_10: bitstring = kdf(ptk_10,label_ick,none) in
-    {393}let ka_5: bitstring = hmac(ick_10,(sn_5,anR_5,sta_10,ap_10,gs_3,gaR_3)) in
-    {391}let kek_10: bitstring = kdf(ptk_10,label_kek,none) in
-    {395}let ct_5: bitstring = aead((aad_10,ka_5),kek_10) in
-    {397}out(c, (sta_10,ap_10,sess_5,rsne_sk,ct_5));
-    {398}in(c, (ap2R_10: bitstring,sta2R_10: bitstring,sess2R_10: bitstring,st2R_5: bitstring,rsne2R_5: bitstring,ct2R_5: bitstring));
-    {399}if (ap2R_10 = ap_10) then
-    {400}if (sta2R_10 = sta_10) then
-    {401}if (sess2R_10 = sess_5) then
-    {402}if (st2R_5 = st_ok) then
-    {403}if (rsne2R_5 = rsne_sk) then
-    {404}let aad2_10: bitstring = (ap_10,sta_10,anR_5,sn_5,sess_5,rsne_sk) in
-    {405}let pl2_5: bitstring = adec(ct2R_5,aad2_10,kek_10) in
-    {406}let (kaAR_5: bitstring,gtkR_5: bitstring) = pl2_5 in
-    {407}if (kaAR_5 = hmac(ick_10,(anR_5,sn_5,ap_10,sta_10,gaR_3,gs_3))) then
-    {408}event StaFinish5C(sta_10,ap_10,sess_5);
-    {392}let tk_10: bitstring = kdf(ptk_10,label_tk,none) in
-    {409}out(c, aead((label_data,probe_tk),tk_10))
+    {382}new sn_5: bitstring;
+    {383}new sS_3: bitstring;
+    {385}new sess_5: bitstring;
+    {384}let gs_3: bitstring = exp(g,sS_3) in
+    {381}let pmkid_2: bitstring = pmkid_c2 in
+    {379}let ap_10: bitstring = ap2 in
+    {378}let sta_10: bitstring = sta2 in
+    {386}out(c, (sta_10,ap_10,aan5,seq1,dhgrp,gs_3,sn_5,sess_5,rsne_sk,some(pmkid_2),none));
+    {387}in(c, (apR_10: bitstring,staR_10: bitstring,aanR_10: bitstring,seqR_10: bitstring,stR_5: bitstring,dhR_6: bitstring,gaR_3: bitstring,snR_10: bitstring,sessR_10: bitstring,rsneR_10: bitstring,anR_5: bitstring,pidR_10: bitstring));
+    {388}if (apR_10 = ap_10) then
+    {389}if (staR_10 = sta_10) then
+    {390}if (aanR_10 = aan5) then
+    {391}if (seqR_10 = seq2) then
+    {392}if (stR_5 = st_ok) then
+    {393}if (dhR_6 = dhgrp) then
+    {394}if (snR_10 = sn_5) then
+    {395}if (sessR_10 = sess_5) then
+    {396}if (rsneR_10 = rsne_sk) then
+    {397}if (pidR_10 = some(pmkid_2)) then
+    {406}event StaStart5C(sta_10,ap_10,sess_5);
+    {404}let aad_10: bitstring = (sta_10,ap_10,sn_5,anR_5,sess_5,rsne_sk) in
+    {398}let dhss_6: bitstring = exp(gaR_3,sS_3) in
+    {380}let pmk_10: bitstring = pmk_c2 in
+    {399}let ptk_10: bitstring = kdf(pmk_10,label_ptk,(sta_10,ap_10,sn_5,anR_5,dhss_6)) in
+    {400}let ick_10: bitstring = kdf(ptk_10,label_ick,none) in
+    {403}let ka_5: bitstring = hmac(ick_10,(sn_5,anR_5,sta_10,ap_10,gs_3,gaR_3)) in
+    {401}let kek_10: bitstring = kdf(ptk_10,label_kek,none) in
+    {405}let ct_5: bitstring = aead((aad_10,ka_5),kek_10) in
+    {407}out(c, (sta_10,ap_10,sess_5,rsne_sk,ct_5));
+    {408}in(c, (ap2R_10: bitstring,sta2R_10: bitstring,sess2R_10: bitstring,st2R_5: bitstring,rsne2R_5: bitstring,ct2R_5: bitstring));
+    {409}if (ap2R_10 = ap_10) then
+    {410}if (sta2R_10 = sta_10) then
+    {411}if (sess2R_10 = sess_5) then
+    {412}if (st2R_5 = st_ok) then
+    {413}if (rsne2R_5 = rsne_sk) then
+    {414}let aad2_10: bitstring = (ap_10,sta_10,anR_5,sn_5,sess_5,rsne_sk) in
+    {415}let pl2_5: bitstring = adec(ct2R_5,aad2_10,kek_10) in
+    {416}let (kaAR_5: bitstring,gtkR_5: bitstring) = pl2_5 in
+    {417}if (kaAR_5 = hmac(ick_10,(anR_5,sn_5,ap_10,sta_10,gaR_3,gs_3))) then
+    {418}event StaFinish5C(sta_10,ap_10,sess_5);
+    {419}event StaPTK(aan5,sta_10,ap_10,sess_5,ptk_10);
+    {402}let tk_10: bitstring = kdf(ptk_10,label_tk,none) in
+    {420}out(c, aead((label_data,probe_tk),tk_10))
 ) | (
-    {414}in(c, (staR_11: bitstring,apR_11: bitstring,aanR_11: bitstring,seqR_11: bitstring,dhR_7: bitstring,gsR_3: bitstring,snR_11: bitstring,sessR_11: bitstring,rsneR_11: bitstring,pidR_11: bitstring,wrR_5: bitstring));
-    {410}let ap_11: bitstring = ap2 in
-    {415}if (apR_11 = ap_11) then
-    {411}let sta_11: bitstring = sta2 in
-    {416}if (staR_11 = sta_11) then
-    {417}if (aanR_11 = aan5) then
-    {418}if (seqR_11 = seq1) then
-    {419}if (dhR_7 = dhgrp) then
-    {413}let pmkid_3: bitstring = pmkid_c2 in
-    {420}if (pidR_11 = some(pmkid_3)) then
-    {421}new an_5: bitstring;
-    {422}new sA_3: bitstring;
-    {423}let ga_3: bitstring = exp(g,sA_3) in
-    {429}out(c, (ap_11,sta_11,aan5,seq2,st_ok,dhgrp,ga_3,snR_11,sessR_11,rsneR_11,an_5,some(pmkid_3)));
-    {430}in(c, (sta2R_11: bitstring,ap2R_11: bitstring,sess2R_11: bitstring,rsne3R_5: bitstring,ctR_5: bitstring));
-    {431}if (sta2R_11 = sta_11) then
-    {432}if (ap2R_11 = ap_11) then
-    {433}if (sess2R_11 = sessR_11) then
-    {434}if (rsne3R_5 = rsneR_11) then
-    {435}let aad_11: bitstring = (sta_11,ap_11,snR_11,an_5,sessR_11,rsne3R_5) in
-    {424}let dhss_7: bitstring = exp(gsR_3,sA_3) in
-    {412}let pmk_11: bitstring = pmk_c2 in
-    {425}let ptk_11: bitstring = kdf(pmk_11,label_ptk,(sta_11,ap_11,snR_11,an_5,dhss_7)) in
-    {427}let kek_11: bitstring = kdf(ptk_11,label_kek,none) in
-    {436}let kaR_5: bitstring = adec(ctR_5,aad_11,kek_11) in
-    {426}let ick_11: bitstring = kdf(ptk_11,label_ick,none) in
-    {437}if (kaR_5 = hmac(ick_11,(snR_11,an_5,sta_11,ap_11,gsR_3,ga_3))) then
-    {438}event ApFinish5C(sta_11,ap_11,sessR_11);
-    {440}let aad2_11: bitstring = (ap_11,sta_11,an_5,snR_11,sessR_11,rsneR_11) in
-    {439}let kaap_5: bitstring = hmac(ick_11,(an_5,snR_11,ap_11,sta_11,ga_3,gsR_3)) in
-    {441}let ct2_5: bitstring = aead((aad2_11,(kaap_5,gtk_val)),kek_11) in
-    {442}out(c, (ap_11,sta_11,sessR_11,st_ok,rsneR_11,ct2_5))
+    {425}in(c, (staR_11: bitstring,apR_11: bitstring,aanR_11: bitstring,seqR_11: bitstring,dhR_7: bitstring,gsR_3: bitstring,snR_11: bitstring,sessR_11: bitstring,rsneR_11: bitstring,pidR_11: bitstring,wrR_5: bitstring));
+    {421}let ap_11: bitstring = ap2 in
+    {426}if (apR_11 = ap_11) then
+    {422}let sta_11: bitstring = sta2 in
+    {427}if (staR_11 = sta_11) then
+    {428}if (aanR_11 = aan5) then
+    {429}if (seqR_11 = seq1) then
+    {430}if (dhR_7 = dhgrp) then
+    {424}let pmkid_3: bitstring = pmkid_c2 in
+    {431}if (pidR_11 = some(pmkid_3)) then
+    {432}new an_5: bitstring;
+    {433}new sA_3: bitstring;
+    {434}let ga_3: bitstring = exp(g,sA_3) in
+    {440}out(c, (ap_11,sta_11,aan5,seq2,st_ok,dhgrp,ga_3,snR_11,sessR_11,rsneR_11,an_5,some(pmkid_3)));
+    {441}in(c, (sta2R_11: bitstring,ap2R_11: bitstring,sess2R_11: bitstring,rsne3R_5: bitstring,ctR_5: bitstring));
+    {442}if (sta2R_11 = sta_11) then
+    {443}if (ap2R_11 = ap_11) then
+    {444}if (sess2R_11 = sessR_11) then
+    {445}if (rsne3R_5 = rsneR_11) then
+    {446}let aad_11: bitstring = (sta_11,ap_11,snR_11,an_5,sessR_11,rsne3R_5) in
+    {435}let dhss_7: bitstring = exp(gsR_3,sA_3) in
+    {423}let pmk_11: bitstring = pmk_c2 in
+    {436}let ptk_11: bitstring = kdf(pmk_11,label_ptk,(sta_11,ap_11,snR_11,an_5,dhss_7)) in
+    {438}let kek_11: bitstring = kdf(ptk_11,label_kek,none) in
+    {447}let kaR_5: bitstring = adec(ctR_5,aad_11,kek_11) in
+    {437}let ick_11: bitstring = kdf(ptk_11,label_ick,none) in
+    {448}if (kaR_5 = hmac(ick_11,(snR_11,an_5,sta_11,ap_11,gsR_3,ga_3))) then
+    {449}event ApFinish5C(sta_11,ap_11,sessR_11);
+    {450}event ApPTK(aan5,sta_11,ap_11,sessR_11,ptk_11);
+    {452}let aad2_11: bitstring = (ap_11,sta_11,an_5,snR_11,sessR_11,rsneR_11) in
+    {451}let kaap_5: bitstring = hmac(ick_11,(an_5,snR_11,ap_11,sta_11,ga_3,gsR_3)) in
+    {453}let ct2_5: bitstring = aead((aad2_11,(kaap_5,gtk_val)),kek_11) in
+    {454}out(c, (ap_11,sta_11,sessR_11,st_ok,rsneR_11,ct2_5))
 )
 
 -- Query not attacker(gtk_val[]) in process 1.
@@ -1005,7 +1029,7 @@ Completing...
 1000 rules inserted. Base: 615 rules (134 with conclusion selected). Queue: 54 rules.
 1200 rules inserted. Base: 729 rules (146 with conclusion selected). Queue: 12 rules.
 Starting query inj-event(StaFinish4(s,a,se)) ==> inj-event(ApFinish4(s,a,se))
-goal reachable: b-inj-event(ApFinish4(sta1,ap1,sess_6),@occ65_1) && attacker(wrR_6) -> inj-event(StaFinish4(sta1,ap1,sess_6),@occ38_1)
+goal reachable: b-inj-event(ApFinish4(sta1,ap1,sess_6),@occ66_1) && attacker(wrR_6) -> inj-event(StaFinish4(sta1,ap1,sess_6),@occ38_1)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
@@ -1013,16 +1037,16 @@ sess_6 = sess[!1 = @sid]
 sn_6 = sn[!1 = @sid]
 an_6 = an[wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
 @occ38_1 = @occ38[ct2R = aead(((ap1,sta1,an_6,sn_6,sess_6,rsne_sk),(hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(an_6,sn_6,ap1,sta1)),gtk_val[])),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne2R = rsne_sk,st2R = st_ok,sess2R = sess_6,sta2R = sta1,ap2R = ap1,pidR = none,rsneR = rsne_sk,sessR = sess_6,snR = sn_6,anR = an_6,stR = st_ok,seqR = seq2,aanR = aan4,staR = sta1,apR = ap1,!1 = @sid]
-@occ65_1 = @occ65[ctR = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R = rsne_sk,sess2R_1 = sess_6,ap2R_1 = ap1,sta2R_1 = sta1,wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
-goal reachable: b-inj-event(ApFinish4(sta2,ap2,sess_6),@occ134_1) && attacker(wrR_6) -> inj-event(StaFinish4(sta2,ap2,sess_6),@occ107_1)
+@occ66_1 = @occ66[ctR = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R = rsne_sk,sess2R_1 = sess_6,ap2R_1 = ap1,sta2R_1 = sta1,wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
+goal reachable: b-inj-event(ApFinish4(sta2,ap2,sess_6),@occ137_1) && attacker(wrR_6) -> inj-event(StaFinish4(sta2,ap2,sess_6),@occ109_1)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
 sess_6 = sess_1[!1 = @sid]
 sn_6 = sn_1[!1 = @sid]
 an_6 = an_1[wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
-@occ107_1 = @occ107[ct2R_1 = aead(((ap2,sta2,an_6,sn_6,sess_6,rsne_sk),(hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(an_6,sn_6,ap2,sta2)),gtk_val[])),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne2R_1 = rsne_sk,st2R_1 = st_ok,sess2R_2 = sess_6,sta2R_2 = sta2,ap2R_2 = ap2,pidR_2 = none,rsneR_2 = rsne_sk,sessR_2 = sess_6,snR_2 = sn_6,anR_1 = an_6,stR_1 = st_ok,seqR_2 = seq2,aanR_2 = aan4,staR_2 = sta2,apR_2 = ap2,!1 = @sid]
-@occ134_1 = @occ134[ctR_1 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_1 = rsne_sk,sess2R_3 = sess_6,ap2R_3 = ap2,sta2R_3 = sta2,wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
+@occ109_1 = @occ109[ct2R_1 = aead(((ap2,sta2,an_6,sn_6,sess_6,rsne_sk),(hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(an_6,sn_6,ap2,sta2)),gtk_val[])),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne2R_1 = rsne_sk,st2R_1 = st_ok,sess2R_2 = sess_6,sta2R_2 = sta2,ap2R_2 = ap2,pidR_2 = none,rsneR_2 = rsne_sk,sessR_2 = sess_6,snR_2 = sn_6,anR_1 = an_6,stR_1 = st_ok,seqR_2 = seq2,aanR_2 = aan4,staR_2 = sta2,apR_2 = ap2,!1 = @sid]
+@occ137_1 = @occ137[ctR_1 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_1 = rsne_sk,sess2R_3 = sess_6,ap2R_3 = ap2,sta2R_3 = sta2,wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
 RESULT inj-event(StaFinish4(s,a,se)) ==> inj-event(ApFinish4(s,a,se)) is true.
 -- Query event(ApFinish4(s,a,se)) ==> event(StaStart4(s,a,se)) in process 1.
 Translating the process into Horn clauses...
@@ -1051,24 +1075,24 @@ Completing...
 1000 rules inserted. Base: 613 rules (136 with conclusion selected). Queue: 53 rules.
 1200 rules inserted. Base: 727 rules (146 with conclusion selected). Queue: 13 rules.
 Starting query inj-event(ApFinish4(s,a,se)) ==> inj-event(StaStart4(s,a,se))
-goal reachable: b-inj-event(StaStart4(sta1,ap1,sess_6),@occ26_1) && attacker(wrR_6) -> inj-event(ApFinish4(sta1,ap1,sess_6),@occ65_2)
+goal reachable: b-inj-event(StaStart4(sta1,ap1,sess_6),@occ26_1) && attacker(wrR_6) -> inj-event(ApFinish4(sta1,ap1,sess_6),@occ66_2)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
 sess_6 = sess[!1 = @sid]
 sn_6 = sn[!1 = @sid]
 an_6 = an[wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
-@occ65_2 = @occ65_1[ctR = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R = rsne_sk,sess2R_1 = sess_6,ap2R_1 = ap1,sta2R_1 = sta1,wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
+@occ66_2 = @occ66_1[ctR = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R = rsne_sk,sess2R_1 = sess_6,ap2R_1 = ap1,sta2R_1 = sta1,wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
 @occ26_1 = @occ26[pidR = none,rsneR = rsne_sk,sessR = sess_6,snR = sn_6,anR = an_6,stR = st_ok,seqR = seq2,aanR = aan4,staR = sta1,apR = ap1,!1 = @sid]
-goal reachable: b-inj-event(StaStart4(sta2,ap2,sess_6),@occ95_1) && attacker(wrR_6) -> inj-event(ApFinish4(sta2,ap2,sess_6),@occ134_2)
+goal reachable: b-inj-event(StaStart4(sta2,ap2,sess_6),@occ97_1) && attacker(wrR_6) -> inj-event(ApFinish4(sta2,ap2,sess_6),@occ137_2)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
 sess_6 = sess_1[!1 = @sid]
 sn_6 = sn_1[!1 = @sid]
 an_6 = an_1[wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
-@occ134_2 = @occ134_1[ctR_1 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_1 = rsne_sk,sess2R_3 = sess_6,ap2R_3 = ap2,sta2R_3 = sta2,wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
-@occ95_1 = @occ95[pidR_2 = none,rsneR_2 = rsne_sk,sessR_2 = sess_6,snR_2 = sn_6,anR_1 = an_6,stR_1 = st_ok,seqR_2 = seq2,aanR_2 = aan4,staR_2 = sta2,apR_2 = ap2,!1 = @sid]
+@occ137_2 = @occ137_1[ctR_1 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2))),kdf(kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_1 = rsne_sk,sess2R_3 = sess_6,ap2R_3 = ap2,sta2R_3 = sta2,wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
+@occ97_1 = @occ97[pidR_2 = none,rsneR_2 = rsne_sk,sessR_2 = sess_6,snR_2 = sn_6,anR_1 = an_6,stR_1 = st_ok,seqR_2 = seq2,aanR_2 = aan4,staR_2 = sta2,apR_2 = ap2,!1 = @sid]
 RESULT inj-event(ApFinish4(s,a,se)) ==> inj-event(StaStart4(s,a,se)) is true.
 -- Query event(StaFinish5(s,a,se)) ==> event(ApFinish5(s,a,se)) in process 1.
 Translating the process into Horn clauses...
@@ -1097,7 +1121,7 @@ Completing...
 1000 rules inserted. Base: 584 rules (134 with conclusion selected). Queue: 104 rules.
 1200 rules inserted. Base: 719 rules (136 with conclusion selected). Queue: 43 rules.
 Starting query inj-event(StaFinish5(s,a,se)) ==> inj-event(ApFinish5(s,a,se))
-goal reachable: b-inj-event(ApFinish5(sta1,ap1,sess_6),@occ211_1) && attacker(wrR_6) -> inj-event(StaFinish5(sta1,ap1,sess_6),@occ180_1)
+goal reachable: b-inj-event(ApFinish5(sta1,ap1,sess_6),@occ216_1) && attacker(wrR_6) -> inj-event(StaFinish5(sta1,ap1,sess_6),@occ184_1)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
@@ -1106,9 +1130,9 @@ sn_6 = sn_2[!1 = @sid]
 sS_4 = sS[!1 = @sid]
 an_6 = an_2[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
 sA_4 = sA[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
-@occ180_1 = @occ180[ct2R_2 = aead(((ap1,sta1,an_6,sn_6,sess_6,rsne_sk),(hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(an_6,sn_6,ap1,sta1,exp(g,sA_4),exp(g,sS_4))),gtk_val[])),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne2R_2 = rsne_sk,st2R_2 = st_ok,sess2R_4 = sess_6,sta2R_4 = sta1,ap2R_4 = ap1,pidR_4 = none,anR_2 = an_6,rsneR_4 = rsne_sk,sessR_4 = sess_6,snR_4 = sn_6,gaR = exp(g,sA_4),dhR = dhgrp,stR_2 = st_ok,seqR_4 = seq2,aanR_4 = aan5,staR_4 = sta1,apR_4 = ap1,!1 = @sid]
-@occ211_1 = @occ211[ctR_2 = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R_2 = rsne_sk,sess2R_5 = sess_6,ap2R_5 = ap1,sta2R_5 = sta1,wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
-goal reachable: b-inj-event(ApFinish5(sta2,ap2,sess_6),@occ288_1) && attacker(wrR_6) -> inj-event(StaFinish5(sta2,ap2,sess_6),@occ257_1)
+@occ184_1 = @occ184[ct2R_2 = aead(((ap1,sta1,an_6,sn_6,sess_6,rsne_sk),(hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(an_6,sn_6,ap1,sta1,exp(g,sA_4),exp(g,sS_4))),gtk_val[])),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne2R_2 = rsne_sk,st2R_2 = st_ok,sess2R_4 = sess_6,sta2R_4 = sta1,ap2R_4 = ap1,pidR_4 = none,anR_2 = an_6,rsneR_4 = rsne_sk,sessR_4 = sess_6,snR_4 = sn_6,gaR = exp(g,sA_4),dhR = dhgrp,stR_2 = st_ok,seqR_4 = seq2,aanR_4 = aan5,staR_4 = sta1,apR_4 = ap1,!1 = @sid]
+@occ216_1 = @occ216[ctR_2 = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R_2 = rsne_sk,sess2R_5 = sess_6,ap2R_5 = ap1,sta2R_5 = sta1,wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+goal reachable: b-inj-event(ApFinish5(sta2,ap2,sess_6),@occ295_1) && attacker(wrR_6) -> inj-event(StaFinish5(sta2,ap2,sess_6),@occ263_1)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
@@ -1117,8 +1141,8 @@ sn_6 = sn_3[!1 = @sid]
 sS_4 = sS_1[!1 = @sid]
 an_6 = an_3[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
 sA_4 = sA_1[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
-@occ257_1 = @occ257[ct2R_3 = aead(((ap2,sta2,an_6,sn_6,sess_6,rsne_sk),(hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(an_6,sn_6,ap2,sta2,exp(g,sA_4),exp(g,sS_4))),gtk_val[])),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne2R_3 = rsne_sk,st2R_3 = st_ok,sess2R_6 = sess_6,sta2R_6 = sta2,ap2R_6 = ap2,pidR_6 = none,anR_3 = an_6,rsneR_6 = rsne_sk,sessR_6 = sess_6,snR_6 = sn_6,gaR_1 = exp(g,sA_4),dhR_2 = dhgrp,stR_3 = st_ok,seqR_6 = seq2,aanR_6 = aan5,staR_6 = sta2,apR_6 = ap2,!1 = @sid]
-@occ288_1 = @occ288[ctR_3 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_3 = rsne_sk,sess2R_7 = sess_6,ap2R_7 = ap2,sta2R_7 = sta2,wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+@occ263_1 = @occ263[ct2R_3 = aead(((ap2,sta2,an_6,sn_6,sess_6,rsne_sk),(hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(an_6,sn_6,ap2,sta2,exp(g,sA_4),exp(g,sS_4))),gtk_val[])),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne2R_3 = rsne_sk,st2R_3 = st_ok,sess2R_6 = sess_6,sta2R_6 = sta2,ap2R_6 = ap2,pidR_6 = none,anR_3 = an_6,rsneR_6 = rsne_sk,sessR_6 = sess_6,snR_6 = sn_6,gaR_1 = exp(g,sA_4),dhR_2 = dhgrp,stR_3 = st_ok,seqR_6 = seq2,aanR_6 = aan5,staR_6 = sta2,apR_6 = ap2,!1 = @sid]
+@occ295_1 = @occ295[ctR_3 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_3 = rsne_sk,sess2R_7 = sess_6,ap2R_7 = ap2,sta2R_7 = sta2,wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
 RESULT inj-event(StaFinish5(s,a,se)) ==> inj-event(ApFinish5(s,a,se)) is true.
 -- Query event(ApFinish5(s,a,se)) ==> event(StaStart5(s,a,se)) in process 1.
 Translating the process into Horn clauses...
@@ -1147,7 +1171,7 @@ Completing...
 1000 rules inserted. Base: 586 rules (138 with conclusion selected). Queue: 98 rules.
 1200 rules inserted. Base: 728 rules (140 with conclusion selected). Queue: 37 rules.
 Starting query inj-event(ApFinish5(s,a,se)) ==> inj-event(StaStart5(s,a,se))
-goal reachable: b-inj-event(StaStart5(sta1,ap1,sess_6),@occ168_1) && attacker(wrR_6) -> inj-event(ApFinish5(sta1,ap1,sess_6),@occ211_2)
+goal reachable: b-inj-event(StaStart5(sta1,ap1,sess_6),@occ172_1) && attacker(wrR_6) -> inj-event(ApFinish5(sta1,ap1,sess_6),@occ216_2)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
@@ -1156,9 +1180,9 @@ sn_6 = sn_2[!1 = @sid]
 sS_4 = sS[!1 = @sid]
 an_6 = an_2[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
 sA_4 = sA[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
-@occ211_2 = @occ211_1[ctR_2 = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R_2 = rsne_sk,sess2R_5 = sess_6,ap2R_5 = ap1,sta2R_5 = sta1,wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
-@occ168_1 = @occ168[pidR_4 = none,anR_2 = an_6,rsneR_4 = rsne_sk,sessR_4 = sess_6,snR_4 = sn_6,gaR = exp(g,sA_4),dhR = dhgrp,stR_2 = st_ok,seqR_4 = seq2,aanR_4 = aan5,staR_4 = sta1,apR_4 = ap1,!1 = @sid]
-goal reachable: b-inj-event(StaStart5(sta2,ap2,sess_6),@occ245_1) && attacker(wrR_6) -> inj-event(ApFinish5(sta2,ap2,sess_6),@occ288_2)
+@occ216_2 = @occ216_1[ctR_2 = aead(((sta1,ap1,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta1,ap1,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)),label_kek,none)),rsne3R_2 = rsne_sk,sess2R_5 = sess_6,ap2R_5 = ap1,sta2R_5 = sta1,wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+@occ172_1 = @occ172[pidR_4 = none,anR_2 = an_6,rsneR_4 = rsne_sk,sessR_4 = sess_6,snR_4 = sn_6,gaR = exp(g,sA_4),dhR = dhgrp,stR_2 = st_ok,seqR_4 = seq2,aanR_4 = aan5,staR_4 = sta1,apR_4 = ap1,!1 = @sid]
+goal reachable: b-inj-event(StaStart5(sta2,ap2,sess_6),@occ251_1) && attacker(wrR_6) -> inj-event(ApFinish5(sta2,ap2,sess_6),@occ295_2)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
@@ -1167,8 +1191,8 @@ sn_6 = sn_3[!1 = @sid]
 sS_4 = sS_1[!1 = @sid]
 an_6 = an_3[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
 sA_4 = sA_1[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
-@occ288_2 = @occ288_1[ctR_3 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_3 = rsne_sk,sess2R_7 = sess_6,ap2R_7 = ap2,sta2R_7 = sta2,wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
-@occ245_1 = @occ245[pidR_6 = none,anR_3 = an_6,rsneR_6 = rsne_sk,sessR_6 = sess_6,snR_6 = sn_6,gaR_1 = exp(g,sA_4),dhR_2 = dhgrp,stR_3 = st_ok,seqR_6 = seq2,aanR_6 = aan5,staR_6 = sta2,apR_6 = ap2,!1 = @sid]
+@occ295_2 = @occ295_1[ctR_3 = aead(((sta2,ap2,sn_6,an_6,sess_6,rsne_sk),hmac(kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_ick,none),(sn_6,an_6,sta2,ap2,exp(g,sS_4),exp(g,sA_4)))),kdf(kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)),label_kek,none)),rsne3R_3 = rsne_sk,sess2R_7 = sess_6,ap2R_7 = ap2,sta2R_7 = sta2,wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+@occ251_1 = @occ251[pidR_6 = none,anR_3 = an_6,rsneR_6 = rsne_sk,sessR_6 = sess_6,snR_6 = sn_6,gaR_1 = exp(g,sA_4),dhR_2 = dhgrp,stR_3 = st_ok,seqR_6 = seq2,aanR_6 = aan5,staR_6 = sta2,apR_6 = ap2,!1 = @sid]
 RESULT inj-event(ApFinish5(s,a,se)) ==> inj-event(StaStart5(s,a,se)) is true.
 -- Query event(StaFinish5C(s,a,se)) ==> event(ApFinish5C(s,a,se)) in process 1.
 Translating the process into Horn clauses...
@@ -1193,22 +1217,22 @@ Completing...
 1000 rules inserted. Base: 589 rules (134 with conclusion selected). Queue: 89 rules.
 1200 rules inserted. Base: 718 rules (136 with conclusion selected). Queue: 44 rules.
 Starting query inj-event(StaFinish5C(s,a,se)) ==> inj-event(ApFinish5C(s,a,se))
-goal reachable: b-inj-event(ApFinish5C(sta1,ap1,sess_4[]),@occ363_1) && attacker(wrR_6) -> inj-event(StaFinish5C(sta1,ap1,sess_4[]),@occ333_1)
+goal reachable: b-inj-event(ApFinish5C(sta1,ap1,sess_4[]),@occ372_1) && attacker(wrR_6) -> inj-event(StaFinish5C(sta1,ap1,sess_4[]),@occ341_1)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
 an_6 = an_4[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
 sA_4 = sA_2[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
-@occ333_1 = @occ333[ct2R_4 = aead(((ap1,sta1,an_6,sn_4[],sess_4[],rsne_sk),(hmac(kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_ick,none),(an_6,sn_4[],ap1,sta1,exp(g,sA_4),exp(g,sS_2[]))),gtk_val[])),kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_kek,none)),rsne2R_4 = rsne_sk,st2R_4 = st_ok,sess2R_8 = sess_4[],sta2R_8 = sta1,ap2R_8 = ap1,pidR_8 = some(pmkid_c1),anR_4 = an_6,rsneR_8 = rsne_sk,sessR_8 = sess_4[],snR_8 = sn_4[],gaR_2 = exp(g,sA_4),dhR_4 = dhgrp,stR_4 = st_ok,seqR_8 = seq2,aanR_8 = aan5,staR_8 = sta1,apR_8 = ap1]
-@occ363_1 = @occ363[ctR_4 = aead(((sta1,ap1,sn_4[],an_6,sess_4[],rsne_sk),hmac(kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_ick,none),(sn_4[],an_6,sta1,ap1,exp(g,sS_2[]),exp(g,sA_4)))),kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_kek,none)),rsne3R_4 = rsne_sk,sess2R_9 = sess_4[],ap2R_9 = ap1,sta2R_9 = sta1,wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
-goal reachable: b-inj-event(ApFinish5C(sta2,ap2,sess_5[]),@occ438_1) && attacker(wrR_6) -> inj-event(StaFinish5C(sta2,ap2,sess_5[]),@occ408_1)
+@occ341_1 = @occ341[ct2R_4 = aead(((ap1,sta1,an_6,sn_4[],sess_4[],rsne_sk),(hmac(kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_ick,none),(an_6,sn_4[],ap1,sta1,exp(g,sA_4),exp(g,sS_2[]))),gtk_val[])),kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_kek,none)),rsne2R_4 = rsne_sk,st2R_4 = st_ok,sess2R_8 = sess_4[],sta2R_8 = sta1,ap2R_8 = ap1,pidR_8 = some(pmkid_c1),anR_4 = an_6,rsneR_8 = rsne_sk,sessR_8 = sess_4[],snR_8 = sn_4[],gaR_2 = exp(g,sA_4),dhR_4 = dhgrp,stR_4 = st_ok,seqR_8 = seq2,aanR_8 = aan5,staR_8 = sta1,apR_8 = ap1]
+@occ372_1 = @occ372[ctR_4 = aead(((sta1,ap1,sn_4[],an_6,sess_4[],rsne_sk),hmac(kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_ick,none),(sn_4[],an_6,sta1,ap1,exp(g,sS_2[]),exp(g,sA_4)))),kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_kek,none)),rsne3R_4 = rsne_sk,sess2R_9 = sess_4[],ap2R_9 = ap1,sta2R_9 = sta1,wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+goal reachable: b-inj-event(ApFinish5C(sta2,ap2,sess_5[]),@occ449_1) && attacker(wrR_6) -> inj-event(StaFinish5C(sta2,ap2,sess_5[]),@occ418_1)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
 an_6 = an_5[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
 sA_4 = sA_3[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
-@occ408_1 = @occ408[ct2R_5 = aead(((ap2,sta2,an_6,sn_5[],sess_5[],rsne_sk),(hmac(kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_ick,none),(an_6,sn_5[],ap2,sta2,exp(g,sA_4),exp(g,sS_3[]))),gtk_val[])),kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_kek,none)),rsne2R_5 = rsne_sk,st2R_5 = st_ok,sess2R_10 = sess_5[],sta2R_10 = sta2,ap2R_10 = ap2,pidR_10 = some(pmkid_c2),anR_5 = an_6,rsneR_10 = rsne_sk,sessR_10 = sess_5[],snR_10 = sn_5[],gaR_3 = exp(g,sA_4),dhR_6 = dhgrp,stR_5 = st_ok,seqR_10 = seq2,aanR_10 = aan5,staR_10 = sta2,apR_10 = ap2]
-@occ438_1 = @occ438[ctR_5 = aead(((sta2,ap2,sn_5[],an_6,sess_5[],rsne_sk),hmac(kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_ick,none),(sn_5[],an_6,sta2,ap2,exp(g,sS_3[]),exp(g,sA_4)))),kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_kek,none)),rsne3R_5 = rsne_sk,sess2R_11 = sess_5[],ap2R_11 = ap2,sta2R_11 = sta2,wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+@occ418_1 = @occ418[ct2R_5 = aead(((ap2,sta2,an_6,sn_5[],sess_5[],rsne_sk),(hmac(kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_ick,none),(an_6,sn_5[],ap2,sta2,exp(g,sA_4),exp(g,sS_3[]))),gtk_val[])),kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_kek,none)),rsne2R_5 = rsne_sk,st2R_5 = st_ok,sess2R_10 = sess_5[],sta2R_10 = sta2,ap2R_10 = ap2,pidR_10 = some(pmkid_c2),anR_5 = an_6,rsneR_10 = rsne_sk,sessR_10 = sess_5[],snR_10 = sn_5[],gaR_3 = exp(g,sA_4),dhR_6 = dhgrp,stR_5 = st_ok,seqR_10 = seq2,aanR_10 = aan5,staR_10 = sta2,apR_10 = ap2]
+@occ449_1 = @occ449[ctR_5 = aead(((sta2,ap2,sn_5[],an_6,sess_5[],rsne_sk),hmac(kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_ick,none),(sn_5[],an_6,sta2,ap2,exp(g,sS_3[]),exp(g,sA_4)))),kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_kek,none)),rsne3R_5 = rsne_sk,sess2R_11 = sess_5[],ap2R_11 = ap2,sta2R_11 = sta2,wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
 RESULT inj-event(StaFinish5C(s,a,se)) ==> inj-event(ApFinish5C(s,a,se)) is true.
 -- Query event(ApFinish5C(s,a,se)) ==> event(StaStart5C(s,a,se)) in process 1.
 Translating the process into Horn clauses...
@@ -1233,23 +1257,177 @@ Completing...
 1000 rules inserted. Base: 567 rules (135 with conclusion selected). Queue: 110 rules.
 1200 rules inserted. Base: 715 rules (140 with conclusion selected). Queue: 35 rules.
 Starting query inj-event(ApFinish5C(s,a,se)) ==> inj-event(StaStart5C(s,a,se))
-goal reachable: b-inj-event(StaStart5C(sta1,ap1,sess_4[]),@occ321_1) && attacker(wrR_6) -> inj-event(ApFinish5C(sta1,ap1,sess_4[]),@occ363_2)
+goal reachable: b-inj-event(StaStart5C(sta1,ap1,sess_4[]),@occ329_1) && attacker(wrR_6) -> inj-event(ApFinish5C(sta1,ap1,sess_4[]),@occ372_2)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
 an_6 = an_4[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
 sA_4 = sA_2[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
-@occ363_2 = @occ363_1[ctR_4 = aead(((sta1,ap1,sn_4[],an_6,sess_4[],rsne_sk),hmac(kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_ick,none),(sn_4[],an_6,sta1,ap1,exp(g,sS_2[]),exp(g,sA_4)))),kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_kek,none)),rsne3R_4 = rsne_sk,sess2R_9 = sess_4[],ap2R_9 = ap1,sta2R_9 = sta1,wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
-@occ321_1 = @occ321[pidR_8 = some(pmkid_c1),anR_4 = an_6,rsneR_8 = rsne_sk,sessR_8 = sess_4[],snR_8 = sn_4[],gaR_2 = exp(g,sA_4),dhR_4 = dhgrp,stR_4 = st_ok,seqR_8 = seq2,aanR_8 = aan5,staR_8 = sta1,apR_8 = ap1]
-goal reachable: b-inj-event(StaStart5C(sta2,ap2,sess_5[]),@occ396_1) && attacker(wrR_6) -> inj-event(ApFinish5C(sta2,ap2,sess_5[]),@occ438_2)
+@occ372_2 = @occ372_1[ctR_4 = aead(((sta1,ap1,sn_4[],an_6,sess_4[],rsne_sk),hmac(kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_ick,none),(sn_4[],an_6,sta1,ap1,exp(g,sS_2[]),exp(g,sA_4)))),kdf(kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))),label_kek,none)),rsne3R_4 = rsne_sk,sess2R_9 = sess_4[],ap2R_9 = ap1,sta2R_9 = sta1,wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+@occ329_1 = @occ329[pidR_8 = some(pmkid_c1),anR_4 = an_6,rsneR_8 = rsne_sk,sessR_8 = sess_4[],snR_8 = sn_4[],gaR_2 = exp(g,sA_4),dhR_4 = dhgrp,stR_4 = st_ok,seqR_8 = seq2,aanR_8 = aan5,staR_8 = sta1,apR_8 = ap1]
+goal reachable: b-inj-event(StaStart5C(sta2,ap2,sess_5[]),@occ406_1) && attacker(wrR_6) -> inj-event(ApFinish5C(sta2,ap2,sess_5[]),@occ449_2)
 The 1st hypothesis occurs strictly before the conclusion.
 The 2nd hypothesis occurs before the conclusion.
 Abbreviations:
 an_6 = an_5[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
 sA_4 = sA_3[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
-@occ438_2 = @occ438_1[ctR_5 = aead(((sta2,ap2,sn_5[],an_6,sess_5[],rsne_sk),hmac(kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_ick,none),(sn_5[],an_6,sta2,ap2,exp(g,sS_3[]),exp(g,sA_4)))),kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_kek,none)),rsne3R_5 = rsne_sk,sess2R_11 = sess_5[],ap2R_11 = ap2,sta2R_11 = sta2,wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
-@occ396_1 = @occ396[pidR_10 = some(pmkid_c2),anR_5 = an_6,rsneR_10 = rsne_sk,sessR_10 = sess_5[],snR_10 = sn_5[],gaR_3 = exp(g,sA_4),dhR_6 = dhgrp,stR_5 = st_ok,seqR_10 = seq2,aanR_10 = aan5,staR_10 = sta2,apR_10 = ap2]
+@occ449_2 = @occ449_1[ctR_5 = aead(((sta2,ap2,sn_5[],an_6,sess_5[],rsne_sk),hmac(kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_ick,none),(sn_5[],an_6,sta2,ap2,exp(g,sS_3[]),exp(g,sA_4)))),kdf(kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))),label_kek,none)),rsne3R_5 = rsne_sk,sess2R_11 = sess_5[],ap2R_11 = ap2,sta2R_11 = sta2,wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+@occ406_1 = @occ406[pidR_10 = some(pmkid_c2),anR_5 = an_6,rsneR_10 = rsne_sk,sessR_10 = sess_5[],snR_10 = sn_5[],gaR_3 = exp(g,sA_4),dhR_6 = dhgrp,stR_5 = st_ok,seqR_10 = seq2,aanR_10 = aan5,staR_10 = sta2,apR_10 = ap2]
 RESULT inj-event(ApFinish5C(s,a,se)) ==> inj-event(StaStart5C(s,a,se)) is true.
+-- Query event(StaPTK(akm,s,a,se,k)) ==> event(ApPTK(akm,s,a,se,k)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 186 rules (77 with conclusion selected). Queue: 79 rules.
+400 rules inserted. Base: 282 rules (117 with conclusion selected). Queue: 79 rules.
+600 rules inserted. Base: 440 rules (126 with conclusion selected). Queue: 160 rules.
+800 rules inserted. Base: 503 rules (126 with conclusion selected). Queue: 213 rules.
+1000 rules inserted. Base: 554 rules (130 with conclusion selected). Queue: 174 rules.
+1200 rules inserted. Base: 727 rules (134 with conclusion selected). Queue: 65 rules.
+1400 rules inserted. Base: 807 rules (138 with conclusion selected). Queue: 34 rules.
+Starting query event(StaPTK(akm,s,a,se,k)) ==> event(ApPTK(akm,s,a,se,k))
+goal reachable: b-event(ApPTK(aan4,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)))) && attacker(wrR_6) -> event(StaPTK(aan4,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess[!1 = @sid]
+sn_6 = sn[!1 = @sid]
+an_6 = an[wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
+goal reachable: b-event(ApPTK(aan4,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)))) && attacker(wrR_6) -> event(StaPTK(aan4,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess_1[!1 = @sid]
+sn_6 = sn_1[!1 = @sid]
+an_6 = an_1[wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
+goal reachable: b-event(ApPTK(aan5,sta1,ap1,sess_4[],kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))))) && attacker(wrR_6) -> event(StaPTK(aan5,sta1,ap1,sess_4[],kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4)))))
+Abbreviations:
+an_6 = an_4[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+sA_4 = sA_2[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+goal reachable: b-event(ApPTK(aan5,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)))) && attacker(wrR_6) -> event(StaPTK(aan5,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess_2[!1 = @sid]
+sn_6 = sn_2[!1 = @sid]
+sS_4 = sS[!1 = @sid]
+an_6 = an_2[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+sA_4 = sA[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+goal reachable: b-event(ApPTK(aan5,sta2,ap2,sess_5[],kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))))) && attacker(wrR_6) -> event(StaPTK(aan5,sta2,ap2,sess_5[],kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4)))))
+Abbreviations:
+an_6 = an_5[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+sA_4 = sA_3[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+goal reachable: b-event(ApPTK(aan5,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)))) && attacker(wrR_6) -> event(StaPTK(aan5,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess_3[!1 = @sid]
+sn_6 = sn_3[!1 = @sid]
+sS_4 = sS_1[!1 = @sid]
+an_6 = an_3[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+sA_4 = sA_1[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+RESULT event(StaPTK(akm,s,a,se,k)) ==> event(ApPTK(akm,s,a,se,k)) is true.
+-- Query event(StaPTK(akm1,s1,a1,se1,k)) && event(StaPTK(akm2,s2,a2,se2,k)) ==> se1 = se2 in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 186 rules (77 with conclusion selected). Queue: 79 rules.
+400 rules inserted. Base: 282 rules (117 with conclusion selected). Queue: 79 rules.
+600 rules inserted. Base: 440 rules (126 with conclusion selected). Queue: 160 rules.
+800 rules inserted. Base: 503 rules (126 with conclusion selected). Queue: 213 rules.
+1000 rules inserted. Base: 554 rules (130 with conclusion selected). Queue: 174 rules.
+1200 rules inserted. Base: 727 rules (134 with conclusion selected). Queue: 65 rules.
+1400 rules inserted. Base: 805 rules (142 with conclusion selected). Queue: 28 rules.
+Starting query event(StaPTK(akm1,s1,a1,se1,k)) && event(StaPTK(akm2,s2,a2,se2,k)) ==> se1 = se2
+goal reachable: attacker(wrR_6) -> event(StaPTK(aan4,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)))) && event(StaPTK(aan4,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess[!1 = @sid]
+sn_6 = sn[!1 = @sid]
+an_6 = an[wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
+goal reachable: attacker(wrR_6) -> event(StaPTK(aan4,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)))) && event(StaPTK(aan4,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess_1[!1 = @sid]
+sn_6 = sn_1[!1 = @sid]
+an_6 = an_1[wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
+goal reachable: attacker(wrR_6) -> event(StaPTK(aan5,sta1,ap1,sess_4[],kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))))) && event(StaPTK(aan5,sta1,ap1,sess_4[],kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4)))))
+Abbreviations:
+an_6 = an_4[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+sA_4 = sA_2[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+goal reachable: attacker(wrR_6) -> event(StaPTK(aan5,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)))) && event(StaPTK(aan5,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess_2[!1 = @sid]
+sn_6 = sn_2[!1 = @sid]
+sS_4 = sS[!1 = @sid]
+an_6 = an_2[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+sA_4 = sA[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+goal reachable: attacker(wrR_6) -> event(StaPTK(aan5,sta2,ap2,sess_5[],kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))))) && event(StaPTK(aan5,sta2,ap2,sess_5[],kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4)))))
+Abbreviations:
+an_6 = an_5[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+sA_4 = sA_3[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+goal reachable: attacker(wrR_6) -> event(StaPTK(aan5,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)))) && event(StaPTK(aan5,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6))))
+Abbreviations:
+sess_6 = sess_3[!1 = @sid]
+sn_6 = sn_3[!1 = @sid]
+sS_4 = sS_1[!1 = @sid]
+an_6 = an_3[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+sA_4 = sA_1[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+RESULT event(StaPTK(akm1,s1,a1,se1,k)) && event(StaPTK(akm2,s2,a2,se2,k)) ==> se1 = se2 is true.
+-- Query event(StaPTK(aan4,s1,a1,se1,k)) && event(StaPTK(aan5,s2,a2,se2,k)) ==> se1 = se2 in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 186 rules (77 with conclusion selected). Queue: 79 rules.
+400 rules inserted. Base: 282 rules (117 with conclusion selected). Queue: 79 rules.
+600 rules inserted. Base: 440 rules (126 with conclusion selected). Queue: 160 rules.
+800 rules inserted. Base: 503 rules (126 with conclusion selected). Queue: 213 rules.
+1000 rules inserted. Base: 554 rules (130 with conclusion selected). Queue: 174 rules.
+1200 rules inserted. Base: 727 rules (134 with conclusion selected). Queue: 65 rules.
+1400 rules inserted. Base: 805 rules (142 with conclusion selected). Queue: 28 rules.
+Starting query event(StaPTK(aan4,s1,a1,se1,k)) && event(StaPTK(aan5,s2,a2,se2,k)) ==> se1 = se2
+RESULT event(StaPTK(aan4,s1,a1,se1,k)) && event(StaPTK(aan5,s2,a2,se2,k)) ==> se1 = se2 is true.
+-- Query event(StaPTK(akm1,s,a,se,k1)) && event(StaPTK(akm2,s,a,se,k2)) ==> akm1 = akm2 in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 186 rules (77 with conclusion selected). Queue: 79 rules.
+400 rules inserted. Base: 282 rules (117 with conclusion selected). Queue: 79 rules.
+600 rules inserted. Base: 440 rules (126 with conclusion selected). Queue: 160 rules.
+800 rules inserted. Base: 503 rules (126 with conclusion selected). Queue: 213 rules.
+1000 rules inserted. Base: 554 rules (130 with conclusion selected). Queue: 174 rules.
+1200 rules inserted. Base: 727 rules (134 with conclusion selected). Queue: 65 rules.
+1400 rules inserted. Base: 805 rules (142 with conclusion selected). Queue: 28 rules.
+Starting query event(StaPTK(akm1,s,a,se,k1)) && event(StaPTK(akm2,s,a,se,k2)) ==> akm1 = akm2
+goal reachable: attacker(wrR_6) && attacker(wrR_7) -> event(StaPTK(aan4,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_6)))) && event(StaPTK(aan4,sta1,ap1,sess_6,kdf(hmac((sn_6,an_7),eaprp_rmsk1[]),label_ptk,(sta1,ap1,sn_6,an_7))))
+Abbreviations:
+sess_6 = sess[!1 = @sid]
+sn_6 = sn[!1 = @sid]
+an_6 = an[wrR = wrR_6,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_1]
+an_7 = an[wrR = wrR_7,pidR_1 = none,rsneR_1 = rsne_sk,sessR_1 = sess_6,snR_1 = sn_6,seqR_1 = seq1,aanR_1 = aan4,apR_1 = ap1,staR_1 = sta1,!1 = @sid_2]
+goal reachable: attacker(wrR_6) && attacker(wrR_7) -> event(StaPTK(aan4,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_6)))) && event(StaPTK(aan4,sta2,ap2,sess_6,kdf(hmac((sn_6,an_7),eaprp_rmsk2[]),label_ptk,(sta2,ap2,sn_6,an_7))))
+Abbreviations:
+sess_6 = sess_1[!1 = @sid]
+sn_6 = sn_1[!1 = @sid]
+an_6 = an_1[wrR_1 = wrR_6,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_1]
+an_7 = an_1[wrR_1 = wrR_7,pidR_3 = none,rsneR_3 = rsne_sk,sessR_3 = sess_6,snR_3 = sn_6,seqR_3 = seq1,aanR_3 = aan4,apR_3 = ap2,staR_3 = sta2,!1 = @sid_2]
+goal reachable: attacker(wrR_6) && attacker(wrR_7) -> event(StaPTK(aan5,sta1,ap1,sess_4[],kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_6,exp(exp(g,sS_2[]),sA_4))))) && event(StaPTK(aan5,sta1,ap1,sess_4[],kdf(pmk_c1[],label_ptk,(sta1,ap1,sn_4[],an_7,exp(exp(g,sS_2[]),sA_5)))))
+Abbreviations:
+an_6 = an_4[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+sA_4 = sA_2[wrR_4 = wrR_6,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+an_7 = an_4[wrR_4 = wrR_7,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+sA_5 = sA_2[wrR_4 = wrR_7,pidR_9 = some(pmkid_c1),rsneR_9 = rsne_sk,sessR_9 = sess_4[],snR_9 = sn_4[],gsR_2 = exp(g,sS_2[]),dhR_5 = dhgrp,seqR_9 = seq1,aanR_9 = aan5,apR_9 = ap1,staR_9 = sta1]
+goal reachable: attacker(wrR_6) && attacker(wrR_7) -> event(StaPTK(aan5,sta1,ap1,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta1,ap1,sn_6,an_6)))) && event(StaPTK(aan5,sta1,ap1,sess_6,kdf(hmac((sn_6,an_7),(eaprp_rmsk1[],exp(exp(g,sS_4),sA_5))),label_ptk,(sta1,ap1,sn_6,an_7))))
+Abbreviations:
+sess_6 = sess_2[!1 = @sid]
+sn_6 = sn_2[!1 = @sid]
+sS_4 = sS[!1 = @sid]
+an_6 = an_2[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+sA_4 = sA[wrR_2 = wrR_6,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_1]
+an_7 = an_2[wrR_2 = wrR_7,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_2]
+sA_5 = sA[wrR_2 = wrR_7,pidR_5 = none,rsneR_5 = rsne_sk,sessR_5 = sess_6,snR_5 = sn_6,gsR = exp(g,sS_4),dhR_1 = dhgrp,seqR_5 = seq1,aanR_5 = aan5,apR_5 = ap1,staR_5 = sta1,!1 = @sid_2]
+goal reachable: attacker(wrR_6) && attacker(wrR_7) -> event(StaPTK(aan5,sta2,ap2,sess_5[],kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_6,exp(exp(g,sS_3[]),sA_4))))) && event(StaPTK(aan5,sta2,ap2,sess_5[],kdf(pmk_c2[],label_ptk,(sta2,ap2,sn_5[],an_7,exp(exp(g,sS_3[]),sA_5)))))
+Abbreviations:
+an_6 = an_5[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+sA_4 = sA_3[wrR_5 = wrR_6,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+an_7 = an_5[wrR_5 = wrR_7,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+sA_5 = sA_3[wrR_5 = wrR_7,pidR_11 = some(pmkid_c2),rsneR_11 = rsne_sk,sessR_11 = sess_5[],snR_11 = sn_5[],gsR_3 = exp(g,sS_3[]),dhR_7 = dhgrp,seqR_11 = seq1,aanR_11 = aan5,apR_11 = ap2,staR_11 = sta2]
+goal reachable: attacker(wrR_6) && attacker(wrR_7) -> event(StaPTK(aan5,sta2,ap2,sess_6,kdf(hmac((sn_6,an_6),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_4))),label_ptk,(sta2,ap2,sn_6,an_6)))) && event(StaPTK(aan5,sta2,ap2,sess_6,kdf(hmac((sn_6,an_7),(eaprp_rmsk2[],exp(exp(g,sS_4),sA_5))),label_ptk,(sta2,ap2,sn_6,an_7))))
+Abbreviations:
+sess_6 = sess_3[!1 = @sid]
+sn_6 = sn_3[!1 = @sid]
+sS_4 = sS_1[!1 = @sid]
+an_6 = an_3[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+sA_4 = sA_1[wrR_3 = wrR_6,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_1]
+an_7 = an_3[wrR_3 = wrR_7,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_2]
+sA_5 = sA_1[wrR_3 = wrR_7,pidR_7 = none,rsneR_7 = rsne_sk,sessR_7 = sess_6,snR_7 = sn_6,gsR_1 = exp(g,sS_4),dhR_3 = dhgrp,seqR_7 = seq1,aanR_7 = aan5,apR_7 = ap2,staR_7 = sta2,!1 = @sid_2]
+RESULT event(StaPTK(akm1,s,a,se,k1)) && event(StaPTK(akm2,s,a,se,k2)) ==> akm1 = akm2 is true.
 
 --------------------------------------------------------------
 Verification summary:
@@ -1289,6 +1467,14 @@ Query inj-event(StaFinish5C(s,a,se)) ==> inj-event(ApFinish5C(s,a,se)) is true.
 Query event(ApFinish5C(s,a,se)) ==> event(StaStart5C(s,a,se)) is true.
 
 Query inj-event(ApFinish5C(s,a,se)) ==> inj-event(StaStart5C(s,a,se)) is true.
+
+Query event(StaPTK(akm,s,a,se,k)) ==> event(ApPTK(akm,s,a,se,k)) is true.
+
+Query event(StaPTK(akm1,s1,a1,se1,k)) && event(StaPTK(akm2,s2,a2,se2,k)) ==> se1 = se2 is true.
+
+Query event(StaPTK(aan4,s1,a1,se1,k)) && event(StaPTK(aan5,s2,a2,se2,k)) ==> se1 = se2 is true.
+
+Query event(StaPTK(akm1,s,a,se,k1)) && event(StaPTK(akm2,s,a,se,k2)) ==> akm1 = akm2 is true.
 
 --------------------------------------------------------------
 

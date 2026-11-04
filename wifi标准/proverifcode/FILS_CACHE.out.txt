@@ -1,0 +1,153 @@
+Process 0 (that is, the initial process):
+(
+    {1}let sta: bitstring = sta1 in
+    {2}let ap: bitstring = ap1 in
+    {3}let pmk_s: bitstring = pmkA in
+    {4}let pmk_a: bitstring = pmkA in
+    {5}event CacheStore(sta,ap,pmkid);
+    {6}new sn: bitstring;
+    {7}new an: bitstring;
+    {8}new sess: bitstring;
+    {9}out(c, (sta,ap,sn,sess,pmkid));
+    {10}in(c, (staR: bitstring,apR: bitstring,snR: bitstring,sessR: bitstring,pmkidR: bitstring));
+    {11}if (staR = sta) then
+    {12}if (apR = ap) then
+    {13}if (snR = sn) then
+    {14}if (sessR = sess) then
+    {15}if (pmkidR = pmkid) then
+    {16}let ptk_a: bitstring = kdf(pmk_a,label_ptk,(sta,ap,sn,an)) in
+    {17}let ick_a: bitstring = kdf(ptk_a,label_ick,none) in
+    {18}let kaap: bitstring = hmac(ick_a,(an,sn,ap,sta)) in
+    {19}event ApFinishC(sta,ap,sess);
+    {20}event ApPTK(sta,ap,sess,ptk_a);
+    {21}out(c, (sess,kaap));
+    {22}in(c, (sess2R: bitstring,kaapR: bitstring));
+    {23}if (sess2R = sess) then
+    {24}let ptk_s: bitstring = kdf(pmk_s,label_ptk,(sta,ap,sn,an)) in
+    {25}let ick_s: bitstring = kdf(ptk_s,label_ick,none) in
+    {26}if (kaapR = hmac(ick_s,(an,sn,sta,ap))) then
+    {27}event StaFinishC(sta,ap,sess);
+    {28}event StaPTK(sta,ap,sess,ptk_s);
+    {29}event CacheUse(sta,ap,pmkid)
+) | (
+    {30}let sta_1: bitstring = sta2 in
+    {31}let ap_1: bitstring = ap2 in
+    {32}let pmk_s_1: bitstring = pmkA in
+    {33}let pmk_a_1: bitstring = pmkB in
+    {34}event CacheStore(sta_1,ap_1,pmkid);
+    {35}new sn_1: bitstring;
+    {36}new an_1: bitstring;
+    {37}new sess_1: bitstring;
+    {38}out(c, (sta_1,ap_1,sn_1,sess_1,pmkid));
+    {39}in(c, (staR_1: bitstring,apR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,pmkidR_1: bitstring));
+    {40}if (staR_1 = sta_1) then
+    {41}if (apR_1 = ap_1) then
+    {42}if (snR_1 = sn_1) then
+    {43}if (sessR_1 = sess_1) then
+    {44}if (pmkidR_1 = pmkid) then
+    {45}let ptk_a_1: bitstring = kdf(pmk_a_1,label_ptk,(sta_1,ap_1,sn_1,an_1)) in
+    {46}let ick_a_1: bitstring = kdf(ptk_a_1,label_ick,none) in
+    {47}let kaap_1: bitstring = hmac(ick_a_1,(an_1,sn_1,ap_1,sta_1)) in
+    {48}event ApFinishC(sta_1,ap_1,sess_1);
+    {49}event ApPTK(sta_1,ap_1,sess_1,ptk_a_1);
+    {50}out(c, (sess_1,kaap_1));
+    {51}in(c, (sess2R_1: bitstring,kaapR_1: bitstring));
+    {52}if (sess2R_1 = sess_1) then
+    {53}let ptk_s_1: bitstring = kdf(pmk_s_1,label_ptk,(sta_1,ap_1,sn_1,an_1)) in
+    {54}let ick_s_1: bitstring = kdf(ptk_s_1,label_ick,none) in
+    {55}if (kaapR_1 = hmac(ick_s_1,(an_1,sn_1,sta_1,ap_1))) then
+    {56}event StaFinishC(sta_1,ap_1,sess_1);
+    {57}event StaPTK(sta_1,ap_1,sess_1,ptk_s_1);
+    {58}event CacheUse(sta_1,ap_1,pmkid)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {2}let ap: bitstring = ap1 in
+    {1}let sta: bitstring = sta1 in
+    {5}event CacheStore(sta,ap,pmkid);
+    {6}new sn: bitstring;
+    {7}new an: bitstring;
+    {8}new sess: bitstring;
+    {9}out(c, (sta,ap,sn,sess,pmkid));
+    {10}in(c, (staR: bitstring,apR: bitstring,snR: bitstring,sessR: bitstring,pmkidR: bitstring));
+    {11}if (staR = sta) then
+    {12}if (apR = ap) then
+    {13}if (snR = sn) then
+    {14}if (sessR = sess) then
+    {15}if (pmkidR = pmkid) then
+    {19}event ApFinishC(sta,ap,sess);
+    {4}let pmk_a: bitstring = pmkA in
+    {16}let ptk_a: bitstring = kdf(pmk_a,label_ptk,(sta,ap,sn,an)) in
+    {20}event ApPTK(sta,ap,sess,ptk_a);
+    {17}let ick_a: bitstring = kdf(ptk_a,label_ick,none) in
+    {18}let kaap: bitstring = hmac(ick_a,(an,sn,ap,sta)) in
+    {21}out(c, (sess,kaap));
+    {22}in(c, (sess2R: bitstring,kaapR: bitstring));
+    {23}if (sess2R = sess) then
+    {3}let pmk_s: bitstring = pmkA in
+    {24}let ptk_s: bitstring = kdf(pmk_s,label_ptk,(sta,ap,sn,an)) in
+    {25}let ick_s: bitstring = kdf(ptk_s,label_ick,none) in
+    {26}if (kaapR = hmac(ick_s,(an,sn,sta,ap))) then
+    {27}event StaFinishC(sta,ap,sess);
+    {28}event StaPTK(sta,ap,sess,ptk_s);
+    {29}event CacheUse(sta,ap,pmkid)
+) | (
+    {31}let ap_1: bitstring = ap2 in
+    {30}let sta_1: bitstring = sta2 in
+    {34}event CacheStore(sta_1,ap_1,pmkid);
+    {35}new sn_1: bitstring;
+    {36}new an_1: bitstring;
+    {37}new sess_1: bitstring;
+    {38}out(c, (sta_1,ap_1,sn_1,sess_1,pmkid));
+    {39}in(c, (staR_1: bitstring,apR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,pmkidR_1: bitstring));
+    {40}if (staR_1 = sta_1) then
+    {41}if (apR_1 = ap_1) then
+    {42}if (snR_1 = sn_1) then
+    {43}if (sessR_1 = sess_1) then
+    {44}if (pmkidR_1 = pmkid) then
+    {48}event ApFinishC(sta_1,ap_1,sess_1);
+    {33}let pmk_a_1: bitstring = pmkB in
+    {45}let ptk_a_1: bitstring = kdf(pmk_a_1,label_ptk,(sta_1,ap_1,sn_1,an_1)) in
+    {49}event ApPTK(sta_1,ap_1,sess_1,ptk_a_1);
+    {46}let ick_a_1: bitstring = kdf(ptk_a_1,label_ick,none) in
+    {47}let kaap_1: bitstring = hmac(ick_a_1,(an_1,sn_1,ap_1,sta_1)) in
+    {50}out(c, (sess_1,kaap_1));
+    {51}in(c, (sess2R_1: bitstring,kaapR_1: bitstring));
+    {52}if (sess2R_1 = sess_1) then
+    {32}let pmk_s_1: bitstring = pmkA in
+    {53}let ptk_s_1: bitstring = kdf(pmk_s_1,label_ptk,(sta_1,ap_1,sn_1,an_1)) in
+    {54}let ick_s_1: bitstring = kdf(ptk_s_1,label_ick,none) in
+    {55}if (kaapR_1 = hmac(ick_s_1,(an_1,sn_1,sta_1,ap_1))) then
+    {56}event StaFinishC(sta_1,ap_1,sess_1);
+    {57}event StaPTK(sta_1,ap_1,sess_1,ptk_s_1);
+    {58}event CacheUse(sta_1,ap_1,pmkid)
+)
+
+-- Query event(StaFinishC(s,a,se)) ==> event(ApFinishC(s,a,se)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaFinishC(s,a,se)) ==> event(ApFinishC(s,a,se))
+RESULT event(StaFinishC(s,a,se)) ==> event(ApFinishC(s,a,se)) is true.
+-- Query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k))
+RESULT event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) is true.
+-- Query event(CacheUse(s,a,p)) ==> event(CacheStore(s,a,p)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(CacheUse(s,a,p)) ==> event(CacheStore(s,a,p))
+RESULT event(CacheUse(s,a,p)) ==> event(CacheStore(s,a,p)) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(StaFinishC(s,a,se)) ==> event(ApFinishC(s,a,se)) is true.
+
+Query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) is true.
+
+Query event(CacheUse(s,a,p)) ==> event(CacheStore(s,a,p)) is true.
+
+--------------------------------------------------------------
+

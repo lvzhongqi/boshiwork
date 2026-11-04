@@ -1,0 +1,68 @@
+(* =====================================================================
+   FILS SK：status 失败后“回退旧密钥”的错误实现（对照模型）
+   场景：
+     - 攻击者伪造 M2，把 status 改成非 ok（如 112）；
+     - 错误实现不中止，而是回退到旧的 PTK 继续发数据；
+     - 这会把一次可恢复的失败变成“继续使用旧密钥”的降级/状态问题。
+   查询含义：
+     - not attacker(bad_flag) 为 false -> 攻击者可触发回退分支（降级成立）；
+     - not attacker(old_ptk) 为 true  -> 本模型假设旧密钥仍保密；
+       若旧密钥已泄露/过时，则应把 old_ptk 视为攻击者已知，
+       此时 probe 会被解出（可在下方 out(c, old_ptk) 打开后验证）。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta:bitstring.
+const ap:bitstring.
+const seq1:bitstring.
+const st_ok:bitstring.
+const st_112:bitstring.
+const none:bitstring.
+const pmkid:bitstring.
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_data:bitstring.
+
+free pmk:bitstring [private].
+free old_ptk:bitstring [private].
+free bad_flag:bitstring [private].
+free probe:bitstring [private].
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+fun aead(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, k:bitstring; adec(aead(m,k),k) = m.
+
+event StaFallback(bitstring).
+event StaFinish(bitstring).
+
+query attacker(bad_flag).
+query attacker(old_ptk).
+query attacker(probe).
+
+process
+  new sn:bitstring;
+  new sess:bitstring;
+
+  out(c, (sta, ap, seq1, sn, sess, pmkid));
+
+  (* 简化 M2：status, an, sn, sess（攻击者可伪造 status） *)
+  in(c, (stR:bitstring, anR:bitstring, snR:bitstring, sessR:bitstring));
+  if snR = sn then
+  if sessR = sess then
+
+    ( if stR = st_ok then
+      (
+        let ptk = kdf(pmk, label_ptk, (sta,ap,sn,anR)) in
+        let ick = kdf(ptk, label_ick, none) in
+        let ka  = hmac(ick, (sess,sn,anR,sta,ap)) in
+        event StaFinish(sess);
+        out(c, (sess, ka, aead((label_data, probe), kdf(ptk,label_data,none))))
+      )
+      else
+        (* 错误实现：不中止，回退到旧 PTK 继续用数据密钥 *)
+        ( event StaFallback(stR);
+          out(c, bad_flag);
+          out(c, aead((label_data, probe), old_ptk)) )
+    )

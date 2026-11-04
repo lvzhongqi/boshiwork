@@ -1,0 +1,53 @@
+Process 0 (that is, the initial process):
+{1}new sess1: bitstring;
+{2}event Sent(sess1,pmkid1);
+{3}out(c, pmkid1);
+{4}new sess2: bitstring;
+{5}event Sent(sess2,pmkid1);
+{6}out(c, pmkid1)
+
+-- Query event(Sent(s1,p)) && event(Sent(s2,p)) ==> s1 = s2 in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(Sent(s1,p)) && event(Sent(s2,p)) ==> s1 = s2
+goal reachable: event(Sent(sess2[],pmkid1)) && event(Sent(sess1[],pmkid1))
+
+Derivation:
+
+1. Event Sent(sess1[],pmkid1) may be executed at {2}.
+event(Sent(sess1[],pmkid1)).
+
+2. Event Sent(sess2[],pmkid1) may be executed at {5}.
+event(Sent(sess2[],pmkid1)).
+
+3. By 2, event(Sent(sess2[],pmkid1)).
+By 1, event(Sent(sess1[],pmkid1)).
+The goals are reached, combined in the following fact:
+event(Sent(sess2[],pmkid1)) && event(Sent(sess1[],pmkid1)).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new sess1: bitstring creating sess1_1 at {1}
+
+event Sent(sess1_1,pmkid1) at {2} (goal)
+
+out(c, ~M) with ~M = pmkid1 at {3}
+
+new sess2: bitstring creating sess2_1 at {4}
+
+event Sent(sess2_1,pmkid1) at {5} (goal)
+
+The event Sent(sess2_1,pmkid1) is executed at {5}.
+The event Sent(sess1_1,pmkid1) is executed at {2}.
+A trace has been found.
+RESULT event(Sent(s1,p)) && event(Sent(s2,p)) ==> s1 = s2 is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(Sent(s1,p)) && event(Sent(s2,p)) ==> s1 = s2 is false.
+
+--------------------------------------------------------------
+

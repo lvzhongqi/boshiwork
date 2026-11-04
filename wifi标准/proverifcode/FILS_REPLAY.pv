@@ -1,0 +1,126 @@
+(* =====================================================================
+   FILS SK：Seq / 消息重放 与 PTK 重用测试（双端独立进程）
+   建模要点：
+     - STA、AP 为两个独立的可复制进程（!），攻击者可完全控制 c；
+     - M1 带 Seq=1 + SNonce + Session + PMKID；
+     - M2 带 Seq=2 + ANonce + Session；
+     - 攻击者可任意重放/篡改/交错消息；
+     - 查询：不同会话是否出现相同 PTK（密钥重用）、PTK 是否一致。
+   结论（预期）：
+     - 因为 AP 每次运行都新生成 ANonce、STA 每次新生成 SNonce/Session，
+       重放旧 Seq/M1 不会导致 PTK 重用；唯一性查询为 true。
+     - 若 AP/STA 复用 nonce，则会出现重用（见 FILS_KEYREUSE.pv）。
+
+   重要发现（建模提示）：
+     - 如果 Session 没有绑定进 KeyAuth，ProVerif 会找到 “Session 替换”
+       轨迹：同一 PTK 但 STA/AP 两侧 Session 不同（Session 绑定缺陷）。
+       本模型已按标准把 Session 绑定进 KeyAuth，该轨迹消失，
+       PTK 一致性查询变为 true。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta:bitstring.
+const ap:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const st_53:bitstring.
+const st_112:bitstring.
+const st_113:bitstring.
+const pmkid:bitstring.
+const none:bitstring.
+const label_ptk:bitstring.
+const label_ick:bitstring.
+
+free pmk:bitstring [private].
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+event StaFinish(bitstring,bitstring).
+event ApFinish(bitstring,bitstring).
+event StaPTK(bitstring,bitstring,bitstring,bitstring).
+event ApPTK(bitstring,bitstring,bitstring,bitstring).
+
+(* 同一 PTK 不得出现在不同会话 *)
+query s:bitstring, a:bitstring, se1:bitstring, se2:bitstring, k:bitstring;
+  event(StaPTK(s,a,se1,k)) && event(StaPTK(s,a,se2,k)) ==> se1 = se2.
+
+(* PTK 一致性（STA 完成 ⇒ AP 以同一 PTK 完成同一会话） *)
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)).
+
+(* PMK 保密 *)
+query attacker(pmk).
+
+(* ---------------- STA（可复制） ---------------- *)
+let sta_proc(sta:bitstring, ap:bitstring, pmk:bitstring) =
+  new sn:bitstring;
+  new sess:bitstring;
+
+  (* M1: Auth(Seq=1) *)
+  out(c, (sta, ap, seq1, sn, sess, pmkid));
+
+  (* M2: Auth(Seq=2) *)
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         anR:bitstring, snR:bitstring, sessR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if snR = sn then
+  if sessR = sess then
+
+    let ptk = kdf(pmk, label_ptk, (sta,ap,sn,anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    (* Session 绑定进 KeyAuth，防止 Session 替换 *)
+    let ka  = hmac(ick, (sess, sn, anR, sta, ap)) in
+
+    (* M3 *)
+    out(c, (sess, ka));
+
+    (* M4 *)
+    in(c, (sessR4:bitstring, stR4:bitstring, kaapR:bitstring));
+    if sessR4 = sess then
+    if stR4 = st_ok then
+    if kaapR = hmac(ick, (sess, anR, sn, ap, sta)) then
+      event StaFinish(sess, ptk);
+      event StaPTK(sta, ap, sess, ptk).
+
+(* ---------------- AP（可复制） ---------------- *)
+let ap_proc(ap:bitstring, sta:bitstring, pmk:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring,
+         snR:bitstring, sessR:bitstring, pmkidR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq1 then
+  if pmkidR = pmkid then
+
+    new an:bitstring;
+    let ptk = kdf(pmk, label_ptk, (sta,ap,snR,an)) in
+    let ick = kdf(ptk, label_ick, none) in
+
+    (* M2 *)
+    out(c, (ap, sta, seq2, st_ok, an, snR, sessR));
+
+    (* M3 *)
+    in(c, (sessR3:bitstring, kaR:bitstring));
+    if sessR3 = sessR then
+    if kaR = hmac(ick, (sessR, snR, an, sta, ap)) then
+      event ApFinish(sessR, ptk);
+      event ApPTK(sta, ap, sessR, ptk);
+      (* M4 *)
+      out(c, (sessR, st_ok, hmac(ick, (sessR, an, snR, ap, sta))))
+    else
+      (* KeyAuth 失败：返回 112（攻击者可见，但不泄露密钥） *)
+      out(c, (ap, sta, st_112))
+  else
+    (* PMKID 未命中：返回 53 *)
+    out(c, (ap, sta, st_53))
+  else
+    (* Seq 不匹配：返回 112（标准中为挑战失败/序列错误） *)
+    out(c, (ap, sta, st_112)).
+
+process
+  ( !sta_proc(sta, ap, pmk) | !ap_proc(ap, sta, pmk) )

@@ -1,0 +1,26 @@
+(* =====================================================================
+   FILS PMKID 链接性（linkability）确定性验证
+   事实：PMKID 在 Authentication 帧中明文携带，且对同一 PMKSA 保持不变。
+   建模：同一 STA 的两次会话都使用同一 pmkid1。
+   查询：若同一 PMKID 出现在两个不同会话，则 s1 = s2 必须成立。
+        该查询为 false 即表示“同一 PMKID 可同时出现在不同会话”，
+        攻击者可据此把两次会话关联到同一 STA（链接性成立）。
+   预期：false（可链接）。
+   ===================================================================== *)
+
+free c:channel.
+const pmkid1:bitstring.
+
+event Sent(bitstring,bitstring).   (* sess, pmkid *)
+
+query s1:bitstring, s2:bitstring, p:bitstring;
+  event(Sent(s1,p)) && event(Sent(s2,p)) ==> s1 = s2.
+
+process
+  new sess1:bitstring;
+  event Sent(sess1, pmkid1);
+  out(c, pmkid1);
+
+  new sess2:bitstring;
+  event Sent(sess2, pmkid1);
+  out(c, pmkid1)

@@ -35,6 +35,25 @@
        本模型不额外输出失败帧，不影响保密性与一致性结论。
    ===================================================================== *)
 
+(* ---------------------------------------------------------------------
+   本文件与输出文件 FILS_PK.out.txt 的对应关系（验证结论：17 条查询全部 true）
+     机密性（探针法：下列 free ... [private] 变量只会在攻击者求出相应密钥时被推出）：
+       - not attacker(gtk_val)   true  → GTK 保密 ⇒ 承载它的 KEK 保密 ⇒ PTK/PMK 保密
+       - not attacker(probe_tk)  true  → 受 TK 保护的数据帧明文不可得 ⇒ TK 保密
+       - not attacker(pmk_c1)    true  → 预置 PMKSA 缓存条目 pmk_c1 保密
+       - not attacker(pmk_c2)    true  → 预置 PMKSA 缓存条目 pmk_c2 保密
+     认证 / 密钥确认 / 新鲜性（F = 无缓存 PK 分支；C = PMKSA 缓存分支）：
+       - StaFinishF ==> ApFinishF（含 inj 版本）true
+       - ApFinishF  ==> StaStartF （含 inj 版本）true
+       - StaFinishC ==> ApFinishC（含 inj 版本）true
+       - ApFinishC  ==> StaStartC （含 inj 版本）true
+     新增目标（本轮扩展，均包含在 17 条查询中）：
+       - StaPTKF ==> ApPTKF、StaPTKC ==> ApPTKC（PTK 一致性 + UKS 身份绑定）true
+       - 同一 PTK 只属于同一会话（F/C 各一条唯一性查询）true
+       - CacheUse ==> CacheStore（缓存一致性）true
+   输出文件中没有攻击轨迹：既无 “Derivation:”，也无 “A trace has been found.”。
+   --------------------------------------------------------------------- *)
+
 free c:channel.
 
 (* ---------------- 公开身份与常量 ---------------- *)
@@ -101,6 +120,16 @@ event StaStartC(bitstring,bitstring,bitstring).
 event ApFinishC(bitstring,bitstring,bitstring).
 event StaFinishC(bitstring,bitstring,bitstring).
 
+(* 新增目标用事件：携带 PTK，支持一致性/唯一性/UKS 查询 *)
+event StaPTKF(bitstring,bitstring,bitstring,bitstring).
+event ApPTKF(bitstring,bitstring,bitstring,bitstring).
+event StaPTKC(bitstring,bitstring,bitstring,bitstring).
+event ApPTKC(bitstring,bitstring,bitstring,bitstring).
+
+(* 新增目标用事件：缓存一致性（存储 / 使用） *)
+event CacheStore(bitstring,bitstring,bitstring).
+event CacheUse(bitstring,bitstring,bitstring).
+
 (* =====================================================================
    安全目标（SG）与查询
    SG1  PMK / PTK / TK / GTK 机密性
@@ -143,6 +172,24 @@ query s:bitstring, a:bitstring, se:bitstring;
 
 query s:bitstring, a:bitstring, se:bitstring;
   inj-event(ApFinishC(s,a,se)) ==> inj-event(StaStartC(s,a,se)).
+
+(* --- SG5 PTK 一致性（同时覆盖 UKS：身份 s,a 必须一致） --- *)
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTKF(s,a,se,k)) ==> event(ApPTKF(s,a,se,k)).
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTKC(s,a,se,k)) ==> event(ApPTKC(s,a,se,k)).
+
+(* --- SG6 PTK 唯一性：同一 PTK 不得出现在不同会话 --- *)
+query s1:bitstring, a1:bitstring, se1:bitstring,
+      s2:bitstring, a2:bitstring, se2:bitstring, k:bitstring;
+  event(StaPTKF(s1,a1,se1,k)) && event(StaPTKF(s2,a2,se2,k)) ==> se1 = se2.
+query s1:bitstring, a1:bitstring, se1:bitstring,
+      s2:bitstring, a2:bitstring, se2:bitstring, k:bitstring;
+  event(StaPTKC(s1,a1,se1,k)) && event(StaPTKC(s2,a2,se2,k)) ==> se1 = se2.
+
+(* --- SG7 缓存一致性：使用缓存条目必须此前存储过 --- *)
+query s:bitstring, a:bitstring, p:bitstring;
+  event(CacheUse(s,a,p)) ==> event(CacheStore(s,a,p)).
 
 (* =====================================================================
    STA：无缓存公钥认证（每次均重新协商 PMK）
@@ -203,6 +250,7 @@ let sta_pk_fresh(sta:bitstring, ap:bitstring, skS:bitstring, pkA:bitstring) =
       if pkAR = pkA then
       if checksign(kaAR, pkA) = (gaR, gs, anR, sn, ap, sta) then
         event StaFinishF(sta, ap, sess);
+        event StaPTKF(sta, ap, sess, ptk);
         (* 关联后第一条受 TK 保护的数据帧（机密性探针） *)
         out(c, aead((label_data, probe_tk), tk)).
 
@@ -249,6 +297,7 @@ let ap_pk_fresh(ap:bitstring, sta:bitstring, skA:bitstring, pkS:bitstring) =
       if pkSR = pkS then
       if checksign(kaR, pkS) = (gsR, ga, snR, an, sta, ap) then
         event ApFinishF(sta, ap, sessR);
+        event ApPTKF(sta, ap, sessR, ptk);
 
         (* --- M4: KeyAuth = Sig-AP(gAP||gSTA||ANonce||SNonce||AP-BSSID||STA-MAC) --- *)
         let kaap = sign((ga, gsR, an, snR, ap, sta), skA) in
@@ -311,6 +360,8 @@ let sta_pk_cache(sta:bitstring, ap:bitstring, skS:bitstring, pkA:bitstring,
       if pkAR = pkA then
       if kaAR = hmac(ick, (anR, sn, ap, sta, gaR, gs)) then
         event StaFinishC(sta, ap, sess);
+        event StaPTKC(sta, ap, sess, ptk);
+        event CacheUse(sta, ap, pmkid);
         out(c, aead((label_data, probe_tk), tk)).
 
 (* =====================================================================
@@ -353,6 +404,7 @@ let ap_pk_cache(ap:bitstring, sta:bitstring, skA:bitstring, pkS:bitstring,
       if pkSR = pkS then
       if kaR = hmac(ick, (snR, an, sta, ap, gsR, ga)) then
         event ApFinishC(sta, ap, sessR);
+        event ApPTKC(sta, ap, sessR, ptk);
 
         let kaap = hmac(ick, (an, snR, ap, sta, ga, gsR)) in
         let aad2 = (ap, sta, an, snR, sessR, rsneR) in
@@ -375,11 +427,17 @@ process
   let pkA1 = pk(skA1) in
   let pkA2 = pk(skA2) in
 
+  (* 长期公钥公开：把“证书/公钥可信分发”抽象为直接公开公钥 *)
   out(c, pkS1);
   out(c, pkS2);
   out(c, pkA1);
   out(c, pkA2);
 
+  (* 模拟“更早一次成功会话已把两个 PMKSA 存入缓存”（缓存一致性目标用） *)
+  event CacheStore(sta1, ap1, pmkid_c1);
+  event CacheStore(sta2, ap2, pmkid_c2);
+
+  (* F 分支无界复制；C 分支使用预置 PMKSA 且只跑一次 *)
   (
     ( !sta_pk_fresh(sta1, ap1, skS1, pkA1) )
     |
@@ -389,6 +447,7 @@ process
     |
     ( !ap_pk_fresh(ap2, sta2, skA2, pkS2) )
     |
+    (* C 分支：使用预置 PMKSA 缓存，PMKID 必须命中；只跑一次 *)
     ( sta_pk_cache(sta1, ap1, skS1, pkA1, pmk_c1, pmkid_c1)
       |
       ap_pk_cache(ap1, sta1, skA1, pkS1, pmk_c1, pmkid_c1) )

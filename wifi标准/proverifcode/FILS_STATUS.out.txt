@@ -1,0 +1,247 @@
+Process 0 (that is, the initial process):
+{1}new sn: bitstring;
+{2}new sess: bitstring;
+{3}out(c, (sta,ap,seq1,sn,sess,pmkid));
+{4}in(c, (staR: bitstring,apR: bitstring,seqR: bitstring,snR: bitstring,sessR: bitstring,pmkidR: bitstring));
+{5}if (apR = ap) then
+{6}if (staR = sta) then
+{7}if (seqR = seq1) then
+(
+    {8}if (pmkidR = pmkid) then
+    (
+        {9}new an: bitstring;
+        {10}let ptk: bitstring = kdf(pmk,label_ptk,(sta,ap,snR,an)) in
+        {11}let ick: bitstring = kdf(ptk,label_ick,none) in
+        {12}out(c, (ap,sta,seq2,st_ok,an,snR,sessR));
+        {13}in(c, (apR2: bitstring,staR2: bitstring,seqR2: bitstring,stR2: bitstring,anR2: bitstring,snR2: bitstring,sessR2: bitstring));
+        {14}if (apR2 = ap) then
+        {15}if (staR2 = sta) then
+        {16}if (seqR2 = seq2) then
+        {17}if (snR2 = sn) then
+        {18}if (sessR2 = sess) then
+        {19}if (stR2 = st_ok) then
+        (
+            {20}let ptk_s: bitstring = kdf(pmk,label_ptk,(sta,ap,sn,anR2)) in
+            {21}let ick_s: bitstring = kdf(ptk_s,label_ick,none) in
+            {22}let ka: bitstring = hmac(ick_s,(sess,sn,anR2,sta,ap)) in
+            {23}out(c, (sess,ka));
+            {24}in(c, (sessR3: bitstring,kaR: bitstring));
+            {25}if (sessR3 = sessR) then
+            {26}if (kaR = hmac(ick,(sessR,snR,an,sta,ap))) then
+            (
+                {27}event ApFinish(sessR);
+                {28}out(c, (sessR,st_ok,hmac(ick,(sessR,an,snR,ap,sta))));
+                {29}in(c, (sessR4: bitstring,stR4: bitstring,kaapR: bitstring));
+                {30}if (sessR4 = sess) then
+                {31}if (stR4 = st_ok) then
+                (
+                    {32}if (kaapR = hmac(ick_s,(sess,anR2,sn,ap,sta))) then
+                    {33}event StaFinish(sess);
+                    {34}let tk: bitstring = kdf(ptk_s,label_tk,none) in
+                    {35}out(c, aead((label_data,probe),tk))
+                )
+                else
+                    {36}event StaAbort(stR4);
+                    {37}out(c, abort_flag)
+            )
+            else
+                {38}event ApAbort(st_112);
+                {39}out(c, (ap,sta,st_112))
+        )
+        else
+            {40}event StaAbort(stR2);
+            {41}out(c, abort_flag)
+    )
+    else
+        {42}event ApAbort(st_53);
+        {43}out(c, (ap,sta,st_53))
+)
+else
+    {44}event ApAbort(st_112);
+    {45}out(c, (ap,sta,st_112))
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new sn: bitstring;
+{2}new sess: bitstring;
+{3}out(c, (sta,ap,seq1,sn,sess,pmkid));
+{4}in(c, (staR: bitstring,apR: bitstring,seqR: bitstring,snR: bitstring,sessR: bitstring,pmkidR: bitstring));
+{5}if (apR = ap) then
+{6}if (staR = sta) then
+{7}if (seqR = seq1) then
+(
+    {8}if (pmkidR = pmkid) then
+    (
+        {9}new an: bitstring;
+        {12}out(c, (ap,sta,seq2,st_ok,an,snR,sessR));
+        {13}in(c, (apR2: bitstring,staR2: bitstring,seqR2: bitstring,stR2: bitstring,anR2: bitstring,snR2: bitstring,sessR2: bitstring));
+        {14}if (apR2 = ap) then
+        {15}if (staR2 = sta) then
+        {16}if (seqR2 = seq2) then
+        {17}if (snR2 = sn) then
+        {18}if (sessR2 = sess) then
+        {19}if (stR2 = st_ok) then
+        (
+            {20}let ptk_s: bitstring = kdf(pmk,label_ptk,(sta,ap,sn,anR2)) in
+            {21}let ick_s: bitstring = kdf(ptk_s,label_ick,none) in
+            {22}let ka: bitstring = hmac(ick_s,(sess,sn,anR2,sta,ap)) in
+            {23}out(c, (sess,ka));
+            {24}in(c, (sessR3: bitstring,kaR: bitstring));
+            {25}if (sessR3 = sessR) then
+            {10}let ptk: bitstring = kdf(pmk,label_ptk,(sta,ap,snR,an)) in
+            {11}let ick: bitstring = kdf(ptk,label_ick,none) in
+            {26}if (kaR = hmac(ick,(sessR,snR,an,sta,ap))) then
+            (
+                {27}event ApFinish(sessR);
+                {28}out(c, (sessR,st_ok,hmac(ick,(sessR,an,snR,ap,sta))));
+                {29}in(c, (sessR4: bitstring,stR4: bitstring,kaapR: bitstring));
+                {30}if (sessR4 = sess) then
+                {31}if (stR4 = st_ok) then
+                (
+                    {32}if (kaapR = hmac(ick_s,(sess,anR2,sn,ap,sta))) then
+                    {33}event StaFinish(sess);
+                    {34}let tk: bitstring = kdf(ptk_s,label_tk,none) in
+                    {35}out(c, aead((label_data,probe),tk))
+                )
+                else
+                    {36}event StaAbort(stR4);
+                    {37}out(c, abort_flag)
+            )
+            else
+                {38}event ApAbort(st_112);
+                {39}out(c, (ap,sta,st_112))
+        )
+        else
+            {40}event StaAbort(stR2);
+            {41}out(c, abort_flag)
+    )
+    else
+        {42}event ApAbort(st_53);
+        {43}out(c, (ap,sta,st_53))
+)
+else
+    {44}event ApAbort(st_112);
+    {45}out(c, (ap,sta,st_112))
+
+-- Query not attacker(abort_flag[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(abort_flag[])
+goal reachable: attacker(abort_flag[])
+
+Derivation:
+
+1. Using the function pmkid the attacker may obtain pmkid.
+attacker(pmkid).
+
+2. The attacker has some term sessR_1.
+attacker(sessR_1).
+
+3. The attacker has some term snR_1.
+attacker(snR_1).
+
+4. Using the function seq1 the attacker may obtain seq1.
+attacker(seq1).
+
+5. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+6. Using the function sta the attacker may obtain sta.
+attacker(sta).
+
+7. By 6, the attacker may know sta.
+By 5, the attacker may know ap.
+By 4, the attacker may know seq1.
+By 3, the attacker may know snR_1.
+By 2, the attacker may know sessR_1.
+By 1, the attacker may know pmkid.
+Using the function 6-tuple the attacker may obtain (sta,ap,seq1,snR_1,sessR_1,pmkid).
+attacker((sta,ap,seq1,snR_1,sessR_1,pmkid)).
+
+8. The message (sta,ap,seq1,sn[],sess[],pmkid) may be sent to the attacker at output {3}.
+attacker((sta,ap,seq1,sn[],sess[],pmkid)).
+
+9. By 8, the attacker may know (sta,ap,seq1,sn[],sess[],pmkid).
+Using the function 5-proj-6-tuple the attacker may obtain sess[].
+attacker(sess[]).
+
+10. By 8, the attacker may know (sta,ap,seq1,sn[],sess[],pmkid).
+Using the function 4-proj-6-tuple the attacker may obtain sn[].
+attacker(sn[]).
+
+11. The attacker has some term anR2_1.
+attacker(anR2_1).
+
+12. The attacker has some term stR2_1.
+attacker(stR2_1).
+
+13. Using the function seq2 the attacker may obtain seq2.
+attacker(seq2).
+
+14. By 5, the attacker may know ap.
+By 6, the attacker may know sta.
+By 13, the attacker may know seq2.
+By 12, the attacker may know stR2_1.
+By 11, the attacker may know anR2_1.
+By 10, the attacker may know sn[].
+By 9, the attacker may know sess[].
+Using the function 7-tuple the attacker may obtain (ap,sta,seq2,stR2_1,anR2_1,sn[],sess[]).
+attacker((ap,sta,seq2,stR2_1,anR2_1,sn[],sess[])).
+
+15. The message (sta,ap,seq1,snR_1,sessR_1,pmkid) that the attacker may have by 7 may be received at input {4}.
+The message (ap,sta,seq2,stR2_1,anR2_1,sn[],sess[]) that the attacker may have by 14 may be received at input {13}.
+We have stR2_1 ≠ st_ok.
+So the message abort_flag[] may be sent to the attacker at output {41}.
+attacker(abort_flag[]).
+
+16. By 15, attacker(abort_flag[]).
+The goal is reached, represented in the following fact:
+attacker(abort_flag[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new sn: bitstring creating sn_1 at {1}
+
+new sess: bitstring creating sess_1 at {2}
+
+out(c, (~M,~M_1,~M_2,~M_3,~M_4,~M_5)) with ~M = sta, ~M_1 = ap, ~M_2 = seq1, ~M_3 = sn_1, ~M_4 = sess_1, ~M_5 = pmkid at {3}
+
+in(c, (sta,ap,seq1,a,a_1,pmkid)) at {4}
+
+new an: bitstring creating an_1 at {9}
+
+out(c, (~M_6,~M_7,~M_8,~M_9,~M_10,~M_11,~M_12)) with ~M_6 = ap, ~M_7 = sta, ~M_8 = seq2, ~M_9 = st_ok, ~M_10 = an_1, ~M_11 = a, ~M_12 = a_1 at {12}
+
+in(c, (ap,sta,seq2,a_2,a_3,~M_3,~M_4)) with ~M_3 = sn_1, ~M_4 = sess_1 at {13}
+
+event StaAbort(a_2) at {40}
+
+out(c, ~M_13) with ~M_13 = abort_flag at {41}
+
+The attacker has the message ~M_13 = abort_flag.
+A trace has been found.
+RESULT not attacker(abort_flag[]) is false.
+-- Query not attacker(probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(probe[])
+RESULT not attacker(probe[]) is true.
+-- Query event(StaFinish(se)) ==> event(ApFinish(se)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaFinish(se)) ==> event(ApFinish(se))
+goal reachable: b-event(ApFinish(sess[])) -> event(StaFinish(sess[]))
+RESULT event(StaFinish(se)) ==> event(ApFinish(se)) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker(abort_flag[]) is false.
+
+Query not attacker(probe[]) is true.
+
+Query event(StaFinish(se)) ==> event(ApFinish(se)) is true.
+
+--------------------------------------------------------------
+

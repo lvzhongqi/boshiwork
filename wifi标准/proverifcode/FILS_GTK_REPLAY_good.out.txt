@@ -1,0 +1,44 @@
+Process 0 (that is, the initial process):
+{1}out(c, aead((kid1,gtk1),kek));
+{2}event ApSend(kid1,gtk1);
+{3}out(c, aead((kid2,gtk2),kek));
+{4}event ApSend(kid2,gtk2);
+{5}in(c, ct1: bitstring);
+{6}let (k1R: bitstring,g1R: bitstring) = adec(ct1,kek) in
+{7}if (k1R = kid1) then
+{8}event StaAccept(k1R,g1R);
+{9}in(c, ct2: bitstring);
+{10}let (k2R: bitstring,g2R: bitstring) = adec(ct2,kek) in
+{11}if (k2R = kid2) then
+{12}event StaAccept(k2R,g2R)
+
+-- Query event(StaAccept(k,g)) ==> event(ApSend(k,g)) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaAccept(k,g)) ==> event(ApSend(k,g))
+goal reachable: b-event(ApSend(kid2,gtk2[])) && b-event(ApSend(kid1,gtk1[])) -> event(StaAccept(kid1,gtk1[]))
+goal reachable: b-event(ApSend(kid2,gtk2[])) && b-event(ApSend(kid1,gtk1[])) -> event(StaAccept(kid2,gtk2[]))
+RESULT event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.
+-- Query inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g))
+goal reachable: b-event(@p_act(@occ5[],aead((kid1,gtk1[]),kek[]))) && b-inj-event(ApSend(kid2,gtk2[]),@occ4[]) && b-inj-event(ApSend(kid1,gtk1[]),@occ2[]) -> inj-event(StaAccept(kid1,gtk1[]),@occ8_1)
+The 1st, 2nd, 3rd hypotheses occur strictly before the conclusion.
+Abbreviations:
+@occ8_1 = @occ8[ct1 = aead((kid1,gtk1[]),kek[])]
+goal reachable: b-event(@p_act(@occ9[],aead((kid2,gtk2[]),kek[]))) && b-event(@p_act(@occ5[],aead((kid1,gtk1[]),kek[]))) && b-inj-event(ApSend(kid2,gtk2[]),@occ4[]) && b-inj-event(ApSend(kid1,gtk1[]),@occ2[]) -> inj-event(StaAccept(kid2,gtk2[]),@occ12_1)
+The 1st, 2nd, 3rd, 4th hypotheses occur strictly before the conclusion.
+Abbreviations:
+@occ12_1 = @occ12[ct2 = aead((kid2,gtk2[]),kek[]),ct1 = aead((kid1,gtk1[]),kek[])]
+RESULT inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.
+
+Query inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) is true.
+
+--------------------------------------------------------------
+

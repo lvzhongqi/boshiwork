@@ -1,0 +1,137 @@
+(* =====================================================================
+   FILS SK：status 机制 + 伪造错误 status（正确实现：拒绝非 ok）
+   覆盖状态：
+     - 53  ：PMKID 未命中
+     - 112 ：Seq 错误 / KeyAuth 校验失败
+     - 113 ：会话/序列等待超时（本模型用 112 近似，不展开定时器）
+   行为：
+     - STA 收到 M2 时，若 status != ok，则记录 StaAbort 并停止，
+       不再派生/发送 M3，也不会回退到旧密钥；
+     - 攻击者可伪造 M2 把 status 改成 112（sn/sess/seq 都能从 M1 得到），
+       从而迫使 STA 中止 -> 这是有效的 DoS（可用性）攻击。
+   查询含义：
+     - attacker(abort_flag) 为真 -> 攻击者可强制中止（DoS 成立）；
+     - attacker(probe) 为真    -> 即使发生 status 攻击，密钥仍保密。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta:bitstring.
+const ap:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const st_53:bitstring.
+const st_112:bitstring.
+const st_113:bitstring.
+const none:bitstring.
+const pmkid:bitstring.
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+
+free pmk:bitstring [private].
+free abort_flag:bitstring [private].
+free probe:bitstring [private].
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+fun aead(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, k:bitstring; adec(aead(m,k),k) = m.
+
+event ApFinish(bitstring).
+event StaFinish(bitstring).
+event StaAbort(bitstring).
+event ApAbort(bitstring).
+
+(* attacker(abort_flag)=true 表示攻击者可让 STA 走 abort 分支（DoS） *)
+query attacker(abort_flag).
+(* 密钥机密性：status 攻击不应泄露 probe *)
+query attacker(probe).
+query se:bitstring; event(StaFinish(se)) ==> event(ApFinish(se)).
+
+process
+  new sn:bitstring;
+  new sess:bitstring;
+
+  (* STA M1: Auth(Seq=1) *)
+  out(c, (sta, ap, seq1, sn, sess, pmkid));
+
+  (* ===== AP 处理 M1 ===== *)
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring,
+         snR:bitstring, sessR:bitstring, pmkidR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  ( if seqR = seq1 then
+    ( if pmkidR = pmkid then
+      (
+        new an:bitstring;
+        let ptk = kdf(pmk, label_ptk, (sta,ap,snR,an)) in
+        let ick = kdf(ptk, label_ick, none) in
+
+        (* AP M2: Auth(Seq=2), status=ok *)
+        out(c, (ap, sta, seq2, st_ok, an, snR, sessR));
+
+        (* ===== STA 处理 M2 ===== *)
+        in(c, (apR2:bitstring, staR2:bitstring, seqR2:bitstring,
+               stR2:bitstring, anR2:bitstring, snR2:bitstring, sessR2:bitstring));
+        if apR2 = ap then
+        if staR2 = sta then
+        if seqR2 = seq2 then
+        if snR2 = sn then
+        if sessR2 = sess then
+        ( if stR2 = st_ok then
+          (
+            let ptk_s = kdf(pmk, label_ptk, (sta,ap,sn,anR2)) in
+            let ick_s = kdf(ptk_s, label_ick, none) in
+            let ka = hmac(ick_s, (sess,sn,anR2,sta,ap)) in
+
+            (* STA M3 *)
+            out(c, (sess, ka));
+
+            (* ===== AP 处理 M3 ===== *)
+            in(c, (sessR3:bitstring, kaR:bitstring));
+            if sessR3 = sessR then
+            ( if kaR = hmac(ick, (sessR,snR,an,sta,ap)) then
+              (
+                event ApFinish(sessR);
+                (* AP M4 *)
+                out(c, (sessR, st_ok, hmac(ick, (sessR,an,snR,ap,sta))));
+
+                (* ===== STA 处理 M4 ===== *)
+                in(c, (sessR4:bitstring, stR4:bitstring, kaapR:bitstring));
+                if sessR4 = sess then
+                ( if stR4 = st_ok then
+                  ( if kaapR = hmac(ick_s, (sess,anR2,sn,ap,sta)) then
+                    (
+                      event StaFinish(sess);
+                      let tk = kdf(ptk_s, label_tk, none) in
+                      out(c, aead((label_data, probe), tk))
+                    )
+                  )
+                  else
+                    (* 非 ok status：中止，不回退旧密钥 *)
+                    ( event StaAbort(stR4);
+                      out(c, abort_flag) )
+                )
+              )
+              else
+                ( event ApAbort(st_112);
+                  out(c, (ap, sta, st_112)) )
+            )
+          )
+          else
+            (* M2 的 status != ok：中止（攻击者可伪造 -> DoS） *)
+            ( event StaAbort(stR2);
+              out(c, abort_flag) )
+        )
+      )
+      else
+        ( event ApAbort(st_53);
+          out(c, (ap, sta, st_53)) )
+    )
+    else
+      ( event ApAbort(st_112);
+        out(c, (ap, sta, st_112)) )
+  )

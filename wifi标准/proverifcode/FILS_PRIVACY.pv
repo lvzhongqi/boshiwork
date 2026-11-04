@@ -1,0 +1,22 @@
+(* =====================================================================
+   FILS PMKID 链接性 / 隐私（observational equivalence）测试
+   背景：PMKID 在 FILS Authentication 帧中明文携带，是稳定的伪标识。
+   设计（biprocess）：
+     分支 A：同一 STA 的两次会话  -> 两个 PMKID 相同  (pmkid1, pmkid1)
+     分支 B：两个不同 STA 的会话  -> 两个 PMKID 不同  (pmkid1, pmkid2)
+   若攻击者可区分“两个 PMKID 是否相同”，则 Observational equivalence
+   为 false，说明 PMKID 可被用于跨会话关联/跟踪（链接性）。
+   说明：ProVerif 2.05 对本例会输出
+     RESULT Observational equivalence cannot be proved.
+   并同时打印 “A trace has been found” 的区分轨迹（见下），说明它找到了
+   区分两分支的方式；为了得到确定性的“链接性成立”结论，请使用
+   FILS_PMKID_LINK.pv（等式查询，结果为 false）。
+   ===================================================================== *)
+
+free c:channel.
+
+const pmkid1:bitstring.
+const pmkid2:bitstring.
+
+process
+  out(c, choice[(pmkid1, pmkid1), (pmkid1, pmkid2)])

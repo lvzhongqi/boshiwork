@@ -1,0 +1,106 @@
+Process 0 (that is, the initial process):
+{1}new wd1: bitstring;
+{2}out(c, (sta,ap,seq1,wd1));
+{3}in(c, (staA: bitstring,apA: bitstring,seqA: bitstring,wdA: bitstring));
+{4}if (staA = sta) then
+{5}if (apA = ap) then
+{6}if (seqA = seq1) then
+{7}event UsePMK(sessA,kdf(rmsk,label_pmk,(seqA,wdA)));
+{8}out(c, ok);
+{9}in(c, (staB: bitstring,apB: bitstring,seqB: bitstring,wdB: bitstring));
+{10}if (staB = sta) then
+{11}if (apB = ap) then
+{12}event UsePMK(sessB,kdf(rmsk,label_pmk,(seqB,wdB)))
+
+-- Query event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2
+goal reachable: attacker(wdA_1) -> event(UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_1)))) && event(UsePMK(sessB,kdf(rmsk[],label_pmk,(seq1,wdA_1))))
+
+Derivation:
+
+1. The attacker has some term wdA_1.
+attacker(wdA_1).
+
+2. Using the function seq1 the attacker may obtain seq1.
+attacker(seq1).
+
+3. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+4. Using the function sta the attacker may obtain sta.
+attacker(sta).
+
+5. By 4, the attacker may know sta.
+By 3, the attacker may know ap.
+By 2, the attacker may know seq1.
+By 1, the attacker may know wdA_1.
+Using the function 4-tuple the attacker may obtain (sta,ap,seq1,wdA_1).
+attacker((sta,ap,seq1,wdA_1)).
+
+6. We assume as hypothesis that
+attacker(wdA_2).
+
+7. By 4, the attacker may know sta.
+By 3, the attacker may know ap.
+By 2, the attacker may know seq1.
+By 6, the attacker may know wdA_2.
+Using the function 4-tuple the attacker may obtain (sta,ap,seq1,wdA_2).
+attacker((sta,ap,seq1,wdA_2)).
+
+8. The message (sta,ap,seq1,wdA_1) that the attacker may have by 5 may be received at input {3}.
+The message (sta,ap,seq1,wdA_2) that the attacker may have by 7 may be received at input {9}.
+So event UsePMK(sessB,kdf(rmsk[],label_pmk,(seq1,wdA_2))) may be executed at {12}.
+event(UsePMK(sessB,kdf(rmsk[],label_pmk,(seq1,wdA_2)))).
+
+9. The message (sta,ap,seq1,wdA_2) that the attacker may have by 7 may be received at input {3}.
+So event UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_2))) may be executed at {7}.
+event(UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_2)))).
+
+10. By 9, event(UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_2)))).
+By 8, event(UsePMK(sessB,kdf(rmsk[],label_pmk,(seq1,wdA_2)))).
+The goals are reached, combined in the following fact:
+event(UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_2)))) && event(UsePMK(sessB,kdf(rmsk[],label_pmk,(seq1,wdA_2)))).
+
+
+Unified wdA_1 with wdA_2
+The clause after UnifyDerivationPrecise is
+attacker(wdA_2) -> event(UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_2)))) && event(UsePMK(sessB,kdf(rmsk[],label_pmk,(seq1,wdA_2))))
+This clause still contradicts the query.
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new wd1: bitstring creating wd1_1 at {1}
+
+out(c, (~M,~M_1,~M_2,~M_3)) with ~M = sta, ~M_1 = ap, ~M_2 = seq1, ~M_3 = wd1_1 at {2}
+
+in(c, (sta,ap,seq1,a)) at {3}
+
+event UsePMK(sessA,kdf(rmsk,label_pmk,(seq1,a))) at {7} (goal)
+
+out(c, ~M_4) with ~M_4 = ok at {8}
+
+in(c, (sta,ap,seq1,a)) at {9}
+
+event UsePMK(sessB,kdf(rmsk,label_pmk,(seq1,a))) at {12} (goal)
+
+The event UsePMK(sessA,kdf(rmsk,label_pmk,(seq1,a))) is executed at {7}.
+The event UsePMK(sessB,kdf(rmsk,label_pmk,(seq1,a))) is executed at {12}.
+A trace has been found.
+RESULT event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 is false.
+-- Query not attacker(rmsk[]) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(rmsk[])
+RESULT not attacker(rmsk[]) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 is false.
+
+Query not attacker(rmsk[]) is true.
+
+--------------------------------------------------------------
+

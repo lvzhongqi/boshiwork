@@ -1,0 +1,102 @@
+Process 0 (that is, the initial process):
+{1}out(c, aead((kid1,gtk1),kek));
+{2}event ApSend(kid1,gtk1);
+{3}out(c, aead((kid2,gtk2),kek));
+{4}event ApSend(kid2,gtk2);
+{5}in(c, ct1: bitstring);
+{6}let (k1R: bitstring,g1R: bitstring) = adec(ct1,kek) in
+{7}if (k1R = kid1) then
+{8}event StaAccept(k1R,g1R);
+{9}in(c, ct2: bitstring);
+{10}let (k2R: bitstring,g2R: bitstring) = adec(ct2,kek) in
+{11}if (k2R = kid1) then
+{12}event StaAccept(k2R,g2R)
+
+-- Query event(StaAccept(k,g)) ==> event(ApSend(k,g)) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaAccept(k,g)) ==> event(ApSend(k,g))
+goal reachable: b-event(ApSend(kid2,gtk2[])) && b-event(ApSend(kid1,gtk1[])) -> event(StaAccept(kid1,gtk1[]))
+RESULT event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.
+-- Query inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g))
+goal reachable: b-event(@p_act(@occ9[],aead((kid1,gtk1[]),kek[]))) && b-event(@p_act(@occ5[],aead((kid1,gtk1[]),kek[]))) && b-inj-event(ApSend(kid2,gtk2[]),@occ4[]) && b-inj-event(ApSend(kid1,gtk1[]),@occ2[]) -> inj-event(StaAccept(kid1,gtk1[]),@occ8_1) && inj-event(StaAccept(kid1,gtk1[]),@occ12_1)
+Abbreviations:
+@occ8_1 = @occ8[ct1 = aead((kid1,gtk1[]),kek[])]
+@occ12_1 = @occ12[ct2 = aead((kid1,gtk1[]),kek[]),ct1 = aead((kid1,gtk1[]),kek[])]
+
+Derivation:
+Abbreviations:
+@occ8_1 = @occ8[ct1 = aead((kid1,gtk1[]),kek[])]
+@occ12_1 = @occ12[ct2 = aead((kid1,gtk1[]),kek[]),ct1 = aead((kid1,gtk1[]),kek[])]
+
+1. The message aead((kid1,gtk1[]),kek[]) may be sent to the attacker at output {1}.
+attacker(aead((kid1,gtk1[]),kek[])).
+
+2. The event ApSend(kid1,gtk1[]) (with occurrence name @occ2[]) may be executed at {2}.
+The event ApSend(kid2,gtk2[]) (with occurrence name @occ4[]) may be executed at {4}.
+The event @p_act(@occ5[],aead((kid1,gtk1[]),kek[])) records how variables are instantiated at {5}.
+The message aead((kid1,gtk1[]),kek[]) that the attacker may have by 1 may be received at input {5}.
+The event @p_act(@occ9[],aead((kid1,gtk1[]),kek[])) records how variables are instantiated at {9}.
+The message aead((kid1,gtk1[]),kek[]) that the attacker may have by 1 may be received at input {9}.
+So event StaAccept(kid1,gtk1[]) may be executed at {12}.
+inj-event(StaAccept(kid1,gtk1[]),@occ12_1).
+
+3. By 2, inj-event(StaAccept(kid1,gtk1[]),@occ12_1).
+The goal is reached, represented in the following fact:
+inj-event(StaAccept(kid1,gtk1[]),@occ12_1).
+
+4. The event ApSend(kid1,gtk1[]) (with occurrence name @occ2[]) may be executed at {2}.
+The event ApSend(kid2,gtk2[]) (with occurrence name @occ4[]) may be executed at {4}.
+The event @p_act(@occ5[],aead((kid1,gtk1[]),kek[])) records how variables are instantiated at {5}.
+The message aead((kid1,gtk1[]),kek[]) that the attacker may have by 1 may be received at input {5}.
+So event StaAccept(kid1,gtk1[]) may be executed at {8}.
+inj-event(StaAccept(kid1,gtk1[]),@occ8_1).
+
+5. By 4, inj-event(StaAccept(kid1,gtk1[]),@occ8_1).
+The goal is reached, represented in the following fact:
+inj-event(StaAccept(kid1,gtk1[]),@occ8_1).
+
+6. By 5, inj-event(StaAccept(kid1,gtk1[]),@occ8_1).
+By 3, inj-event(StaAccept(kid1,gtk1[]),@occ12_1).
+We have @occ8_1 ≠ @occ12_1.
+The goals for injectivity are reached, combined in the following fact:
+inj-event(StaAccept(kid1,gtk1[]),@occ8_1) && inj-event(StaAccept(kid1,gtk1[]),@occ12_1).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+out(c, ~M) with ~M = aead((kid1,gtk1),kek) at {1}
+
+event ApSend(kid1,gtk1) at {2}
+
+out(c, ~M_1) with ~M_1 = aead((kid2,gtk2),kek) at {3}
+
+event ApSend(kid2,gtk2) at {4}
+
+in(c, ~M) with ~M = aead((kid1,gtk1),kek) at {5}
+
+event StaAccept(kid1,gtk1) at {8} (goal)
+
+in(c, ~M) with ~M = aead((kid1,gtk1),kek) at {9}
+
+event StaAccept(kid1,gtk1) at {12} (goal)
+
+The event StaAccept(kid1,gtk1) is executed at {8}.
+The event StaAccept(kid1,gtk1) is executed at {12}.
+A trace has been found.
+RESULT inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) is false.
+RESULT (but event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.)
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.
+
+Query inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) is false.
+
+--------------------------------------------------------------
+

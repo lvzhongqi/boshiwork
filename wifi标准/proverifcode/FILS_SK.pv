@@ -41,6 +41,26 @@
         Authentication 与 (Re)Association 的 RSNE 一致，本模型纳入 AAD。
    ===================================================================== *)
 
+(* ---------------------------------------------------------------------
+   本文件与输出文件 FILS_SK.out.txt 的对应关系（验证结论：22 条查询全部 true）
+     机密性（探针法：这些 free ... [private] 变量只有对应密钥泄露时才可被推出）：
+       - not attacker(gtk_val)       true → GTK 保密 ⇒ KEK/PTK/PMK 保密
+       - not attacker(probe_tk)      true → TK 保密
+       - not attacker(pmk_c1/pmk_c2) true → 预置 PMKSA 缓存条目保密
+       - not attacker(eaprp_rmsk1/2) true → 后端 rMSK 不暴露给空口攻击者
+     认证 / 密钥确认 / 新鲜性（三组：ANA=4 无 PFS、ANA=5 带 PFS、ANA=5+缓存）：
+       - 每组 StaFinish ⇒ ApFinish、ApFinish ⇒ StaStart 的普通与 inj 版本均 true。
+     新增目标（本轮扩展，均包含在 22 条查询中）：
+       - StaPTK ==> ApPTK（PTK 一致性 + UKS 身份绑定）true
+       - 同一 PTK 只属于同一会话（唯一性）true
+       - ANA=4 与 ANA=5 的 PTK 不跨 AKM 重用（分离）true
+       - 同一会话不得绑定两个不同 AKM true
+   说明：输出中出现的 “goal reachable ... The 1st hypothesis occurs strictly
+   before the conclusion” 是 ProVerif 证明对应性/注入性时的中间约束输出，
+   不是攻击；真正的攻击轨迹会带 “Derivation:” 与 “A trace has been found.”
+   （参见 FILS_PFS.out.txt 中 ANA=4 的预期反例）。
+   --------------------------------------------------------------------- *)
+
 free c:channel.
 
 (* ---------------- 公开身份与常量 ---------------- *)
@@ -112,6 +132,10 @@ event StaStart5C(bitstring,bitstring,bitstring).
 event ApFinish5C(bitstring,bitstring,bitstring).
 event StaFinish5C(bitstring,bitstring,bitstring).
 
+(* 新增目标用事件：AKM, STA, AP, session, PTK *)
+event StaPTK(bitstring,bitstring,bitstring,bitstring,bitstring).
+event ApPTK(bitstring,bitstring,bitstring,bitstring,bitstring).
+
 (* =====================================================================
    安全目标与查询
    SG1  PMK / PTK / TK / GTK 机密性
@@ -155,6 +179,25 @@ query s:bitstring, a:bitstring, se:bitstring;
   event(ApFinish5C(s,a,se)) ==> event(StaStart5C(s,a,se)).
 query s:bitstring, a:bitstring, se:bitstring;
   inj-event(ApFinish5C(s,a,se)) ==> inj-event(StaStart5C(s,a,se)).
+
+(* --- SG5 PTK 一致性（含 UKS：akm、身份 s,a、会话必须一致） --- *)
+query akm:bitstring, s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTK(akm,s,a,se,k)) ==> event(ApPTK(akm,s,a,se,k)).
+
+(* --- SG6 PTK 唯一性：同一 PTK 不得出现在不同会话 --- *)
+query akm1:bitstring, s1:bitstring, a1:bitstring, se1:bitstring,
+      akm2:bitstring, s2:bitstring, a2:bitstring, se2:bitstring, k:bitstring;
+  event(StaPTK(akm1,s1,a1,se1,k)) && event(StaPTK(akm2,s2,a2,se2,k)) ==> se1 = se2.
+
+(* --- SG7 跨 AKM 密钥分离：同一 PTK 不得同时来自 ANA=4 与 ANA=5 的不同会话 --- *)
+query s1:bitstring, a1:bitstring, se1:bitstring,
+      s2:bitstring, a2:bitstring, se2:bitstring, k:bitstring;
+  event(StaPTK(aan4,s1,a1,se1,k)) && event(StaPTK(aan5,s2,a2,se2,k)) ==> se1 = se2.
+
+(* --- SG8 同一会话不得同时绑定两个不同 AKM --- *)
+query akm1:bitstring, akm2:bitstring, s:bitstring, a:bitstring,
+      se:bitstring, k1:bitstring, k2:bitstring;
+  event(StaPTK(akm1,s,a,se,k1)) && event(StaPTK(akm2,s,a,se,k2)) ==> akm1 = akm2.
 
 (* =====================================================================
    ANA = 4（FILS Shared Key without PFS）：STA
@@ -206,6 +249,7 @@ let sta_sk4(sta:bitstring, ap:bitstring, rmsk:bitstring) =
       let (kaAR:bitstring, gtkR:bitstring) = pl2 in
       if kaAR = hmac(ick, (anR, sn, ap, sta)) then
         event StaFinish4(sta, ap, sess);
+        event StaPTK(aan4, sta, ap, sess, ptk);
         out(c, aead((label_data, probe_tk), tk)).
 
 (* =====================================================================
@@ -241,6 +285,7 @@ let ap_sk4(ap:bitstring, sta:bitstring, rmsk:bitstring) =
       let kaR = adec(ctR, aad, kek) in
       if kaR = hmac(ick, (snR, an, sta, ap)) then
         event ApFinish4(sta, ap, sessR);
+        event ApPTK(aan4, sta, ap, sessR, ptk);
 
         let kaap = hmac(ick, (an, snR, ap, sta)) in
         let aad2 = (ap, sta, an, snR, sessR, rsneR) in
@@ -300,6 +345,7 @@ let sta_sk5(sta:bitstring, ap:bitstring, rmsk:bitstring) =
       let (kaAR:bitstring, gtkR:bitstring) = pl2 in
       if kaAR = hmac(ick, (anR, sn, ap, sta, gaR, gs)) then
         event StaFinish5(sta, ap, sess);
+        event StaPTK(aan5, sta, ap, sess, ptk);
         out(c, aead((label_data, probe_tk), tk)).
 
 (* =====================================================================
@@ -339,6 +385,7 @@ let ap_sk5(ap:bitstring, sta:bitstring, rmsk:bitstring) =
       let kaR = adec(ctR, aad, kek) in
       if kaR = hmac(ick, (snR, an, sta, ap, gsR, ga)) then
         event ApFinish5(sta, ap, sessR);
+        event ApPTK(aan5, sta, ap, sessR, ptk);
 
         let kaap = hmac(ick, (an, snR, ap, sta, ga, gsR)) in
         let aad2 = (ap, sta, an, snR, sessR, rsneR) in
@@ -397,6 +444,7 @@ let sta_sk5c(sta:bitstring, ap:bitstring, pmk:bitstring, pmkid:bitstring) =
       let (kaAR:bitstring, gtkR:bitstring) = pl2 in
       if kaAR = hmac(ick, (anR, sn, ap, sta, gaR, gs)) then
         event StaFinish5C(sta, ap, sess);
+        event StaPTK(aan5, sta, ap, sess, ptk);
         out(c, aead((label_data, probe_tk), tk)).
 
 (* =====================================================================
@@ -436,6 +484,7 @@ let ap_sk5c(ap:bitstring, sta:bitstring, pmk:bitstring, pmkid:bitstring) =
       let kaR = adec(ctR, aad, kek) in
       if kaR = hmac(ick, (snR, an, sta, ap, gsR, ga)) then
         event ApFinish5C(sta, ap, sessR);
+        event ApPTK(aan5, sta, ap, sessR, ptk);
 
         let kaap = hmac(ick, (an, snR, ap, sta, ga, gsR)) in
         let aad2 = (ap, sta, an, snR, sessR, rsneR) in
@@ -446,6 +495,8 @@ let ap_sk5c(ap:bitstring, sta:bitstring, pmk:bitstring, pmkid:bitstring) =
    顶层
    ===================================================================== *)
 process
+  (* ANA=4 / ANA=5 用 ! 无界复制，用于抗重放与单射一致性；
+     ANA=5+缓存使用预置 PMKSA，只跑一次（PMKID 需命中） *)
   (
     ( !sta_sk4(sta1, ap1, eaprp_rmsk1) )
     |

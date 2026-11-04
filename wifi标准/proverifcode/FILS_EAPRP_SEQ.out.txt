@@ -1,0 +1,37 @@
+Process 0 (that is, the initial process):
+{1}new wd1: bitstring;
+{2}out(c, (sta,ap,seq1,wd1));
+{3}in(c, (staA: bitstring,apA: bitstring,seqA: bitstring,wdA: bitstring));
+{4}if (staA = sta) then
+{5}if (apA = ap) then
+{6}if (seqA = seq1) then
+{7}event UsePMK(sessA,kdf(rmsk,label_pmk,(seqA,wdA)));
+{8}out(c, ok);
+{9}in(c, (staB: bitstring,apB: bitstring,seqB: bitstring,wdB: bitstring));
+{10}if (staB = sta) then
+{11}if (apB = ap) then
+{12}if (seqB = seq2) then
+{13}event UsePMK(sessB,kdf(rmsk,label_pmk,(seqB,wdB)))
+
+-- Query event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2
+goal reachable: attacker(wdA_1) -> event(UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_1)))) && event(UsePMK(sessA,kdf(rmsk[],label_pmk,(seq1,wdA_1))))
+goal reachable: attacker(wdB_1) -> event(UsePMK(sessB,kdf(rmsk[],label_pmk,(seq2,wdB_1)))) && event(UsePMK(sessB,kdf(rmsk[],label_pmk,(seq2,wdB_1))))
+RESULT event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 is true.
+-- Query not attacker(rmsk[]) in process 0.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(rmsk[])
+RESULT not attacker(rmsk[]) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 is true.
+
+Query not attacker(rmsk[]) is true.
+
+--------------------------------------------------------------
+

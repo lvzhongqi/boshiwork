@@ -1,0 +1,145 @@
+Process 0 (that is, the initial process):
+(
+    {1}!
+    {2}let sta_1: bitstring = sta in
+    {3}let ap_1: bitstring = ap in
+    {4}let pmk_1: bitstring = pmk in
+    {5}new sn: bitstring;
+    {6}new sess: bitstring;
+    {7}out(c, (sta_1,ap_1,seq1,sn,sess,pmkid));
+    {8}in(c, (apR: bitstring,staR: bitstring,seqR: bitstring,stR: bitstring,anR: bitstring,snR: bitstring,sessR: bitstring));
+    {9}if (apR = ap_1) then
+    {10}if (staR = sta_1) then
+    {11}if (seqR = seq2) then
+    {12}if (stR = st_ok) then
+    {13}if (snR = sn) then
+    {14}if (sessR = sess) then
+    {15}let ptk: bitstring = kdf(pmk_1,label_ptk,(sta_1,ap_1,sn,anR)) in
+    {16}let ick: bitstring = kdf(ptk,label_ick,none) in
+    {17}let ka: bitstring = hmac(ick,(sess,sn,anR,sta_1,ap_1)) in
+    {18}out(c, (sess,ka));
+    {19}in(c, (sessR4: bitstring,stR4: bitstring,kaapR: bitstring));
+    {20}if (sessR4 = sess) then
+    {21}if (stR4 = st_ok) then
+    {22}if (kaapR = hmac(ick,(sess,anR,sn,ap_1,sta_1))) then
+    {23}event StaFinish(sess,ptk);
+    {24}event StaPTK(sta_1,ap_1,sess,ptk)
+) | (
+    {25}!
+    {26}let ap_2: bitstring = ap in
+    {27}let sta_2: bitstring = sta in
+    {28}let pmk_2: bitstring = pmk in
+    {29}in(c, (staR_1: bitstring,apR_1: bitstring,seqR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,pmkidR: bitstring));
+    {30}if (apR_1 = ap_2) then
+    {31}if (staR_1 = sta_2) then
+    {32}if (seqR_1 = seq1) then
+    {33}if (pmkidR = pmkid) then
+    {34}new an: bitstring;
+    {35}let ptk_1: bitstring = kdf(pmk_2,label_ptk,(sta_2,ap_2,snR_1,an)) in
+    {36}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
+    {37}out(c, (ap_2,sta_2,seq2,st_ok,an,snR_1,sessR_1));
+    {38}in(c, (sessR3: bitstring,kaR: bitstring));
+    {39}if (sessR3 = sessR_1) then
+    (
+        {40}if (kaR = hmac(ick_1,(sessR_1,snR_1,an,sta_2,ap_2))) then
+            {41}event ApFinish(sessR_1,ptk_1);
+            {42}event ApPTK(sta_2,ap_2,sessR_1,ptk_1);
+            {43}out(c, (sessR_1,st_ok,hmac(ick_1,(sessR_1,an,snR_1,ap_2,sta_2))))
+        else
+            {44}out(c, (ap_2,sta_2,st_112))
+    )
+    else
+        {45}out(c, (ap_2,sta_2,st_53))
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {1}!
+    {5}new sn: bitstring;
+    {6}new sess: bitstring;
+    {3}let ap_1: bitstring = ap in
+    {2}let sta_1: bitstring = sta in
+    {7}out(c, (sta_1,ap_1,seq1,sn,sess,pmkid));
+    {8}in(c, (apR: bitstring,staR: bitstring,seqR: bitstring,stR: bitstring,anR: bitstring,snR: bitstring,sessR: bitstring));
+    {9}if (apR = ap_1) then
+    {10}if (staR = sta_1) then
+    {11}if (seqR = seq2) then
+    {12}if (stR = st_ok) then
+    {13}if (snR = sn) then
+    {14}if (sessR = sess) then
+    {4}let pmk_1: bitstring = pmk in
+    {15}let ptk: bitstring = kdf(pmk_1,label_ptk,(sta_1,ap_1,sn,anR)) in
+    {16}let ick: bitstring = kdf(ptk,label_ick,none) in
+    {17}let ka: bitstring = hmac(ick,(sess,sn,anR,sta_1,ap_1)) in
+    {18}out(c, (sess,ka));
+    {19}in(c, (sessR4: bitstring,stR4: bitstring,kaapR: bitstring));
+    {20}if (sessR4 = sess) then
+    {21}if (stR4 = st_ok) then
+    {22}if (kaapR = hmac(ick,(sess,anR,sn,ap_1,sta_1))) then
+    {23}event StaFinish(sess,ptk);
+    {24}event StaPTK(sta_1,ap_1,sess,ptk)
+) | (
+    {25}!
+    {29}in(c, (staR_1: bitstring,apR_1: bitstring,seqR_1: bitstring,snR_1: bitstring,sessR_1: bitstring,pmkidR: bitstring));
+    {26}let ap_2: bitstring = ap in
+    {30}if (apR_1 = ap_2) then
+    {27}let sta_2: bitstring = sta in
+    {31}if (staR_1 = sta_2) then
+    {32}if (seqR_1 = seq1) then
+    {33}if (pmkidR = pmkid) then
+    {34}new an: bitstring;
+    {37}out(c, (ap_2,sta_2,seq2,st_ok,an,snR_1,sessR_1));
+    {38}in(c, (sessR3: bitstring,kaR: bitstring));
+    {39}if (sessR3 = sessR_1) then
+    (
+        {28}let pmk_2: bitstring = pmk in
+        {35}let ptk_1: bitstring = kdf(pmk_2,label_ptk,(sta_2,ap_2,snR_1,an)) in
+        {36}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
+        {40}if (kaR = hmac(ick_1,(sessR_1,snR_1,an,sta_2,ap_2))) then
+            {41}event ApFinish(sessR_1,ptk_1);
+            {42}event ApPTK(sta_2,ap_2,sessR_1,ptk_1);
+            {43}out(c, (sessR_1,st_ok,hmac(ick_1,(sessR_1,an,snR_1,ap_2,sta_2))))
+        else
+            {44}out(c, (ap_2,sta_2,st_112))
+    )
+    else
+        {45}out(c, (ap_2,sta_2,st_53))
+)
+
+-- Query event(StaPTK(s,a,se1,k)) && event(StaPTK(s,a,se2,k)) ==> se1 = se2 in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaPTK(s,a,se1,k)) && event(StaPTK(s,a,se2,k)) ==> se1 = se2
+goal reachable: event(StaPTK(sta,ap,sess_1,kdf(pmk[],label_ptk,(sta,ap,sn_1,an_1)))) && event(StaPTK(sta,ap,sess_1,kdf(pmk[],label_ptk,(sta,ap,sn_1,an_1))))
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+an_1 = an[pmkidR = pmkid,sessR_1 = sess_1,snR_1 = sn_1,seqR_1 = seq1,apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+RESULT event(StaPTK(s,a,se1,k)) && event(StaPTK(s,a,se2,k)) ==> se1 = se2 is true.
+-- Query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k))
+goal reachable: b-event(ApPTK(sta,ap,sess_1,kdf(pmk[],label_ptk,(sta,ap,sn_1,an_1)))) -> event(StaPTK(sta,ap,sess_1,kdf(pmk[],label_ptk,(sta,ap,sn_1,an_1))))
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+an_1 = an[pmkidR = pmkid,sessR_1 = sess_1,snR_1 = sn_1,seqR_1 = seq1,apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+RESULT event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) is true.
+-- Query not attacker(pmk[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(pmk[])
+RESULT not attacker(pmk[]) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(StaPTK(s,a,se1,k)) && event(StaPTK(s,a,se2,k)) ==> se1 = se2 is true.
+
+Query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) is true.
+
+Query not attacker(pmk[]) is true.
+
+--------------------------------------------------------------
+

@@ -1,0 +1,124 @@
+Process 0 (that is, the initial process):
+{1}new sn: bitstring;
+{2}new sess: bitstring;
+{3}out(c, (sta,ap,seq1,sn,sess,pmkid));
+{4}in(c, (stR: bitstring,anR: bitstring,snR: bitstring,sessR: bitstring));
+{5}if (snR = sn) then
+{6}if (sessR = sess) then
+{7}if (stR = st_ok) then
+(
+    {8}let ptk: bitstring = kdf(pmk,label_ptk,(sta,ap,sn,anR)) in
+    {9}let ick: bitstring = kdf(ptk,label_ick,none) in
+    {10}let ka: bitstring = hmac(ick,(sess,sn,anR,sta,ap)) in
+    {11}event StaFinish(sess);
+    {12}out(c, (sess,ka,aead((label_data,probe),kdf(ptk,label_data,none))))
+)
+else
+    {13}event StaFallback(stR);
+    {14}out(c, bad_flag);
+    {15}out(c, aead((label_data,probe),old_ptk))
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new sn: bitstring;
+{2}new sess: bitstring;
+{3}out(c, (sta,ap,seq1,sn,sess,pmkid));
+{4}in(c, (stR: bitstring,anR: bitstring,snR: bitstring,sessR: bitstring));
+{5}if (snR = sn) then
+{6}if (sessR = sess) then
+{7}if (stR = st_ok) then
+(
+    {11}event StaFinish(sess);
+    {8}let ptk: bitstring = kdf(pmk,label_ptk,(sta,ap,sn,anR)) in
+    {9}let ick: bitstring = kdf(ptk,label_ick,none) in
+    {10}let ka: bitstring = hmac(ick,(sess,sn,anR,sta,ap)) in
+    {12}out(c, (sess,ka,aead((label_data,probe),kdf(ptk,label_data,none))))
+)
+else
+    {13}event StaFallback(stR);
+    {14}out(c, bad_flag);
+    {15}out(c, aead((label_data,probe),old_ptk))
+
+-- Query not attacker(bad_flag[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(bad_flag[])
+goal reachable: attacker(bad_flag[])
+
+Derivation:
+
+1. The message (sta,ap,seq1,sn[],sess[],pmkid) may be sent to the attacker at output {3}.
+attacker((sta,ap,seq1,sn[],sess[],pmkid)).
+
+2. By 1, the attacker may know (sta,ap,seq1,sn[],sess[],pmkid).
+Using the function 5-proj-6-tuple the attacker may obtain sess[].
+attacker(sess[]).
+
+3. By 1, the attacker may know (sta,ap,seq1,sn[],sess[],pmkid).
+Using the function 4-proj-6-tuple the attacker may obtain sn[].
+attacker(sn[]).
+
+4. The attacker has some term anR_1.
+attacker(anR_1).
+
+5. The attacker has some term stR_1.
+attacker(stR_1).
+
+6. By 5, the attacker may know stR_1.
+By 4, the attacker may know anR_1.
+By 3, the attacker may know sn[].
+By 2, the attacker may know sess[].
+Using the function 4-tuple the attacker may obtain (stR_1,anR_1,sn[],sess[]).
+attacker((stR_1,anR_1,sn[],sess[])).
+
+7. The message (stR_1,anR_1,sn[],sess[]) that the attacker may have by 6 may be received at input {4}.
+We have stR_1 ≠ st_ok.
+So the message bad_flag[] may be sent to the attacker at output {14}.
+attacker(bad_flag[]).
+
+8. By 7, attacker(bad_flag[]).
+The goal is reached, represented in the following fact:
+attacker(bad_flag[]).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new sn: bitstring creating sn_1 at {1}
+
+new sess: bitstring creating sess_1 at {2}
+
+out(c, (~M,~M_1,~M_2,~M_3,~M_4,~M_5)) with ~M = sta, ~M_1 = ap, ~M_2 = seq1, ~M_3 = sn_1, ~M_4 = sess_1, ~M_5 = pmkid at {3}
+
+in(c, (a,a_1,~M_3,~M_4)) with ~M_3 = sn_1, ~M_4 = sess_1 at {4}
+
+event StaFallback(a) at {13}
+
+out(c, ~M_6) with ~M_6 = bad_flag at {14}
+
+out(c, ~M_7) with ~M_7 = aead((label_data,probe),old_ptk) at {15}
+
+The attacker has the message ~M_6 = bad_flag.
+A trace has been found.
+RESULT not attacker(bad_flag[]) is false.
+-- Query not attacker(old_ptk[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(old_ptk[])
+RESULT not attacker(old_ptk[]) is true.
+-- Query not attacker(probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(probe[])
+RESULT not attacker(probe[]) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker(bad_flag[]) is false.
+
+Query not attacker(old_ptk[]) is true.
+
+Query not attacker(probe[]) is true.
+
+--------------------------------------------------------------
+
