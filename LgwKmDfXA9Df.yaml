@@ -5,6 +5,20 @@ log-level: info
 ipv6: true
 
 proxies:
+  # 主节点：VLESS + REALITY
+  - name: ByteVirt-REALITY
+    type: vless
+    server: 69.8.130.17
+    port: 443
+    uuid: "3ca36a3d-9e91-43fb-83bc-462d42da625a"
+    network: tcp
+    tls: true
+    servername: www.microsoft.com
+    flow: xtls-rprx-vision
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: "CDtFr_zyKefRrhj9X9ScJLVaXnGmN8AM6fTIpzZ90TI"
+      short-id: "32b81ab648f976cb"
 
   # 备用节点：IPv6 Shadowsocks
   - name: ByteVirt-SS-IPv6
@@ -22,12 +36,26 @@ proxies:
     cipher: chacha20-ietf-poly1305
     password: "UdjixDkY4pLkXYDSZ4SkvbDngl2W0bmp"
 
+  - name: ByteVirt-Hysteria2
+    type: hysteria2
+    server: 69.8.130.17
+    port: 28888
+    ports: "28888-28999"
+    hop-interval: 30
+    password: "6da86cbb62f078aefe2e7b699e23199ba6be432e07f57f4f7bd6b1574e791dd0"
+    sni: 69.8.130.17
+    skip-cert-verify: false
+    alpn:
+      - h3
+
 
 proxy-groups:
   # 自动故障切换
   - name: ByteVirt-Auto
     type: fallback
     proxies:
+      - ByteVirt-REALITY
+      - ByteVirt-Hysteria2
       - ByteVirt-SS-IPv6
       - ByteVirt-SS-IPv4
     url: "https://www.gstatic.com/generate_204"
@@ -38,6 +66,8 @@ proxy-groups:
     type: select
     proxies:
       - ByteVirt-Auto
+      - ByteVirt-REALITY
+      - ByteVirt-Hysteria2
       - ByteVirt-SS-IPv6
       - ByteVirt-SS-IPv4
       - DIRECT

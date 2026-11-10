@@ -671,43 +671,43 @@
   .eco-traits span{font-size:8.5px;letter-spacing:.05em;padding:4px 8px;border-radius:5px;background:rgba(25,34,45,.05);color:var(--muted);border:1px solid rgba(25,34,45,.07)}
 
   /* Chapter 2 · taxonomy + threat model */
-  .model-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .model-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
   .model-card{
     aspect-ratio:2.2/1;
-    padding:24px 26px;
+    padding:18px 20px;
     display:grid;
-    grid-template-columns:1.55fr .95fr;
-    gap:22px;
+    grid-template-columns:1.5fr 1fr;
+    gap:16px;
   }
   .model-main{display:flex;flex-direction:column;min-width:0}
   .model-type{
-    display:flex;align-items:center;justify-content:space-between;
-    font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-family:var(--mono);font-size:16px;letter-spacing:.04em;text-transform:uppercase;
     color:var(--muted);
   }
-  .model-type b{font-size:11px;color:var(--red)}
+  .model-type b{font-size:16px;color:var(--red)}
   .model-card.teal .model-type b{color:var(--teal)}
   .model-card.gold .model-type b{color:var(--gold)}
-  .model-card h3{margin-top:13px;font-size:24px;line-height:1.2;letter-spacing:-.02em}
-  .model-en{margin-top:5px;font-family:var(--mono);font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
-  .model-main p{margin-top:13px;font-size:11.5px;line-height:1.68;color:var(--muted)}
+  .model-card h3{margin-top:8px;font-size:28px;line-height:1.2;letter-spacing:-.02em}
+  .model-en{margin-top:4px;font-family:var(--mono);font-size:16px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}
+  .model-main p{margin-top:8px;font-size:16px;line-height:1.5;color:var(--muted)}
   .model-side{
     border-left:1px dashed rgba(25,34,45,.16);
-    padding-left:20px;
-    display:flex;flex-direction:column;justify-content:center;gap:9px;
+    padding-left:14px;
+    display:flex;flex-direction:column;justify-content:center;gap:8px;
     min-width:0;
   }
-  .model-side .side-label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .model-side .side-value{font-size:10.5px;line-height:1.55;color:var(--ink-2)}
+  .model-side .side-label{font-family:var(--mono);font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .model-side .side-value{font-size:16px;line-height:1.4;color:var(--ink-2)}
   .model-traits{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
-  .model-traits span{font-size:8px;letter-spacing:.04em;padding:3px 7px;border-radius:5px;background:rgba(25,34,45,.05);color:var(--muted);border:1px solid rgba(25,34,45,.07)}
-  .model-foot{margin-top:auto;padding-top:10px;border-top:1px dashed rgba(25,34,45,.13);font-size:10px;line-height:1.45;color:var(--muted)}
-  .model-foot b{font-family:var(--mono);font-size:8px;letter-spacing:.11em;text-transform:uppercase;color:var(--red);margin-right:6px}
+  .model-traits span{font-size:16px;letter-spacing:0;padding:2px 7px;border-radius:5px;background:rgba(25,34,45,.05);color:var(--muted);border:1px solid rgba(25,34,45,.07)}
+  .model-foot{margin-top:auto;padding-top:8px;border-top:1px dashed rgba(25,34,45,.13);font-size:16px;line-height:1.4;color:var(--muted)}
+  .model-foot b{font-family:var(--mono);font-size:16px;letter-spacing:.05em;text-transform:uppercase;color:var(--red);margin-right:6px}
   .model-card.teal .model-foot b{color:var(--teal)}
   .model-card.gold .model-foot b{color:var(--gold)}
   .model-ghost{
     position:absolute;right:12px;bottom:-14px;
-    font-family:var(--serif);font-size:118px;line-height:1;font-style:italic;font-weight:500;
+    font-family:var(--serif);font-size:104px;line-height:1;font-style:italic;font-weight:500;
     letter-spacing:-.06em;color:rgba(25,34,45,.045);pointer-events:none;
   }
   .model-card > *:not(.model-ghost){position:relative;z-index:1}
@@ -720,9 +720,9 @@
   .threat-card .model-side{border-left-color:rgba(245,240,230,.18);justify-content:flex-start;gap:8px}
   .threat-card .side-label{color:rgba(245,240,230,.42)}
   .threat-card .side-value{color:rgba(245,240,230,.78)}
-  .threat-rows{display:flex;flex-direction:column;gap:7px}
-  .threat-rows > div b{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.13em;text-transform:uppercase;color:#ee755d;margin-bottom:1px}
-  .threat-rows > div span{display:block;font-size:10px;line-height:1.45;color:rgba(245,240,230,.74)}
+  .threat-rows{display:flex;flex-direction:column;gap:8px}
+  .threat-rows > div b{display:block;font-family:var(--mono);font-size:16px;letter-spacing:.05em;text-transform:uppercase;color:#ee755d;margin-bottom:1px}
+  .threat-rows > div span{display:block;font-size:16px;line-height:1.4;color:rgba(245,240,230,.74)}
   .threat-card .model-ghost{color:rgba(245,240,230,.05)}
   .threat-card .model-foot{border-top-color:rgba(245,240,230,.16);color:rgba(245,240,230,.56)}
   .threat-card .model-foot b{color:#ee755d}
@@ -732,83 +732,83 @@
   .atk3-card{
     position:relative;
     aspect-ratio:3/4;
-    padding:30px 28px 24px;
+    padding:24px 22px 18px;
     display:flex;flex-direction:column;
     overflow:hidden;
   }
   .a3-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-  .a3-kicker{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:700}
+  .a3-kicker{font-family:var(--mono);font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--red);font-weight:700}
   .atk3-card.gold .a3-kicker{color:var(--gold)}
   .atk3-card.teal .a3-kicker{color:var(--teal)}
-  .a3-count{font-family:var(--serif);font-style:italic;font-size:52px;line-height:.9;color:rgba(25,34,45,.13)}
-  .atk3-card h3{margin-top:6px;font-size:30px;line-height:1.2;letter-spacing:-.02em}
-  .a3-en{margin-top:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-  .a3-principle{margin-top:18px;font-size:14.5px;line-height:1.8;color:var(--muted)}
-  .a3-rule{margin:20px 0 18px;border-top:1px dashed rgba(25,34,45,.15)}
-  .a3-list{display:flex;flex-direction:column;gap:9px}
-  .a3-item .n{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;color:var(--red);margin-right:5px}
+  .a3-count{font-family:var(--serif);font-style:italic;font-size:44px;line-height:.9;color:rgba(25,34,45,.13)}
+  .atk3-card h3{margin-top:2px;font-size:30px;line-height:1.2;letter-spacing:-.02em}
+  .a3-en{margin-top:4px;font-family:var(--mono);font-size:16px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}
+  .a3-principle{margin-top:14px;font-size:16px;line-height:1.55;color:var(--muted)}
+  .a3-rule{margin:16px 0 14px;border-top:1px dashed rgba(25,34,45,.15)}
+  .a3-list{display:flex;flex-direction:column;gap:8px}
+  .a3-item .n{font-family:var(--mono);font-size:16px;letter-spacing:.02em;color:var(--red);margin-right:5px}
   .atk3-card.gold .a3-item .n{color:var(--gold)}
   .atk3-card.teal .a3-item .n{color:var(--teal)}
-  .a3-item b{display:block;font-size:10.5px;line-height:1.35;font-weight:800;color:var(--ink)}
-  .a3-item > span{display:block;margin-top:2px;font-size:9.5px;line-height:1.45;color:var(--muted)}
-  .a3-foot{margin-top:auto;padding-top:14px;border-top:1px dashed rgba(25,34,45,.15);font-size:12px;line-height:1.55;color:var(--muted)}
-  .a3-foot b{display:block;margin-bottom:3px;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);font-weight:700}
+  .a3-item b{display:block;font-size:16px;line-height:1.35;font-weight:800;color:var(--ink)}
+  .a3-item > span{display:block;margin-top:2px;font-size:16px;line-height:1.45;color:var(--muted)}
+  .a3-foot{margin-top:auto;padding-top:12px;border-top:1px dashed rgba(25,34,45,.15);font-size:16px;line-height:1.4;color:var(--muted)}
+  .a3-foot b{display:block;margin-bottom:2px;font-family:var(--mono);font-size:16px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);font-weight:700}
 
-  .atk4-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .atk4-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
   .atk4-card{
     position:relative;
     aspect-ratio:2.15/1;
-    padding:24px 26px;
+    padding:18px 20px;
     display:grid;grid-template-rows:auto 1fr auto;
     overflow:hidden;
   }
   .a4-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .a4-left{display:flex;align-items:center;gap:9px}
+  .a4-left{display:flex;align-items:center;gap:8px}
   .a4-no{font-family:var(--serif);font-style:italic;font-size:30px;line-height:1;color:rgba(25,34,45,.2)}
-  .a4-layer{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);font-weight:700}
+  .a4-layer{font-family:var(--mono);font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--red);font-weight:700}
   .atk4-card.gui .a4-layer{color:var(--gold)}
-  .a4-stat{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--ink-2);background:rgba(216,79,56,.07);border:1px solid rgba(216,79,56,.2);padding:4px 8px;border-radius:999px;white-space:nowrap}
+  .a4-stat{font-family:var(--mono);font-size:16px;letter-spacing:.02em;color:var(--ink-2);background:rgba(216,79,56,.07);border:1px solid rgba(216,79,56,.2);padding:4px 8px;border-radius:999px;white-space:nowrap}
   .atk4-card.gui .a4-stat{background:rgba(168,121,50,.08);border-color:rgba(168,121,50,.24)}
-  .a4-body{display:grid;grid-template-columns:1.4fr .92fr;gap:18px;min-height:0;margin-top:4px}
+  .a4-body{display:grid;grid-template-columns:1.35fr .95fr;gap:16px;min-height:0;margin-top:2px}
   .a4-main{display:flex;flex-direction:column;min-width:0}
-  .atk4-card h3{margin-top:8px;font-size:30px;line-height:1.2;letter-spacing:-.02em}
-  .a4-cn{margin-top:6px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
-  .atk4-card p{margin-top:12px;font-size:15.5px;line-height:1.85;color:var(--muted)}
-  .a4-side{border-left:1px dashed rgba(25,34,45,.16);padding-left:16px;display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:0}
-  .a4-side-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2px}
+  .atk4-card h3{margin-top:2px;font-size:28px;line-height:1.2;letter-spacing:-.02em}
+  .a4-cn{margin-top:2px;font-size:16px;letter-spacing:.02em;color:var(--muted)}
+  .atk4-card p{margin-top:6px;font-size:16px;line-height:1.5;color:var(--muted)}
+  .a4-side{border-left:1px dashed rgba(25,34,45,.16);padding-left:14px;display:flex;flex-direction:column;justify-content:center;gap:7px;min-width:0}
+  .a4-side-label{font-family:var(--mono);font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:0}
   .a4-srow{display:flex;gap:7px;align-items:flex-start}
-  .a4-srow i{flex:none;margin-top:1px;width:18px;height:18px;border-radius:50%;border:1px solid rgba(216,79,56,.35);display:grid;place-items:center;font-family:var(--mono);font-style:normal;font-size:8px;color:var(--red)}
+  .a4-srow i{flex:none;margin-top:1px;width:24px;height:24px;border-radius:50%;border:1px solid rgba(216,79,56,.35);display:grid;place-items:center;font-family:var(--mono);font-style:normal;font-size:16px;color:var(--red)}
   .atk4-card.gui .a4-srow i{border-color:rgba(168,121,50,.4);color:var(--gold)}
-  .a4-srow b{display:block;font-size:13px;line-height:1.4;color:var(--ink)}
-  .a4-srow span{display:block;font-size:12px;line-height:1.55;color:var(--muted)}
-  .a4-observed{margin-top:0;padding-top:10px;border-top:1px dashed rgba(25,34,45,.13);font-size:12.5px;line-height:1.55;color:var(--muted)}
-  .a4-observed b{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-right:5px}
+  .a4-srow b{display:block;font-size:16px;line-height:1.3;color:var(--ink)}
+  .a4-srow span{display:block;font-size:16px;line-height:1.35;color:var(--muted)}
+  .a4-observed{margin-top:0;padding-top:8px;border-top:1px dashed rgba(25,34,45,.13);font-size:16px;line-height:1.4;color:var(--muted)}
+  .a4-observed b{font-family:var(--mono);font-size:16px;letter-spacing:.05em;text-transform:uppercase;color:var(--red);margin-right:6px}
   .atk4-card.gui .a4-observed b{color:var(--gold)}
 
-  .a3-flow{margin-top:15px;display:flex;flex-direction:column}
-  .a3-node{position:relative;margin-left:5px;padding:0 0 16px 24px;border-left:1px solid rgba(25,34,45,.16)}
+  .a3-flow{margin-top:12px;display:flex;flex-direction:column}
+  .a3-node{position:relative;margin-left:5px;padding:0 0 10px 22px;border-left:1px solid rgba(25,34,45,.16)}
   .a3-node:last-child{padding-bottom:0;border-left-color:transparent}
-  .a3-node::before{content:"";position:absolute;left:-4px;top:3px;width:7px;height:7px;border-radius:50%;background:var(--red)}
+  .a3-node::before{content:"";position:absolute;left:-4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--red)}
   .atk3-card.gold .a3-node::before{background:var(--gold)}
   .atk3-card.teal .a3-node::before{background:var(--teal)}
-  .a3-node b{display:block;font-size:13px;line-height:1.3;color:var(--ink)}
-  .a3-node span{display:block;margin-top:2px;font-size:11.5px;line-height:1.55;color:var(--muted)}
-  .a3-stats{display:flex;gap:16px;margin-top:14px;padding-top:11px;border-top:1px dashed rgba(25,34,45,.13)}
+  .a3-node b{display:block;font-size:16px;line-height:1.3;color:var(--ink)}
+  .a3-node span{display:block;margin-top:1px;font-size:16px;line-height:1.4;color:var(--muted)}
+  .a3-stats{display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px dashed rgba(25,34,45,.13)}
   .a3-stats b{display:block;font-family:var(--serif);font-size:20px;line-height:1;color:var(--ink)}
-  .a3-stats span{display:block;margin-top:3px;font-size:8px;color:var(--muted);line-height:1.35}
-  .a3-note{margin-top:16px;font-size:12px;line-height:1.65;color:var(--muted)}
-  .a3-note b{display:block;margin-bottom:2px;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);font-weight:700}
-  .a3-impact{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
-  .a3-impact span{font-size:8.5px;padding:3px 8px;border-radius:5px;background:rgba(14,113,105,.07);border:1px solid rgba(14,113,105,.2);color:var(--teal)}
-  .a3-ghost{position:absolute;right:14px;bottom:0;font-family:var(--serif);font-style:italic;font-weight:500;font-size:104px;line-height:1;letter-spacing:-.06em;color:rgba(14,113,105,.075);pointer-events:none}
+  .a3-stats span{display:block;margin-top:3px;font-size:16px;color:var(--muted);line-height:1.3}
+  .a3-note{margin-top:14px;font-size:16px;line-height:1.45;color:var(--muted)}
+  .a3-note b{display:block;margin-bottom:2px;font-family:var(--mono);font-size:16px;letter-spacing:.05em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  .a3-impact{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .a3-impact span{font-size:16px;padding:2px 8px;border-radius:5px;background:rgba(14,113,105,.07);border:1px solid rgba(14,113,105,.2);color:var(--teal)}
+  .a3-ghost{position:absolute;right:12px;bottom:0;font-family:var(--serif);font-style:italic;font-weight:500;font-size:96px;line-height:1;letter-spacing:-.06em;color:rgba(14,113,105,.075);pointer-events:none}
   .atk3-card > *:not(.a3-ghost){position:relative;z-index:1}
 
-  .a3-cn{margin-top:4px;font-size:10.5px;letter-spacing:.05em;color:var(--muted)}
-  .d-steps{margin-top:18px;display:flex;flex-direction:column;gap:11px}
-  .d-step{position:relative;padding-left:24px}
-  .d-step i{position:absolute;left:0;top:0;width:17px;height:17px;border-radius:50%;border:1px solid rgba(14,113,105,.4);display:grid;place-items:center;font-family:var(--mono);font-style:normal;font-size:7px;color:var(--teal)}
-  .d-step span{display:block;font-size:10px;line-height:1.5;color:var(--muted)}
-  .d-step b{display:block;font-size:10.5px;line-height:1.35;color:var(--ink);margin-bottom:2px}
+  .a3-cn{margin-top:4px;font-size:16px;letter-spacing:.02em;color:var(--muted)}
+  .d-steps{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .d-step{position:relative;padding-left:32px}
+  .d-step i{position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;border:1px solid rgba(14,113,105,.4);display:grid;place-items:center;font-family:var(--mono);font-style:normal;font-size:16px;color:var(--teal)}
+  .d-step span{display:block;font-size:16px;line-height:1.4;color:var(--muted)}
+  .d-step b{display:block;font-size:16px;line-height:1.35;color:var(--ink);margin-bottom:1px}
 
   .pull-quote{
     margin-top:16px;
@@ -1216,15 +1216,15 @@
   .impact-card.teal{background:linear-gradient(180deg,rgba(14,113,105,.08),rgba(255,253,248,.62) 48%)}
 
   /* Contributions */
-  .contrib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .contrib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
   .contrib-card{
     position:relative;
-    aspect-ratio:1/1;
-    padding:26px 28px 22px;
+    aspect-ratio:3/4;
+    padding:28px 24px 22px;
     border-radius:16px;
     border:1px solid rgba(25,34,45,.12);
     background:linear-gradient(165deg,rgba(255,253,248,.96),rgba(255,253,248,.6));
-    display:flex;flex-direction:column;
+    display:flex;flex-direction:column;justify-content:space-between;
     overflow:hidden;
     box-shadow:0 12px 34px rgba(25,34,45,.05);
   }
@@ -1232,39 +1232,39 @@
   .contrib-card.gold::before{background:var(--gold)}
   .contrib-card.teal::before{background:var(--teal)}
   .contrib-ghost{
-    position:absolute;right:16px;bottom:2px;
-    font-family:var(--serif);font-size:150px;line-height:1;font-style:italic;font-weight:500;
+    position:absolute;right:14px;bottom:0;
+    font-family:var(--serif);font-size:118px;line-height:1;font-style:italic;font-weight:500;
     letter-spacing:-.06em;color:rgba(25,34,45,.045);
     pointer-events:none;
   }
   .contrib-card > *:not(.contrib-ghost){position:relative;z-index:1}
   .contrib-top{
     display:flex;align-items:center;justify-content:space-between;
-    font-family:var(--mono);font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;
+    font-family:var(--mono);font-size:16px;letter-spacing:.04em;text-transform:uppercase;
     color:var(--muted);
   }
-  .contrib-top .idx{color:var(--red);font-size:10px;font-weight:700}
+  .contrib-top .idx{color:var(--red);font-size:16px;font-weight:700}
   .contrib-card.gold .contrib-top .idx{color:var(--gold)}
   .contrib-card.teal .contrib-top .idx{color:var(--teal)}
-  .contrib-card h3{margin-top:22px;font-size:27px;line-height:1.2;letter-spacing:-.02em}
-  .contrib-card .sub{margin-top:7px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-  .contrib-card p{margin-top:15px;min-height:69px;font-size:13px;line-height:1.75;color:var(--muted)}
+  .contrib-card h3{margin-top:16px;font-size:32px;line-height:1.2;letter-spacing:-.02em}
+  .contrib-card .sub{margin-top:8px;font-family:var(--mono);font-size:16px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}
+  .contrib-card p{margin-top:16px;font-size:17px;line-height:1.7;color:var(--muted)}
   .contrib-metrics{
-    margin-top:18px;padding:12px 0;
+    margin-top:22px;padding:16px 0;
     display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
     border-top:1px solid rgba(25,34,45,.1);
     border-bottom:1px solid rgba(25,34,45,.1);
   }
-  .contrib-metrics b{display:block;font-family:var(--serif);font-size:23px;line-height:1;font-weight:600;color:var(--ink)}
-  .contrib-metrics b.txt{font-family:var(--sans);font-size:14px;line-height:1.35;font-weight:800}
-  .contrib-metrics span{display:block;margin-top:5px;font-size:8.5px;letter-spacing:.07em;color:var(--muted)}
-  .contrib-points{margin-top:16px;display:flex;flex-direction:column;gap:7px}
-  .contrib-points div{position:relative;padding-left:15px;font-size:11px;line-height:1.5;color:var(--muted)}
-  .contrib-points div::before{content:"→";position:absolute;left:0;color:var(--red);font-size:9px}
+  .contrib-metrics b{display:block;font-family:var(--serif);font-size:28px;line-height:1;font-weight:600;color:var(--ink)}
+  .contrib-metrics b.txt{font-family:var(--sans);font-size:17px;line-height:1.35;font-weight:800}
+  .contrib-metrics span{display:block;margin-top:6px;font-size:16px;letter-spacing:0;line-height:1.3;color:var(--muted)}
+  .contrib-points{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+  .contrib-points div{position:relative;padding-left:20px;font-size:17px;line-height:1.55;color:var(--muted)}
+  .contrib-points div::before{content:"→";position:absolute;left:0;color:var(--red);font-size:16px}
   .contrib-card.gold .contrib-points div::before{color:var(--gold)}
   .contrib-card.teal .contrib-points div::before{color:var(--teal)}
-  .contrib-note{margin-top:auto;padding-top:13px;border-top:1px dashed rgba(25,34,45,.14);display:flex;align-items:center;gap:9px;font-size:10.5px;color:var(--ink-2)}
-  .contrib-note b{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+  .contrib-note{margin-top:0;padding-top:16px;border-top:1px dashed rgba(25,34,45,.14);display:flex;align-items:center;gap:8px;font-size:16px;color:var(--ink-2)}
+  .contrib-note b{font-family:var(--mono);font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--red)}
   .contrib-card.gold .contrib-note b{color:var(--gold)}
   .contrib-card.teal .contrib-note b{color:var(--teal)}
 
@@ -1536,7 +1536,6 @@
       <div class="head">
         <div class="kicker reveal">01 · Introduction <span class="cn">第一章 · 主要贡献</span></div>
         <h2 class="reveal d1">三项核心贡献：从“首次刻画”到<em>可复现评测</em></h2>
-        <p class="lead reveal d2">论文的贡献不止于“发现漏洞”，而是建立了从能力刻画、攻击面抽象到真实评测的完整链路。</p>
       </div>
 
       <div class="body">
@@ -1546,7 +1545,7 @@
             <div class="contrib-top"><span class="idx">C 01</span><span>Characterization</span></div>
             <h3>系统刻画</h3>
             <div class="sub">First cross-form characterization</div>
-            <p>首次在同一框架下拆解系统级、第三方与框架型 Agent；将工作流抽象为 LLM / GUI / System 三层，识别 11 个攻击面。</p>
+            <p>首次在同一框架下拆解系统级、第三方与框架型 Agent，并把执行流程抽象为三层。</p>
             <div class="contrib-metrics">
               <div><b>3</b><span>部署形态</span></div>
               <div><b>3</b><span>能力层</span></div>
@@ -1565,7 +1564,7 @@
             <div class="contrib-top"><span class="idx">C 02</span><span>Framework</span></div>
             <h3>分析框架</h3>
             <div class="sub">AgentScan · semi-automated framework</div>
-            <p>设计并实现半自动安全测试框架：统一任务执行、攻击注入与行为观测，支持扩展攻击能力，并在真实设备上复现跨层攻击。</p>
+            <p>设计并实现半自动安全测试框架：统一任务执行、攻击注入与行为观测，并在真实设备上复现跨层攻击。</p>
             <div class="contrib-metrics">
               <div><b class="txt">半自动</b><span>测试模式</span></div>
               <div><b class="txt">3 类</b><span>注入方式</span></div>
@@ -1583,8 +1582,8 @@
             <div class="contrib-ghost">03</div>
             <div class="contrib-top"><span class="idx">C 03</span><span>Evaluation</span></div>
             <h3>真实评测</h3>
-            <div class="sub">9 agents in the wild · responsible disclosure</div>
-            <p>用 AgentScan 评测 9 款在野 Agent：全部存在可利用漏洞，最高暴露 8 / 11 个攻击面；发现已通过负责任披露反馈给两家 OEM。</p>
+            <div class="sub">9 agents in the wild</div>
+            <p>用 AgentScan 评测 9 款在野 Agent：全部存在可利用漏洞，最高暴露 8 / 11 个攻击面，且已负责任披露。</p>
             <div class="contrib-metrics">
               <div><b>9/9</b><span>Agent 中招</span></div>
               <div><b>8/11</b><span>最高暴露</span></div>
@@ -1599,7 +1598,7 @@
           </article>
         </div>
 
-        <div class="insight-banner reveal d5" style="margin-top:16px"><b>一句话总结：</b>首个覆盖三类移动 LLM Agent 的系统性安全研究——既给出攻击面地图，也给出可复用的评测基线与防御建议。</div>
+        <div class="insight-banner reveal d5" style="margin-top:12px;padding:10px 16px;font-size:16px"><b>一句话总结：</b>首个覆盖三类移动 LLM Agent 的系统性安全研究——既给出攻击面地图，也给出可复用的评测基线与防御建议。</div>
       </div>
 
       <div class="footer">
@@ -1703,9 +1702,9 @@
             </div>
             <div class="model-side">
               <div class="threat-rows">
-                <div><b>Precondition</b><span>控制普通第三方 App，可诱导授予悬浮窗等权限</span></div>
+                <div><b>Precondition</b><span>控制普通第三方 App，诱导授予悬浮窗权限</span></div>
                 <div><b>Capability</b><span>注入误导输入 · 覆盖 UI · 触发非预期动作</span></div>
-                <div><b>Goal</b><span>操纵 Agent 行为，或窃取用户数据</span></div>
+                <div><b>Goal</b><span>操纵 Agent 行为或窃取数据</span></div>
               </div>
             </div>
           </article>
@@ -2080,16 +2079,15 @@
             <div class="a3-top"><div class="a3-kicker">系统层</div><div class="a3-count">01</div></div>
             <h3>包名伪造</h3>
             <div class="a3-cn">同名包与图标仿冒</div>
-            <p class="a3-principle">注册与合法 App 相同的包名与图标，利用 Agent 只按包名启动、缺少签名与身份校验的缺陷，让恶意克隆接管后续交互。</p>
+            <p class="a3-principle">注册与合法 App 相同的包名与图标，利用 Agent 只按包名启动、缺少签名校验的缺陷，让恶意克隆接管交互。</p>
             <div class="a3-rule"></div>
             <div class="d-steps">
               <div class="d-step"><i>1</i><span><b>注册同名包</b>复制合法 App 的包名、图标与名称</span></div>
               <div class="d-step"><i>2</i><span><b>诱导启动</b>Agent 按包名或视觉线索选择应用</span></div>
               <div class="d-step"><i>3</i><span><b>接管操作</b>恶意克隆接收并记录后续交互</span></div>
             </div>
-            <div class="a3-note"><b>前置条件</b>目标 Agent 通过包名或视觉线索启动应用，且未校验签名。</div>
+            <div class="a3-note"><b>前置条件</b>目标 Agent 按包名或视觉线索启动应用，未校验签名。</div>
             <div class="a3-impact"><span>应用劫持</span><span>凭据窃取</span></div>
-            <div class="a3-note"><b>为什么有效</b>系统 Intent 只按包名寻址，缺少签名与来源校验，Agent 无法区分同名应用。</div>
             <div class="a3-foot"><b>影响</b>仿冒应用可长期驻留，持续窃取操作与凭据。</div>
           </article>
 
@@ -2107,7 +2105,6 @@
             </div>
             <div class="a3-note"><b>前置条件</b>目标使用可被覆盖的 URI 跳转，且未校验最终页面。</div>
             <div class="a3-impact"><span>钓鱼跳转</span><span>参数泄漏</span></div>
-            <div class="a3-note"><b>为什么有效</b>URI 跳转默认信任调用方，Agent 不校验最终落地页与参数归属。</div>
             <div class="a3-foot"><b>影响</b>Agent 被引向钓鱼页面，敏感参数随 URL 一并泄漏。</div>
           </article>
 
@@ -2125,7 +2122,6 @@
             </div>
             <div class="a3-note"><b>前置条件</b>Agent 将运行时状态写入其他应用可读取的日志。</div>
             <div class="a3-impact"><span>上下文重建</span><span>隐私外泄</span></div>
-            <div class="a3-note"><b>为什么有效</b>日志对同用户应用可读，Agent 又把完整上下文写入 logcat。</div>
             <div class="a3-foot"><b>影响</b>攻击者无需接触设备，即可还原任务与界面状态。</div>
           </article>
         </div>
