@@ -1,0 +1,929 @@
+Linear part:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Completing equations...
+Completed equations:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Convergent part: No equation.
+Process 0 (that is, the initial process):
+{1}new skS: bitstring;
+{2}new skA: bitstring;
+{3}let pkS: bitstring = pk(skS) in
+{4}let pkA: bitstring = pk(skA) in
+{5}out(c, pkS);
+{6}out(c, pkA);
+(
+    {7}!
+    {8}let sta_1: bitstring = sta in
+    {9}let ap_1: bitstring = ap in
+    {10}let skS_1: bitstring = skS in
+    {11}new sn: bitstring;
+    {12}new sS: bitstring;
+    {13}let gs: bitstring = exp(g,sS) in
+    {14}new sess: bitstring;
+    {15}out(c, (sta_1,ap_1,gs,sn,sess));
+    {16}in(c, (apR: bitstring,staR: bitstring,gaR: bitstring,snR: bitstring,sessR: bitstring,anR: bitstring));
+    {17}if (apR = ap_1) then
+    {18}if (staR = sta_1) then
+    {19}if (snR = sn) then
+    {20}if (sessR = sess) then
+    {21}if (dh_ok(gaR) = dh_valid) then
+    {22}let dhss: bitstring = exp(gaR,sS) in
+    {23}let pmk: bitstring = hmac((sn,anR),dhss) in
+    {24}let ptk: bitstring = kdf(pmk,label_ptk,(sta_1,ap_1,sn,anR,sess)) in
+    {25}let ick: bitstring = kdf(ptk,label_ick,none) in
+    {26}let kek: bitstring = kdf(ptk,label_kek,none) in
+    {27}let tk: bitstring = kdf(ptk,label_tk,none) in
+    {28}let ka: bitstring = sign((sn,anR,sta_1,ap_1,sess),skS_1) in
+    {29}let aad: bitstring = (sta_1,ap_1,sn,anR,sess) in
+    {30}let ct: bitstring = aead((aad,ka),kek) in
+    {31}event StaStart(sta_1,ap_1,sess);
+    {32}out(c, (sta_1,ap_1,sess,ct));
+    {33}in(c, (ap2R: bitstring,sta2R: bitstring,sess2R: bitstring,ct2R: bitstring));
+    {34}if (ap2R = ap_1) then
+    {35}if (sta2R = sta_1) then
+    {36}if (sess2R = sess) then
+    {37}let aad2: bitstring = (ap_1,sta_1,anR,sn,sess) in
+    {38}let pl2: bitstring = adec(ct2R,aad2,kek) in
+    {39}let kaAR: bitstring = pl2 in
+    {40}if (checksign(kaAR,pkA) = (anR,sn,ap_1,sta_1,sess)) then
+    {41}event StaFinish(sta_1,ap_1,sess);
+    {42}event StaPTK(sta_1,ap_1,sess,ptk);
+    {43}out(c, aead((label_data,probe_tk),tk))
+) | (
+    {44}!
+    {45}let ap_2: bitstring = ap in
+    {46}let sta_2: bitstring = sta in
+    {47}let skA_1: bitstring = skA in
+    {48}in(c, (staR_1: bitstring,apR_1: bitstring,gsR: bitstring,snR_1: bitstring,sessR_1: bitstring));
+    {49}if (apR_1 = ap_2) then
+    {50}if (staR_1 = sta_2) then
+    {51}if (dh_ok(gsR) = dh_valid) then
+    {52}new an: bitstring;
+    {53}new sA: bitstring;
+    {54}let ga: bitstring = exp(g,sA) in
+    {55}let dhss_1: bitstring = exp(gsR,sA) in
+    {56}let pmk_1: bitstring = hmac((snR_1,an),dhss_1) in
+    {57}let ptk_1: bitstring = kdf(pmk_1,label_ptk,(sta_2,ap_2,snR_1,an,sessR_1)) in
+    {58}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
+    {59}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
+    {60}let tk_1: bitstring = kdf(ptk_1,label_tk,none) in
+    {61}out(c, (ap_2,sta_2,ga,snR_1,sessR_1,an));
+    {62}in(c, (sta2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,ctR: bitstring));
+    {63}if (sta2R_1 = sta_2) then
+    {64}if (ap2R_1 = ap_2) then
+    {65}if (sess2R_1 = sessR_1) then
+    {66}let aad_1: bitstring = (sta_2,ap_2,snR_1,an,sessR_1) in
+    {67}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
+    {68}if (checksign(kaR,pkS) = (snR_1,an,sta_2,ap_2,sessR_1)) then
+    {69}event ApFinish(sta_2,ap_2,sessR_1);
+    {70}event ApPTK(sta_2,ap_2,sessR_1,ptk_1);
+    {71}let kaap: bitstring = sign((an,snR_1,ap_2,sta_2,sessR_1),skA_1) in
+    {72}let aad2_1: bitstring = (ap_2,sta_2,an,snR_1,sessR_1) in
+    {73}let ct2: bitstring = aead((aad2_1,kaap),kek_1) in
+    {74}out(c, (ap_2,sta_2,sessR_1,ct2))
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new skS: bitstring;
+{2}new skA: bitstring;
+{3}let pkS: bitstring = pk(skS) in
+{5}out(c, pkS);
+{4}let pkA: bitstring = pk(skA) in
+{6}out(c, pkA);
+(
+    {7}!
+    {11}new sn: bitstring;
+    {12}new sS: bitstring;
+    {14}new sess: bitstring;
+    {13}let gs: bitstring = exp(g,sS) in
+    {9}let ap_1: bitstring = ap in
+    {8}let sta_1: bitstring = sta in
+    {15}out(c, (sta_1,ap_1,gs,sn,sess));
+    {16}in(c, (apR: bitstring,staR: bitstring,gaR: bitstring,snR: bitstring,sessR: bitstring,anR: bitstring));
+    {17}if (apR = ap_1) then
+    {18}if (staR = sta_1) then
+    {19}if (snR = sn) then
+    {20}if (sessR = sess) then
+    {21}if (dh_ok(gaR) = dh_valid) then
+    {31}event StaStart(sta_1,ap_1,sess);
+    {29}let aad: bitstring = (sta_1,ap_1,sn,anR,sess) in
+    {10}let skS_1: bitstring = skS in
+    {28}let ka: bitstring = sign((sn,anR,sta_1,ap_1,sess),skS_1) in
+    {22}let dhss: bitstring = exp(gaR,sS) in
+    {23}let pmk: bitstring = hmac((sn,anR),dhss) in
+    {24}let ptk: bitstring = kdf(pmk,label_ptk,(sta_1,ap_1,sn,anR,sess)) in
+    {26}let kek: bitstring = kdf(ptk,label_kek,none) in
+    {30}let ct: bitstring = aead((aad,ka),kek) in
+    {32}out(c, (sta_1,ap_1,sess,ct));
+    {33}in(c, (ap2R: bitstring,sta2R: bitstring,sess2R: bitstring,ct2R: bitstring));
+    {34}if (ap2R = ap_1) then
+    {35}if (sta2R = sta_1) then
+    {36}if (sess2R = sess) then
+    {37}let aad2: bitstring = (ap_1,sta_1,anR,sn,sess) in
+    {38}let pl2: bitstring = adec(ct2R,aad2,kek) in
+    {39}let kaAR: bitstring = pl2 in
+    {40}if (checksign(kaAR,pkA) = (anR,sn,ap_1,sta_1,sess)) then
+    {41}event StaFinish(sta_1,ap_1,sess);
+    {42}event StaPTK(sta_1,ap_1,sess,ptk);
+    {27}let tk: bitstring = kdf(ptk,label_tk,none) in
+    {43}out(c, aead((label_data,probe_tk),tk))
+) | (
+    {44}!
+    {48}in(c, (staR_1: bitstring,apR_1: bitstring,gsR: bitstring,snR_1: bitstring,sessR_1: bitstring));
+    {45}let ap_2: bitstring = ap in
+    {49}if (apR_1 = ap_2) then
+    {46}let sta_2: bitstring = sta in
+    {50}if (staR_1 = sta_2) then
+    {51}if (dh_ok(gsR) = dh_valid) then
+    {52}new an: bitstring;
+    {53}new sA: bitstring;
+    {54}let ga: bitstring = exp(g,sA) in
+    {61}out(c, (ap_2,sta_2,ga,snR_1,sessR_1,an));
+    {62}in(c, (sta2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,ctR: bitstring));
+    {63}if (sta2R_1 = sta_2) then
+    {64}if (ap2R_1 = ap_2) then
+    {65}if (sess2R_1 = sessR_1) then
+    {66}let aad_1: bitstring = (sta_2,ap_2,snR_1,an,sessR_1) in
+    {55}let dhss_1: bitstring = exp(gsR,sA) in
+    {56}let pmk_1: bitstring = hmac((snR_1,an),dhss_1) in
+    {57}let ptk_1: bitstring = kdf(pmk_1,label_ptk,(sta_2,ap_2,snR_1,an,sessR_1)) in
+    {59}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
+    {67}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
+    {68}if (checksign(kaR,pkS) = (snR_1,an,sta_2,ap_2,sessR_1)) then
+    {69}event ApFinish(sta_2,ap_2,sessR_1);
+    {70}event ApPTK(sta_2,ap_2,sessR_1,ptk_1);
+    {72}let aad2_1: bitstring = (ap_2,sta_2,an,snR_1,sessR_1) in
+    {47}let skA_1: bitstring = skA in
+    {71}let kaap: bitstring = sign((an,snR_1,ap_2,sta_2,sessR_1),skA_1) in
+    {73}let ct2: bitstring = aead((aad2_1,kaap),kek_1) in
+    {74}out(c, (ap_2,sta_2,sessR_1,ct2))
+)
+
+-- Query not attacker(probe_tk[]) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+200 rules inserted. Base: 139 rules (49 with conclusion selected). Queue: 1 rules.
+Starting query not attacker(probe_tk[])
+goal reachable: attacker(exp(g,x)) && attacker(x) && attacker(x_1) && attacker(exp(g,x_2)) && attacker(x_2) && attacker(exp(g,x_1)) -> attacker(probe_tk[])
+
+Derivation:
+Abbreviations:
+sn_1 = sn[!1 = @sid]
+sess_1 = sess[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sS_1 = sS[!1 = @sid]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+
+1. Using the function none the attacker may obtain none.
+attacker(none).
+
+2. Using the function label_tk the attacker may obtain label_tk.
+attacker(label_tk).
+
+3. The message (sta,ap,exp(g,sS_1),sn_1,sess_1) may be sent to the attacker at output {15}.
+attacker((sta,ap,exp(g,sS_1),sn_1,sess_1)).
+
+4. By 3, the attacker may know (sta,ap,exp(g,sS_1),sn_1,sess_1).
+Using the function 5-proj-5-tuple the attacker may obtain sess_1.
+attacker(sess_1).
+
+5. By 3, the attacker may know (sta,ap,exp(g,sS_1),sn_1,sess_1).
+Using the function 4-proj-5-tuple the attacker may obtain sn_1.
+attacker(sn_1).
+
+6. We assume as hypothesis that
+attacker(exp(g,x)).
+
+7. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+8. Using the function sta the attacker may obtain sta.
+attacker(sta).
+
+9. By 8, the attacker may know sta.
+By 7, the attacker may know ap.
+By 6, the attacker may know exp(g,x).
+By 5, the attacker may know sn_1.
+By 4, the attacker may know sess_1.
+Using the function 5-tuple the attacker may obtain (sta,ap,exp(g,x),sn_1,sess_1).
+attacker((sta,ap,exp(g,x),sn_1,sess_1)).
+
+10. The message (sta,ap,exp(g,x),sn_1,sess_1) that the attacker may have by 9 may be received at input {48}.
+So the message (ap,sta,exp(g,sA_1),sn_1,sess_1,an_1) may be sent to the attacker at output {61}.
+attacker((ap,sta,exp(g,sA_1),sn_1,sess_1,an_1)).
+
+11. By 10, the attacker may know (ap,sta,exp(g,sA_1),sn_1,sess_1,an_1).
+Using the function 6-proj-6-tuple the attacker may obtain an_1.
+attacker(an_1).
+
+12. By 8, the attacker may know sta.
+By 7, the attacker may know ap.
+By 5, the attacker may know sn_1.
+By 11, the attacker may know an_1.
+By 4, the attacker may know sess_1.
+Using the function 5-tuple the attacker may obtain (sta,ap,sn_1,an_1,sess_1).
+attacker((sta,ap,sn_1,an_1,sess_1)).
+
+13. Using the function label_ptk the attacker may obtain label_ptk.
+attacker(label_ptk).
+
+14. We assume as hypothesis that
+attacker(x_1).
+
+15. By 3, the attacker may know (sta,ap,exp(g,sS_1),sn_1,sess_1).
+Using the function 3-proj-5-tuple the attacker may obtain exp(g,sS_1).
+attacker(exp(g,sS_1)).
+
+16. By 15, the attacker may know exp(g,sS_1).
+By 14, the attacker may know x_1.
+Using the function exp the attacker may obtain exp(exp(g,x_1),sS_1).
+attacker(exp(exp(g,x_1),sS_1)).
+
+17. By 5, the attacker may know sn_1.
+By 11, the attacker may know an_1.
+Using the function 2-tuple the attacker may obtain (sn_1,an_1).
+attacker((sn_1,an_1)).
+
+18. By 17, the attacker may know (sn_1,an_1).
+By 16, the attacker may know exp(exp(g,x_1),sS_1).
+Using the function hmac the attacker may obtain hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)).
+attacker(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1))).
+
+19. By 18, the attacker may know hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)).
+By 13, the attacker may know label_ptk.
+By 12, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+Using the function kdf the attacker may obtain kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+attacker(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1))).
+
+20. By 19, the attacker may know kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+By 2, the attacker may know label_tk.
+By 1, the attacker may know none.
+Using the function kdf the attacker may obtain kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_tk,none).
+attacker(kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_tk,none)).
+
+21. Using the function label_data the attacker may obtain label_data.
+attacker(label_data).
+
+22. We assume as hypothesis that
+attacker(exp(g,x_1)).
+
+23. By 7, the attacker may know ap.
+By 8, the attacker may know sta.
+By 22, the attacker may know exp(g,x_1).
+By 5, the attacker may know sn_1.
+By 4, the attacker may know sess_1.
+By 11, the attacker may know an_1.
+Using the function 6-tuple the attacker may obtain (ap,sta,exp(g,x_1),sn_1,sess_1,an_1).
+attacker((ap,sta,exp(g,x_1),sn_1,sess_1,an_1)).
+
+24. Using the function label_kek the attacker may obtain label_kek.
+attacker(label_kek).
+
+25. By 19, the attacker may know kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+By 24, the attacker may know label_kek.
+By 1, the attacker may know none.
+Using the function kdf the attacker may obtain kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+attacker(kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+
+26. We assume as hypothesis that
+attacker(x).
+
+27. By 10, the attacker may know (ap,sta,exp(g,sA_1),sn_1,sess_1,an_1).
+Using the function 3-proj-6-tuple the attacker may obtain exp(g,sA_1).
+attacker(exp(g,sA_1)).
+
+28. By 27, the attacker may know exp(g,sA_1).
+By 26, the attacker may know x.
+Using the function exp the attacker may obtain exp(exp(g,x),sA_1).
+attacker(exp(exp(g,x),sA_1)).
+
+29. By 17, the attacker may know (sn_1,an_1).
+By 28, the attacker may know exp(exp(g,x),sA_1).
+Using the function hmac the attacker may obtain hmac((sn_1,an_1),exp(exp(g,x),sA_1)).
+attacker(hmac((sn_1,an_1),exp(exp(g,x),sA_1))).
+
+30. By 29, the attacker may know hmac((sn_1,an_1),exp(exp(g,x),sA_1)).
+By 13, the attacker may know label_ptk.
+By 12, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+Using the function kdf the attacker may obtain kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+attacker(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1))).
+
+31. By 30, the attacker may know kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+By 24, the attacker may know label_kek.
+By 1, the attacker may know none.
+Using the function kdf the attacker may obtain kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+attacker(kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+
+32. By 7, the attacker may know ap.
+By 8, the attacker may know sta.
+By 11, the attacker may know an_1.
+By 5, the attacker may know sn_1.
+By 4, the attacker may know sess_1.
+Using the function 5-tuple the attacker may obtain (ap,sta,an_1,sn_1,sess_1).
+attacker((ap,sta,an_1,sn_1,sess_1)).
+
+33. We assume as hypothesis that
+attacker(x_2).
+
+34. By 15, the attacker may know exp(g,sS_1).
+By 33, the attacker may know x_2.
+Using the function exp the attacker may obtain exp(exp(g,sS_1),x_2).
+attacker(exp(exp(g,sS_1),x_2)).
+
+35. By 17, the attacker may know (sn_1,an_1).
+By 34, the attacker may know exp(exp(g,sS_1),x_2).
+Using the function hmac the attacker may obtain hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)).
+attacker(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2))).
+
+36. By 35, the attacker may know hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)).
+By 13, the attacker may know label_ptk.
+By 12, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+Using the function kdf the attacker may obtain kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+attacker(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1))).
+
+37. By 36, the attacker may know kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+By 24, the attacker may know label_kek.
+By 1, the attacker may know none.
+Using the function kdf the attacker may obtain kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+attacker(kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+
+38. We assume as hypothesis that
+attacker(exp(g,x_2)).
+
+39. By 7, the attacker may know ap.
+By 8, the attacker may know sta.
+By 38, the attacker may know exp(g,x_2).
+By 5, the attacker may know sn_1.
+By 4, the attacker may know sess_1.
+By 11, the attacker may know an_1.
+Using the function 6-tuple the attacker may obtain (ap,sta,exp(g,x_2),sn_1,sess_1,an_1).
+attacker((ap,sta,exp(g,x_2),sn_1,sess_1,an_1)).
+
+40. The message (ap,sta,exp(g,x_2),sn_1,sess_1,an_1) that the attacker may have by 39 may be received at input {16}.
+So the message (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) may be sent to the attacker at output {32}.
+attacker((sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+41. By 40, the attacker may know (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+Using the function 4-proj-4-tuple the attacker may obtain aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+42. By 41, the attacker may know aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+By 12, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+By 37, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_2)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function adec the attacker may obtain sign((sn_1,an_1,sta,ap,sess_1),skS[]).
+attacker(sign((sn_1,an_1,sta,ap,sess_1),skS[])).
+
+43. By 12, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+By 42, the attacker may know sign((sn_1,an_1,sta,ap,sess_1),skS[]).
+Using the function 2-tuple the attacker may obtain ((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])).
+attacker(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[]))).
+
+44. By 43, the attacker may know ((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])).
+By 31, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function aead the attacker may obtain aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+45. By 8, the attacker may know sta.
+By 7, the attacker may know ap.
+By 4, the attacker may know sess_1.
+By 44, the attacker may know aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+Using the function 4-tuple the attacker may obtain (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+attacker((sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+46. The message (sta,ap,exp(g,x),sn_1,sess_1) that the attacker may have by 9 may be received at input {48}.
+The message (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) that the attacker may have by 45 may be received at input {62}.
+So the message (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) may be sent to the attacker at output {74}.
+attacker((ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+47. By 46, the attacker may know (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+Using the function 4-proj-4-tuple the attacker may obtain aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+48. By 47, the attacker may know aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+By 32, the attacker may know (ap,sta,an_1,sn_1,sess_1).
+By 31, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x),sA_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function adec the attacker may obtain sign((an_1,sn_1,ap,sta,sess_1),skA[]).
+attacker(sign((an_1,sn_1,ap,sta,sess_1),skA[])).
+
+49. By 32, the attacker may know (ap,sta,an_1,sn_1,sess_1).
+By 48, the attacker may know sign((an_1,sn_1,ap,sta,sess_1),skA[]).
+Using the function 2-tuple the attacker may obtain ((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])).
+attacker(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[]))).
+
+50. By 49, the attacker may know ((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])).
+By 25, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function aead the attacker may obtain aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+51. By 7, the attacker may know ap.
+By 8, the attacker may know sta.
+By 4, the attacker may know sess_1.
+By 50, the attacker may know aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+Using the function 4-tuple the attacker may obtain (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+attacker((ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+52. The message (ap,sta,exp(g,x_1),sn_1,sess_1,an_1) that the attacker may have by 23 may be received at input {16}.
+The message (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) that the attacker may have by 51 may be received at input {33}.
+So the message aead((label_data,probe_tk[]),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_tk,none)) may be sent to the attacker at output {43}.
+attacker(aead((label_data,probe_tk[]),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_tk,none))).
+
+53. By 52, the attacker may know aead((label_data,probe_tk[]),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_tk,none)).
+By 21, the attacker may know label_data.
+By 20, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,x_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_tk,none).
+Using the function adec the attacker may obtain probe_tk[].
+attacker(probe_tk[]).
+
+54. By 53, attacker(probe_tk[]).
+The goal is reached, represented in the following fact:
+attacker(probe_tk[]).
+
+
+Unified x_2 with x_1
+The clause after UnifyDerivationPrecise is
+attacker(exp(g,x)) && attacker(x) && attacker(x_1) && attacker(exp(g,x_1)) -> attacker(probe_tk[])
+This clause still contradicts the query.
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skS: bitstring creating skS_2 at {1}
+
+new skA: bitstring creating skA_2 at {2}
+
+out(c, ~M) with ~M = pk(skS_2) at {5}
+
+out(c, ~M_1) with ~M_1 = pk(skA_2) at {6}
+
+new sn: bitstring creating sn_2 at {11} in copy a
+
+new sS: bitstring creating sS_2 at {12} in copy a
+
+new sess: bitstring creating sess_2 at {14} in copy a
+
+out(c, (~M_2,~M_3,~M_4,~M_5,~M_6)) with ~M_2 = sta, ~M_3 = ap, ~M_4 = exp(g,sS_2), ~M_5 = sn_2, ~M_6 = sess_2 at {15} in copy a
+
+in(c, (sta,ap,exp(g,a_1),~M_5,~M_6)) with ~M_5 = sn_2, ~M_6 = sess_2 at {48} in copy a_2
+
+new an: bitstring creating an_2 at {52} in copy a_2
+
+new sA: bitstring creating sA_2 at {53} in copy a_2
+
+out(c, (~M_7,~M_8,~M_9,~M_10,~M_11,~M_12)) with ~M_7 = ap, ~M_8 = sta, ~M_9 = exp(g,sA_2), ~M_10 = sn_2, ~M_11 = sess_2, ~M_12 = an_2 at {61} in copy a_2
+
+in(c, (ap,sta,exp(g,a_3),~M_5,~M_6,~M_12)) with ~M_5 = sn_2, ~M_6 = sess_2, ~M_12 = an_2 at {16} in copy a
+
+event StaStart(sta,ap,sess_2) at {31} in copy a
+
+out(c, (~M_13,~M_14,~M_15,~M_16)) with ~M_13 = sta, ~M_14 = ap, ~M_15 = sess_2, ~M_16 = aead(((sta,ap,sn_2,an_2,sess_2),sign((sn_2,an_2,sta,ap,sess_2),skS_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,a_3),sS_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {32} in copy a
+
+in(c, (sta,ap,~M_6,aead(((sta,ap,~M_5,~M_12,~M_6),adec(~M_16,(sta,ap,~M_5,~M_12,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_3)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)))) with ~M_6 = sess_2, aead(((sta,ap,~M_5,~M_12,~M_6),adec(~M_16,(sta,ap,~M_5,~M_12,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_3)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)) = aead(((sta,ap,sn_2,an_2,sess_2),sign((sn_2,an_2,sta,ap,sess_2),skS_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,a_1),sA_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {62} in copy a_2
+
+event ApFinish(sta,ap,sess_2) at {69} in copy a_2
+
+event ApPTK(sta,ap,sess_2,kdf(hmac((sn_2,an_2),exp(exp(g,a_1),sA_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2))) at {70} in copy a_2
+
+out(c, (~M_17,~M_18,~M_19,~M_20)) with ~M_17 = ap, ~M_18 = sta, ~M_19 = sess_2, ~M_20 = aead(((ap,sta,an_2,sn_2,sess_2),sign((an_2,sn_2,ap,sta,sess_2),skA_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,a_1),sA_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {74} in copy a_2
+
+in(c, (ap,sta,~M_6,aead(((ap,sta,~M_12,~M_5,~M_6),adec(~M_20,(ap,sta,~M_12,~M_5,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_3)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)))) with ~M_6 = sess_2, aead(((ap,sta,~M_12,~M_5,~M_6),adec(~M_20,(ap,sta,~M_12,~M_5,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_3)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)) = aead(((ap,sta,an_2,sn_2,sess_2),sign((an_2,sn_2,ap,sta,sess_2),skA_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,a_3),sS_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {33} in copy a
+
+event StaFinish(sta,ap,sess_2) at {41} in copy a
+
+event StaPTK(sta,ap,sess_2,kdf(hmac((sn_2,an_2),exp(exp(g,a_3),sS_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2))) at {42} in copy a
+
+out(c, ~M_21) with ~M_21 = aead((label_data,probe_tk),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,a_3),sS_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_tk,none)) at {43} in copy a
+
+The attacker has the message adec(~M_21,label_data,kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_3)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_tk,none)) = probe_tk.
+A trace has been found.
+RESULT not attacker(probe_tk[]) is false.
+-- Query event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+200 rules inserted. Base: 146 rules (49 with conclusion selected). Queue: 4 rules.
+Starting query event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se))
+goal reachable: b-event(ApFinish(sta,ap,sess_1)) -> event(StaFinish(sta,ap,sess_1))
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+RESULT event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se)) is true.
+-- Query inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+200 rules inserted. Base: 146 rules (47 with conclusion selected). Queue: 8 rules.
+Starting query inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se))
+goal reachable: b-inj-event(ApFinish(sta,ap,sess_1),@occ69_1) && attacker(x) && attacker(x_1) && attacker(exp(g,x_1)) && attacker(exp(g,x)) -> inj-event(StaFinish(sta,ap,sess_1),@occ41_1)
+The 1st hypothesis occurs strictly before the conclusion.
+The 2nd, 3rd, 4th, 5th hypotheses occur before the conclusion.
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sS_1 = sS[!1 = @sid]
+@occ41_1 = @occ41[ct2R = aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)),sess2R = sess_1,sta2R = sta,ap2R = ap,anR = an_1,sessR = sess_1,snR = sn_1,gaR = exp(g,x_1),staR = sta,apR = ap,!1 = @sid]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+@occ69_1 = @occ69[ctR = aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)),sess2R_1 = sess_1,ap2R_1 = ap,sta2R_1 = sta,sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+goal reachable: b-inj-event(ApFinish(sta,ap,sess_1),@occ69_1) -> inj-event(StaFinish(sta,ap,sess_1),@occ41_1)
+The hypothesis occurs strictly before the conclusion.
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+sS_1 = sS[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+@occ41_1 = @occ41[ct2R = aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)),sess2R = sess_1,sta2R = sta,ap2R = ap,anR = an_1,sessR = sess_1,snR = sn_1,gaR = exp(g,sA_1),staR = sta,apR = ap,!1 = @sid]
+@occ69_1 = @occ69[ctR = aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)),sess2R_1 = sess_1,ap2R_1 = ap,sta2R_1 = sta,sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+RESULT inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se)) is true.
+-- Query event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+200 rules inserted. Base: 146 rules (49 with conclusion selected). Queue: 4 rules.
+Starting query event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se))
+goal reachable: b-event(StaStart(sta,ap,sess_1)) -> event(ApFinish(sta,ap,sess_1))
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+RESULT event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se)) is true.
+-- Query inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+200 rules inserted. Base: 147 rules (47 with conclusion selected). Queue: 8 rules.
+Starting query inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se))
+goal reachable: b-inj-event(StaStart(sta,ap,sess_1),@occ31_1) && attacker(exp(g,x)) && attacker(x) && attacker(x_1) && attacker(exp(g,x_1)) -> inj-event(ApFinish(sta,ap,sess_1),@occ69_2)
+The 1st hypothesis occurs strictly before the conclusion.
+The 2nd, 3rd, 4th, 5th hypotheses occur before the conclusion.
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+@occ69_2 = @occ69_1[ctR = aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)),sess2R_1 = sess_1,ap2R_1 = ap,sta2R_1 = sta,sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+@occ31_1 = @occ31[anR = an_1,sessR = sess_1,snR = sn_1,gaR = exp(g,x),staR = sta,apR = ap,!1 = @sid]
+goal reachable: b-inj-event(StaStart(sta,ap,sess_1),@occ31_1) -> inj-event(ApFinish(sta,ap,sess_1),@occ69_2)
+The hypothesis occurs strictly before the conclusion.
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+sS_1 = sS[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+@occ69_2 = @occ69_1[ctR = aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)),sess2R_1 = sess_1,ap2R_1 = ap,sta2R_1 = sta,sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+@occ31_1 = @occ31[anR = an_1,sessR = sess_1,snR = sn_1,gaR = exp(g,sA_1),staR = sta,apR = ap,!1 = @sid]
+RESULT inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se)) is true.
+-- Query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+200 rules inserted. Base: 146 rules (47 with conclusion selected). Queue: 8 rules.
+Starting query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k))
+goal reachable: b-event(ApPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)))) && attacker(x) && attacker(x_1) && attacker(exp(g,x_1)) && attacker(exp(g,x)) -> event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1))))
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sS_1 = sS[!1 = @sid]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+
+Derivation:
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sS_1 = sS[!1 = @sid]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+
+1. The message (sta,ap,exp(g,sS_1),sn_1,sess_1) may be sent to the attacker at output {15}.
+attacker((sta,ap,exp(g,sS_1),sn_1,sess_1)).
+
+2. By 1, the attacker may know (sta,ap,exp(g,sS_1),sn_1,sess_1).
+Using the function 5-proj-5-tuple the attacker may obtain sess_1.
+attacker(sess_1).
+
+3. By 1, the attacker may know (sta,ap,exp(g,sS_1),sn_1,sess_1).
+Using the function 4-proj-5-tuple the attacker may obtain sn_1.
+attacker(sn_1).
+
+4. We assume as hypothesis that
+attacker(exp(g,x)).
+
+5. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+6. Using the function sta the attacker may obtain sta.
+attacker(sta).
+
+7. By 6, the attacker may know sta.
+By 5, the attacker may know ap.
+By 4, the attacker may know exp(g,x).
+By 3, the attacker may know sn_1.
+By 2, the attacker may know sess_1.
+Using the function 5-tuple the attacker may obtain (sta,ap,exp(g,x),sn_1,sess_1).
+attacker((sta,ap,exp(g,x),sn_1,sess_1)).
+
+8. The message (sta,ap,exp(g,x),sn_1,sess_1) that the attacker may have by 7 may be received at input {48}.
+So the message (ap,sta,exp(g,sA_1),sn_1,sess_1,an_1) may be sent to the attacker at output {61}.
+attacker((ap,sta,exp(g,sA_1),sn_1,sess_1,an_1)).
+
+9. By 8, the attacker may know (ap,sta,exp(g,sA_1),sn_1,sess_1,an_1).
+Using the function 6-proj-6-tuple the attacker may obtain an_1.
+attacker(an_1).
+
+10. We assume as hypothesis that
+attacker(exp(g,x_1)).
+
+11. By 5, the attacker may know ap.
+By 6, the attacker may know sta.
+By 10, the attacker may know exp(g,x_1).
+By 3, the attacker may know sn_1.
+By 2, the attacker may know sess_1.
+By 9, the attacker may know an_1.
+Using the function 6-tuple the attacker may obtain (ap,sta,exp(g,x_1),sn_1,sess_1,an_1).
+attacker((ap,sta,exp(g,x_1),sn_1,sess_1,an_1)).
+
+12. Using the function none the attacker may obtain none.
+attacker(none).
+
+13. Using the function label_kek the attacker may obtain label_kek.
+attacker(label_kek).
+
+14. By 6, the attacker may know sta.
+By 5, the attacker may know ap.
+By 3, the attacker may know sn_1.
+By 9, the attacker may know an_1.
+By 2, the attacker may know sess_1.
+Using the function 5-tuple the attacker may obtain (sta,ap,sn_1,an_1,sess_1).
+attacker((sta,ap,sn_1,an_1,sess_1)).
+
+15. Using the function label_ptk the attacker may obtain label_ptk.
+attacker(label_ptk).
+
+16. We assume as hypothesis that
+attacker(x_1).
+
+17. By 1, the attacker may know (sta,ap,exp(g,sS_1),sn_1,sess_1).
+Using the function 3-proj-5-tuple the attacker may obtain exp(g,sS_1).
+attacker(exp(g,sS_1)).
+
+18. By 17, the attacker may know exp(g,sS_1).
+By 16, the attacker may know x_1.
+Using the function exp the attacker may obtain exp(exp(g,sS_1),x_1).
+attacker(exp(exp(g,sS_1),x_1)).
+
+19. By 3, the attacker may know sn_1.
+By 9, the attacker may know an_1.
+Using the function 2-tuple the attacker may obtain (sn_1,an_1).
+attacker((sn_1,an_1)).
+
+20. By 19, the attacker may know (sn_1,an_1).
+By 18, the attacker may know exp(exp(g,sS_1),x_1).
+Using the function hmac the attacker may obtain hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)).
+attacker(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1))).
+
+21. By 20, the attacker may know hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)).
+By 15, the attacker may know label_ptk.
+By 14, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+Using the function kdf the attacker may obtain kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+attacker(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1))).
+
+22. By 21, the attacker may know kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+By 13, the attacker may know label_kek.
+By 12, the attacker may know none.
+Using the function kdf the attacker may obtain kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+attacker(kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+
+23. We assume as hypothesis that
+attacker(x).
+
+24. By 8, the attacker may know (ap,sta,exp(g,sA_1),sn_1,sess_1,an_1).
+Using the function 3-proj-6-tuple the attacker may obtain exp(g,sA_1).
+attacker(exp(g,sA_1)).
+
+25. By 24, the attacker may know exp(g,sA_1).
+By 23, the attacker may know x.
+Using the function exp the attacker may obtain exp(exp(g,sA_1),x).
+attacker(exp(exp(g,sA_1),x)).
+
+26. By 19, the attacker may know (sn_1,an_1).
+By 25, the attacker may know exp(exp(g,sA_1),x).
+Using the function hmac the attacker may obtain hmac((sn_1,an_1),exp(exp(g,sA_1),x)).
+attacker(hmac((sn_1,an_1),exp(exp(g,sA_1),x))).
+
+27. By 26, the attacker may know hmac((sn_1,an_1),exp(exp(g,sA_1),x)).
+By 15, the attacker may know label_ptk.
+By 14, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+Using the function kdf the attacker may obtain kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+attacker(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1))).
+
+28. By 27, the attacker may know kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+By 13, the attacker may know label_kek.
+By 12, the attacker may know none.
+Using the function kdf the attacker may obtain kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+attacker(kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+
+29. By 5, the attacker may know ap.
+By 6, the attacker may know sta.
+By 9, the attacker may know an_1.
+By 3, the attacker may know sn_1.
+By 2, the attacker may know sess_1.
+Using the function 5-tuple the attacker may obtain (ap,sta,an_1,sn_1,sess_1).
+attacker((ap,sta,an_1,sn_1,sess_1)).
+
+30. By 17, the attacker may know exp(g,sS_1).
+By 23, the attacker may know x.
+Using the function exp the attacker may obtain exp(exp(g,sS_1),x).
+attacker(exp(exp(g,sS_1),x)).
+
+31. By 19, the attacker may know (sn_1,an_1).
+By 30, the attacker may know exp(exp(g,sS_1),x).
+Using the function hmac the attacker may obtain hmac((sn_1,an_1),exp(exp(g,sS_1),x)).
+attacker(hmac((sn_1,an_1),exp(exp(g,sS_1),x))).
+
+32. By 31, the attacker may know hmac((sn_1,an_1),exp(exp(g,sS_1),x)).
+By 15, the attacker may know label_ptk.
+By 14, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+Using the function kdf the attacker may obtain kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+attacker(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1))).
+
+33. By 32, the attacker may know kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)).
+By 13, the attacker may know label_kek.
+By 12, the attacker may know none.
+Using the function kdf the attacker may obtain kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+attacker(kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+
+34. By 5, the attacker may know ap.
+By 6, the attacker may know sta.
+By 4, the attacker may know exp(g,x).
+By 3, the attacker may know sn_1.
+By 2, the attacker may know sess_1.
+By 9, the attacker may know an_1.
+Using the function 6-tuple the attacker may obtain (ap,sta,exp(g,x),sn_1,sess_1,an_1).
+attacker((ap,sta,exp(g,x),sn_1,sess_1,an_1)).
+
+35. The message (ap,sta,exp(g,x),sn_1,sess_1,an_1) that the attacker may have by 34 may be received at input {16}.
+So the message (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) may be sent to the attacker at output {32}.
+attacker((sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+36. By 35, the attacker may know (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+Using the function 4-proj-4-tuple the attacker may obtain aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+37. By 36, the attacker may know aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+By 14, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+By 33, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function adec the attacker may obtain sign((sn_1,an_1,sta,ap,sess_1),skS[]).
+attacker(sign((sn_1,an_1,sta,ap,sess_1),skS[])).
+
+38. By 14, the attacker may know (sta,ap,sn_1,an_1,sess_1).
+By 37, the attacker may know sign((sn_1,an_1,sta,ap,sess_1),skS[]).
+Using the function 2-tuple the attacker may obtain ((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])).
+attacker(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[]))).
+
+39. By 38, the attacker may know ((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])).
+By 28, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function aead the attacker may obtain aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+40. By 6, the attacker may know sta.
+By 5, the attacker may know ap.
+By 2, the attacker may know sess_1.
+By 39, the attacker may know aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+Using the function 4-tuple the attacker may obtain (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+attacker((sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+41. The message (sta,ap,exp(g,x),sn_1,sess_1) that the attacker may have by 7 may be received at input {48}.
+The message (sta,ap,sess_1,aead(((sta,ap,sn_1,an_1,sess_1),sign((sn_1,an_1,sta,ap,sess_1),skS[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) that the attacker may have by 40 may be received at input {62}.
+The event ApPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1))) may be executed at {70}.
+So the message (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) may be sent to the attacker at output {74}.
+attacker((ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+42. By 41, the attacker may know (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+Using the function 4-proj-4-tuple the attacker may obtain aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+43. By 42, the attacker may know aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+By 29, the attacker may know (ap,sta,an_1,sn_1,sess_1).
+By 28, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),x)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function adec the attacker may obtain sign((an_1,sn_1,ap,sta,sess_1),skA[]).
+attacker(sign((an_1,sn_1,ap,sta,sess_1),skA[])).
+
+44. By 29, the attacker may know (ap,sta,an_1,sn_1,sess_1).
+By 43, the attacker may know sign((an_1,sn_1,ap,sta,sess_1),skA[]).
+Using the function 2-tuple the attacker may obtain ((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])).
+attacker(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[]))).
+
+45. By 44, the attacker may know ((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])).
+By 22, the attacker may know kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none).
+Using the function aead the attacker may obtain aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+attacker(aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+
+46. By 5, the attacker may know ap.
+By 6, the attacker may know sta.
+By 2, the attacker may know sess_1.
+By 45, the attacker may know aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)).
+Using the function 4-tuple the attacker may obtain (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))).
+attacker((ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none)))).
+
+47. The message (ap,sta,exp(g,x_1),sn_1,sess_1,an_1) that the attacker may have by 11 may be received at input {16}.
+The message (ap,sta,sess_1,aead(((ap,sta,an_1,sn_1,sess_1),sign((an_1,sn_1,ap,sta,sess_1),skA[])),kdf(kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)),label_kek,none))) that the attacker may have by 46 may be received at input {33}.
+So event StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1))) may be executed at {42}.
+event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)))).
+
+48. By 47, event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)))).
+The goal is reached, represented in the following fact:
+event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)))).
+
+
+Unified x with x_1
+The clause after UnifyDerivationPrecise is
+attacker(exp(g,x_1)) && attacker(x_1) && b-event(ApPTK(sta,ap,sess[!1 = @sid],kdf(hmac((sn[!1 = @sid],an[sessR_1 = sess[!1 = @sid],snR_1 = sn[!1 = @sid],gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]),exp(exp(g,sA[sessR_1 = sess[!1 = @sid],snR_1 = sn[!1 = @sid],gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]),x_1)),label_ptk,(sta,ap,sn[!1 = @sid],an[sessR_1 = sess[!1 = @sid],snR_1 = sn[!1 = @sid],gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1],sess[!1 = @sid])))) -> event(StaPTK(sta,ap,sess[!1 = @sid],kdf(hmac((sn[!1 = @sid],an[sessR_1 = sess[!1 = @sid],snR_1 = sn[!1 = @sid],gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]),exp(exp(g,sS[!1 = @sid]),x_1)),label_ptk,(sta,ap,sn[!1 = @sid],an[sessR_1 = sess[!1 = @sid],snR_1 = sn[!1 = @sid],gsR = exp(g,x_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1],sess[!1 = @sid]))))
+This clause still contradicts the query.
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skS: bitstring creating skS_2 at {1}
+
+new skA: bitstring creating skA_2 at {2}
+
+out(c, ~M) with ~M = pk(skS_2) at {5}
+
+out(c, ~M_1) with ~M_1 = pk(skA_2) at {6}
+
+new sn: bitstring creating sn_2 at {11} in copy a
+
+new sS: bitstring creating sS_2 at {12} in copy a
+
+new sess: bitstring creating sess_2 at {14} in copy a
+
+out(c, (~M_2,~M_3,~M_4,~M_5,~M_6)) with ~M_2 = sta, ~M_3 = ap, ~M_4 = exp(g,sS_2), ~M_5 = sn_2, ~M_6 = sess_2 at {15} in copy a
+
+in(c, (sta,ap,exp(g,a_1),~M_5,~M_6)) with ~M_5 = sn_2, ~M_6 = sess_2 at {48} in copy a_2
+
+new an: bitstring creating an_2 at {52} in copy a_2
+
+new sA: bitstring creating sA_2 at {53} in copy a_2
+
+out(c, (~M_7,~M_8,~M_9,~M_10,~M_11,~M_12)) with ~M_7 = ap, ~M_8 = sta, ~M_9 = exp(g,sA_2), ~M_10 = sn_2, ~M_11 = sess_2, ~M_12 = an_2 at {61} in copy a_2
+
+in(c, (ap,sta,exp(g,a_1),~M_5,~M_6,~M_12)) with ~M_5 = sn_2, ~M_6 = sess_2, ~M_12 = an_2 at {16} in copy a
+
+event StaStart(sta,ap,sess_2) at {31} in copy a
+
+out(c, (~M_13,~M_14,~M_15,~M_16)) with ~M_13 = sta, ~M_14 = ap, ~M_15 = sess_2, ~M_16 = aead(((sta,ap,sn_2,an_2,sess_2),sign((sn_2,an_2,sta,ap,sess_2),skS_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,a_1),sS_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {32} in copy a
+
+in(c, (sta,ap,~M_6,aead(((sta,ap,~M_5,~M_12,~M_6),adec(~M_16,(sta,ap,~M_5,~M_12,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)))) with ~M_6 = sess_2, aead(((sta,ap,~M_5,~M_12,~M_6),adec(~M_16,(sta,ap,~M_5,~M_12,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)) = aead(((sta,ap,sn_2,an_2,sess_2),sign((sn_2,an_2,sta,ap,sess_2),skS_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,sA_2),a_1)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {62} in copy a_2
+
+event ApFinish(sta,ap,sess_2) at {69} in copy a_2
+
+event ApPTK(sta,ap,sess_2,kdf(hmac((sn_2,an_2),exp(exp(g,a_1),sA_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2))) at {70} in copy a_2
+
+out(c, (~M_17,~M_18,~M_19,~M_20)) with ~M_17 = ap, ~M_18 = sta, ~M_19 = sess_2, ~M_20 = aead(((ap,sta,an_2,sn_2,sess_2),sign((an_2,sn_2,ap,sta,sess_2),skA_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,a_1),sA_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {74} in copy a_2
+
+in(c, (ap,sta,~M_6,aead(((ap,sta,~M_12,~M_5,~M_6),adec(~M_20,(ap,sta,~M_12,~M_5,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)))) with ~M_6 = sess_2, aead(((ap,sta,~M_12,~M_5,~M_6),adec(~M_20,(ap,sta,~M_12,~M_5,~M_6),kdf(kdf(hmac((~M_5,~M_12),exp(~M_9,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none))),kdf(kdf(hmac((~M_5,~M_12),exp(~M_4,a_1)),label_ptk,(sta,ap,~M_5,~M_12,~M_6)),label_kek,none)) = aead(((ap,sta,an_2,sn_2,sess_2),sign((an_2,sn_2,ap,sta,sess_2),skA_2)),kdf(kdf(hmac((sn_2,an_2),exp(exp(g,sS_2),a_1)),label_ptk,(sta,ap,sn_2,an_2,sess_2)),label_kek,none)) at {33} in copy a
+
+event StaFinish(sta,ap,sess_2) at {41} in copy a
+
+event StaPTK(sta,ap,sess_2,kdf(hmac((sn_2,an_2),exp(exp(g,a_1),sS_2)),label_ptk,(sta,ap,sn_2,an_2,sess_2))) at {42} in copy a (goal)
+
+The event StaPTK(sta,ap,sess_2,kdf(hmac((sn_2,an_2),exp(exp(g,sS_2),a_1)),label_ptk,(sta,ap,sn_2,an_2,sess_2))) is executed at {42} in copy a.
+A trace has been found.
+RESULT event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) is false.
+-- Query event(StaPTK(s1,a1,se1,k)) && event(StaPTK(s2,a2,se2,k)) ==> se1 = se2 in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+200 rules inserted. Base: 144 rules (47 with conclusion selected). Queue: 6 rules.
+Starting query event(StaPTK(s1,a1,se1,k)) && event(StaPTK(s2,a2,se2,k)) ==> se1 = se2
+goal reachable: event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1)))) && event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sA_1),sS_1)),label_ptk,(sta,ap,sn_1,an_1,sess_1))))
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+sS_1 = sS[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sA_1 = sA[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,sS_1),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+goal reachable: attacker(exp(g,x)) && attacker(x) && attacker(exp(g,x_1)) && attacker(x_1) && attacker(x_2) && attacker(x_3) && attacker(exp(g,x_3)) && attacker(exp(g,x_2)) -> event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_3)),label_ptk,(sta,ap,sn_1,an_1,sess_1)))) && event(StaPTK(sta,ap,sess_1,kdf(hmac((sn_1,an_1),exp(exp(g,sS_1),x_3)),label_ptk,(sta,ap,sn_1,an_1,sess_1))))
+Abbreviations:
+sess_1 = sess[!1 = @sid]
+sn_1 = sn[!1 = @sid]
+an_1 = an[sessR_1 = sess_1,snR_1 = sn_1,gsR = exp(g,x_2),apR_1 = ap,staR_1 = sta,!1 = @sid_1]
+sS_1 = sS[!1 = @sid]
+RESULT event(StaPTK(s1,a1,se1,k)) && event(StaPTK(s2,a2,se2,k)) ==> se1 = se2 is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker(probe_tk[]) is false.
+
+Query event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se)) is true.
+
+Query inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se)) is true.
+
+Query event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se)) is true.
+
+Query inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se)) is true.
+
+Query event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)) is false.
+
+Query event(StaPTK(s1,a1,se1,k)) && event(StaPTK(s2,a2,se2,k)) ==> se1 = se2 is true.
+
+--------------------------------------------------------------
+

@@ -1,0 +1,342 @@
+(* =====================================================================
+   FILS PK：证书链 + 主体身份绑定（正确实现）—— ProVerif 模型
+   目的：把 FILS_PK.pv 中“证书链校验被抽象为公钥白名单”的假设展开，
+        显式建模：
+          - CA 根公钥 pkCA 是信任锚；
+          - STA / AP 的证书 cert = Sign_CA(subject, pk_subject)；
+          - KeyAuth 用证书中的公钥验签；
+          - 验签方必须检查“证书主体 == 自己期望的对端身份”。
+   结论（预期）：全部 true。
+        即使攻击者持有一张 CA 合法签发、但主体为 sta2/ap2 的证书，
+        也不能冒充 sta1/ap1；GTK/TK 不泄露。
+   对照：FILS_PK_CERT_bad.pv 去掉主体检查后，同一攻击者可以冒充成功。
+   ===================================================================== *)
+
+free c:channel.
+
+(* ---------------- 公开身份与常量 ---------------- *)
+const sta1:bitstring.
+const sta2:bitstring.
+const ap1:bitstring.
+const ap2:bitstring.
+
+const g:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+const gtk_fake:bitstring.
+const dh_valid:bitstring.
+
+(* 机密性探针 *)
+free gtk_val:bitstring [private].
+free probe_tk:bitstring [private].
+
+(* ---------------- 密码学原语 ---------------- *)
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+(* 临时 DH 公钥合法性：只接受形如 g^x 的群元素。
+   对应标准 §12.11.2.4.3 / NIST SP 800-56A 5.6.2.3 的群元素校验；
+   没有这一步，攻击者可发送 gAP = g，使 DHss = gSTA（公开值）。 *)
+reduc forall x:bitstring; dh_ok(exp(g,x)) = dh_valid.
+
+fun h(bitstring):bitstring.
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+fun pk(bitstring):bitstring.
+fun sign(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, sk:bitstring;
+  checksign(sign(m,sk), pk(sk)) = m.
+
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+(* ---------------- 事件 ---------------- *)
+event StaStart(bitstring,bitstring,bitstring).
+event ApFinish(bitstring,bitstring,bitstring).
+event StaFinish(bitstring,bitstring,bitstring).
+event StaPTK(bitstring,bitstring,bitstring,bitstring).
+event ApPTK(bitstring,bitstring,bitstring,bitstring).
+
+(* 恶意方专用事件：故意不叫 StaStart/ApFinish *)
+event RogueStaAccept(bitstring,bitstring,bitstring).
+event RogueApAccept(bitstring,bitstring,bitstring).
+
+(* =====================================================================
+   查询
+   ===================================================================== *)
+query attacker(gtk_val).
+query attacker(probe_tk).
+
+(* 双向认证 / 密钥确认 / 单射 *)
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se)).
+
+(* PTK 一致性（同时覆盖 UKS） *)
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)).
+
+(* =====================================================================
+   STA：用证书链验证 AP，KeyAuth 用 skS 签名
+   ===================================================================== *)
+let sta_pk(sta:bitstring, ap:bitstring, skS:bitstring, certS:bitstring,
+           pkCA:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  (* M1: Authentication Seq=1 *)
+  out(c, (sta, ap, seq1, dhgrp, gs, sn, sess, rsne));
+
+  (* M2: Authentication Seq=2 *)
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR, sess)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    (* KeyAuth = Sig-STA(完整握手 transcript) *)
+    let ka = sign((gs, gaR, sn, anR, sta, ap, sess), skS) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    let ct = aead((aad, ka), kek) in
+    event StaStart(sta, ap, sess);
+    out(c, (sta, ap, sess, certS, ct));
+
+    (* M4: (Re)Association Response *)
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, certAR:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+
+      (* 证书链验证：certAR 必须由 CA 签发 *)
+      let (subjAR:bitstring, pkAR:bitstring) = checksign(certAR, pkCA) in
+      (* ★ 主体绑定：证书主体必须等于自己期望的对端 AP *)
+      if subjAR = ap then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if checksign(kaAR, pkAR) = (gaR, gs, anR, sn, ap, sta, sess) then
+        event StaFinish(sta, ap, sess);
+        event StaPTK(sta, ap, sess, ptk);
+        out(c, aead((label_data, probe_tk), tk)).
+
+(* =====================================================================
+   AP：用证书链验证 STA，KeyAuth 用 skA 签名
+   ===================================================================== *)
+let ap_pk(ap:bitstring, sta:bitstring, skA:bitstring, certA:bitstring,
+          pkCA:bitstring) =
+  (* M1 *)
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring, dhR:bitstring,
+         gsR:bitstring, snR:bitstring, sessR:bitstring, rsneR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if rsneR = rsne then
+  if dh_ok(gsR) = dh_valid then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an, sessR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    (* M2 *)
+    out(c, (ap, sta, seq2, st_ok, dhgrp, ga, snR, sessR, rsne, an));
+
+    (* M3 *)
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           certSR:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+
+      (* 证书链验证 *)
+      let (subjR:bitstring, pkSR:bitstring) = checksign(certSR, pkCA) in
+      (* ★ 主体绑定：证书主体必须等于自己期望的对端 STA *)
+      if subjR = sta then
+      let aad = (sta, ap, snR, an, sessR, rsne) in
+      let kaR = adec(ctR, aad, kek) in
+      if checksign(kaR, pkSR) = (gsR, ga, snR, an, sta, ap, sessR) then
+        event ApFinish(sta, ap, sessR);
+        event ApPTK(sta, ap, sessR, ptk);
+
+        let kaap = sign((ga, gsR, an, snR, ap, sta, sessR), skA) in
+        let aad2 = (ap, sta, an, snR, sessR, rsne) in
+        let ct2 = aead((aad2, (kaap, gtk_val)), kek) in
+        out(c, (ap, sta, sessR, st_ok, certA, ct2)).
+
+(* =====================================================================
+   恶意 STA：持有 CA 合法签发的 (sta2, pkE) 证书，试图冒充 sta1
+   - 故意不触发 StaStart(sta1,...)：它根本不是 sta1；
+   - 若 AP 不检查证书主体，AP 会接受，并让攻击者拿到 GTK。
+   ===================================================================== *)
+let rogue_sta(claimed:bitstring, ap:bitstring, skE:bitstring,
+              certE:bitstring, pkCA:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (claimed, ap, seq1, dhgrp, gs, sn, sess, rsne));
+
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring));
+  if apR = ap then
+  if staR = claimed then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (claimed, ap, sn, anR, sess)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+
+    let ka = sign((gs, gaR, sn, anR, claimed, ap, sess), skE) in
+    let aad = (claimed, ap, sn, anR, sess, rsne) in
+    let ct = aead((aad, ka), kek) in
+    out(c, (claimed, ap, sess, certE, ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, certAR:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = claimed then
+    if sess2R = sess then
+    if st2R = st_ok then
+
+      let (subjAR:bitstring, pkAR:bitstring) = checksign(certAR, pkCA) in
+      if subjAR = ap then
+      let aad2 = (ap, claimed, anR, sn, sess, rsne) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if checksign(kaAR, pkAR) = (gaR, gs, anR, sn, ap, claimed, sess) then
+        event RogueStaAccept(claimed, ap, sess);
+        (* 攻击者把骗到的 GTK 直接交给空口攻击者 *)
+        out(c, gtkR).
+
+(* =====================================================================
+   恶意 AP：持有 CA 合法签发的 (ap2, pkE2) 证书，试图冒充 ap1
+   - 故意不触发 ApFinish(ap1,...)；
+   - 若 STA 不检查证书主体，STA 会接受并安装攻击者给的 GTK。
+   ===================================================================== *)
+let rogue_ap(sta:bitstring, claimed_ap:bitstring, skE:bitstring,
+             certE:bitstring, pkCA:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring, dhR:bitstring,
+         gsR:bitstring, snR:bitstring, sessR:bitstring, rsneR:bitstring));
+  if apR = claimed_ap then
+  if staR = sta then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if rsneR = rsne then
+  if dh_ok(gsR) = dh_valid then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, claimed_ap, snR, an, sessR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+
+    out(c, (claimed_ap, sta, seq2, st_ok, dhgrp, ga, snR, sessR, rsne, an));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           certSR:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = claimed_ap then
+    if sess2R = sessR then
+
+      let (subjR:bitstring, pkSR:bitstring) = checksign(certSR, pkCA) in
+      if subjR = sta then
+      let aad = (sta, claimed_ap, snR, an, sessR, rsne) in
+      let kaR = adec(ctR, aad, kek) in
+      if checksign(kaR, pkSR) = (gsR, ga, snR, an, sta, claimed_ap, sessR) then
+        event RogueApAccept(sta, claimed_ap, sessR);
+        let kaap = sign((ga, gsR, an, snR, claimed_ap, sta, sessR), skE) in
+        let aad2 = (claimed_ap, sta, an, snR, sessR, rsne) in
+        let ct2 = aead((aad2, (kaap, gtk_fake)), kek) in
+        out(c, (claimed_ap, sta, sessR, st_ok, certE, ct2)).
+
+(* =====================================================================
+   顶层：CA + 诚实 STA/AP + 两个持合法证书的恶意方
+   ===================================================================== *)
+process
+  new skCA:bitstring;
+  new skS1:bitstring;
+  new skA1:bitstring;
+  new skE:bitstring;
+  new skE2:bitstring;
+
+  let pkCA = pk(skCA) in
+  let pkS1 = pk(skS1) in
+  let pkA1 = pk(skA1) in
+  let pkE  = pk(skE)  in
+  let pkE2 = pk(skE2) in
+
+  let certS1 = sign((sta1, pkS1), skCA) in
+  let certA1 = sign((ap1,  pkA1), skCA) in
+  let certE  = sign((sta2, pkE),  skCA) in
+  let certE2 = sign((ap2,  pkE2), skCA) in
+
+  (* 信任锚与所有证书公开 *)
+  out(c, pkCA);
+  out(c, certS1);
+  out(c, certA1);
+  out(c, certE);
+  out(c, certE2);
+
+  (* 恶意方私钥本来就在攻击者手里 *)
+  out(c, skE);
+  out(c, skE2);
+
+  ( !sta_pk(sta1, ap1, skS1, certS1, pkCA)
+    | !ap_pk(ap1, sta1, skA1, certA1, pkCA)
+    | !rogue_sta(sta1, ap1, skE, certE, pkCA)
+    | !rogue_ap(sta1, ap1, skE2, certE2, pkCA) )

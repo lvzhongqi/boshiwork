@@ -45,6 +45,13 @@
 | `FILS_STATUS.pv` | status 机制 + 伪造错误 status（正确实现） | 3 | `abort_flag` **false（DoS 可达）**、`probe` true（密钥仍保密）、认证 true |
 | `FILS_STATUS_faulty.pv` | 失败后回退旧密钥（错误实现） | 3 | `bad_flag` **false（回退可达）**、`old_ptk` true、`probe` true |
 | `FILS_PK_old.pv` | 早期合并模型（历史版，仅参考） | — | 未作为正式验证目标 |
+| `FILS_PK_CERT.pv` | 证书链 + 证书主体绑定 + KeyAuth（正确实现） | 7 | **全部 true** |
+| `FILS_PK_CERT_bad.pv` | 只验证书链、不验主体（错误实现） | 7 | **全部 false（冒充/GTK/TK 泄露/UKS）** |
+| `FILS_PK_RAW.pv` | 无证书、预置原始公钥（Key Type=2/3） | 7 | **全部 true** |
+| `FILS_PK_RAW_bad.pv` | 无证书、无预置公钥（TOFU/信任报文中的公钥） | 7 | **全部 false（中间人）** |
+| `FILS_LATEAUTH.pv` | 先 DH、KeyAuth 覆盖完整 transcript + AEAD | 7 | **全部 true** |
+| `FILS_LATEAUTH_nobind.pv` | 先 DH、KeyAuth 漏掉 gSTA/gAP | 7 | 双向完成 true，**PTK 一致性 false、数据泄露 false** |
+| `FILS_DOS_UNAUTH.pv` | 未认证 M1 迫使 AP 先做 DH/状态分配（DoS 前提） | 2 | `ApWork=>StaStart` **false**；`ApFinish=>ApWork` true |
 
 > 注：`FILS_GTK_REPLAY_bad.out.txt` 中还有一行
 > `(but event(StaAccept...) ==> ... is true)`，是 ProVerif 对非单射查询的补充说明，
@@ -181,8 +188,14 @@
 
 ## 五、未覆盖 / 边界
 
+- 本轮已补充：**证书链（单级 CA 抽象）+ 证书主体绑定**、**无证书原始公钥
+  （Key Type=2/3）**、**延迟认证（先 DH、后 KeyAuth）**；详见第八节与新文档
+  `FILS_PK_证书与延迟认证分析.md`。
+- 仍未完整建模：多级/交叉证书链、CRL/OCSP 实时性与策略/名称约束、
+  证书 Subject 到 STA-MAC/SSID 的真实身份映射；
 - 未完整建模 status 的**定时器 113**、失败后的重试/换 AKM 策略；
-- 未建模 **DoS 资源消耗**、速率限制、anti-clogging（ProVerif 无可用性语义）；
+- 已建立 DoS 前提模型 `FILS_DOS_UNAUTH.pv`（证明“未认证工作可达”）；
+  仍未建模时间/CPU/内存/队列等资源语义、速率限制、anti-clogging 的定量效果；
 - 未建模 **EAP-RP 全协议**（rMSK 被抽象为后端共享私钥；AP↔AS 接口标准列为 out of scope）；
 - 未建模 **多 AP / 移动性** 下的 PMKSA 复用、PMKID miss 回退、跨 AP 缓存；
 - 未建模 **GTK rekey 完整状态机**（仅 epoch/KeyID 校验的微观模型）；
@@ -217,3 +230,75 @@ powershell -ExecutionPolicy Bypass -File `
   （需 rMSK 泄露）。
 - **不合规实现**：会出现 PTK/PMK 重用（RNG、SEQ）、GTK rekey 重放、
   失败回退旧密钥、Session 错绑等攻击。
+
+---
+
+## 八、2026-11-05 补充：证书链 / 无证书公钥 / 延迟认证
+
+本轮把 `FILS_PK.pv` 中“证书链被抽象为公钥白名单”的假设展开，并单独验证
+“先密钥协商、后在密钥确认中认证身份”这一消息顺序。
+
+### 8.1 新增模型与结果
+
+| 模型 | 关键差异 | 结果 |
+|---|---|---|
+| `FILS_PK_CERT.pv` | 验证书链 + 检查证书 Subject == 期望对端 | 7/7 **true** |
+| `FILS_PK_CERT_bad.pv` | 只验证书链、不检查 Subject | 7/7 **false**（冒充 STA/AP、GTK/TK 泄露、PTK 不一致） |
+| `FILS_PK_RAW.pv` | 无证书、预置并固定原始公钥（Key Type=2/3） | 7/7 **true** |
+| `FILS_PK_RAW_bad.pv` | 无证书、直接信任报文里携带的公钥 | 7/7 **false**（完整中间人） |
+| `FILS_LATEAUTH.pv` | DH 先行，KeyAuth 覆盖 `gSTA/gAP/nonce/MAC/Session` + AEAD | 7/7 **true** |
+| `FILS_LATEAUTH_nobind.pv` | 同上，但 KeyAuth 漏掉 `gSTA/gAP` | 双向完成 true，**PTK 一致性 false、probe_tk 泄露 false** |
+
+### 8.2 三个结论
+
+1. **证书认证 = 证书链 + 主体绑定 + 持钥证明 + 会话绑定**
+   - 证书链只证明“公钥被 CA 签过”；
+   - 还必须检查“证书 Subject 就是我以为的对端”；
+   - KeyAuth 签名证明“持有私钥”，并覆盖本次 `gSTA/gAP/SNonce/ANonce/MAC/Session`；
+   - 少任何一项都会出现 `FILS_PK_CERT_bad.pv` 中的冒充/UKS。
+
+2. **无证书公钥认证 = 原始公钥 + 带外信任锚**
+   - 标准支持 Key Type=2（RFC 5480）/ 3（RFC 3279）的原始公钥；
+   - `FILS Indication` 里的 `SHA-256(pk)` 只是选择器，不是信任凭证；
+   - 没有预置/固定/DPP/企业下发等带外锚点，公钥认证就是空的
+     （`FILS_PK_RAW_bad.pv`）。
+
+3. **“先协商、后在密钥确认中认证”合理，但必须绑定 transcript**
+   - 这是 TLS 1.3 / SIGMA / Noise 同类模式，适合 FILS 的 4 帧目标；
+   - 认证消息必须在 `AEAD(PTK-KEK)` 内，且签名/HMAC 覆盖完整 transcript；
+   - 若漏掉 `gSTA/gAP`，中间人可分别与两端协商不同 PTK，同时让两端“认证成功”，
+     并且自己知道两把会话密钥（`FILS_LATEAUTH_nobind.pv` 的 UKS 反例）；
+   - **AEAD 本身不能替代 transcript 绑定**：攻击者选择自己的 DH 私钥后，
+     可以算出两端的派生密钥并翻译密文。
+
+### 8.3 建模修正：DH 公钥合法性
+
+新模型都加入了 `dh_ok(exp(g,x))` 校验，作为“校验 gSTA/gAP 是合法群元素”
+的模型抽象（真实实现按 NIST SP 800-56A §5.6.2.3 检查 identity/子群/阶/cofactor）。
+如果不校验，攻击者可发送 `gAP = g`，使 `DHss = gSTA`（公开值），
+直接算出 PTK。这是独立于“证书主体未校验”的实现陷阱。
+
+### 8.4 详细分析
+
+三个问题的完整回答、标准条款、实现检查清单与反例轨迹说明，见：
+
+- `FILS_PK_证书与延迟认证分析.md`
+- `FILS安全问题汇总.md`（全部问题分类 + DoS 专题）
+
+### 8.5 DoS 补充：未认证 M1 的资源耗尽
+
+`FILS_DOS_UNAUTH.pv` 形式化了“AP 在认证前先做昂贵工作”：
+
+```
+event(ApWork(a,s,se,gs)) ==> event(StaStart(s,a,se))   false
+event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs))   true
+```
+
+- 第一条 false：攻击者/未预置公钥的 STA 只发 M1、不发 M3，AP 仍会做
+  群元素校验、生成 ANonce/gAP、DH、派生 PTK、分配状态并回 M2。
+- 第二条 true：认证完成一定以这些工作为前提。
+- 结论：**会形成半开会话/状态耗尽/CPU 消耗型 DoS**；严重性取决于
+  AP 的速率限制、pending 上限、超时、anti-clogging、CPU 配额。
+- “没有预置公钥”不是前提：M1 没有证书/签名/持钥证明，攻击者不需要密钥；
+  有密钥的 STA 也能被伪造。关键是 AP 是否对未认证 M1 做无界昂贵工作。
+- ProVerif 没有资源语义，所以这是 DoS 前提的可达性证明，不是定量打垮证明。

@@ -1,0 +1,172 @@
+(* =====================================================================
+   FILS 风格的“先密钥协商、后在密钥确认中认证身份”（错误绑定）——
+   ProVerif 反例模型
+   与 FILS_LATEAUTH.pv 的唯一差别：
+     KeyAuth 签名【只覆盖 nonce / 身份 / Session，不覆盖 gs 和 ga】；
+     AEAD 仍然使用派生出的 PTK-KEK（即“加密”这一层并没有省）。
+   中间人攻击（UKS）：
+     1. STA 发 gs，攻击者替换为 g^m1 发给 AP；
+     2. AP 发 ga，攻击者替换为 g^m2 发给 STA；
+     3. 攻击者知道 gs 和 m2，可算 K_STA = g^(s*m2)；
+        知道 ga 和 m1，可算 K_AP  = g^(a*m1)；
+     4. 攻击者用 K_STA 解开 STA 的 M3，再用 K_AP 重新加密后转发；
+        用 K_AP 解开 AP 的 M4，再用 K_STA 重新加密后转发；
+     5. 两侧签名都合法（因为签名不含 gs/ga），双方都完成，
+        但它们各自持有的 PTK 不同，且攻击者知道两把会话密钥。
+   预期结果：
+     - StaPTK ==> ApPTK        false（PTK 不一致 / UKS）
+     - attacker(probe_tk)      false（攻击者能解开 STA 的数据帧）
+   结论：仅靠“用派生密钥加密 KeyAuth”不能替代 transcript 绑定；
+        必须先认证 ephemeral DH 公钥，否则中间人可翻译密文。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta:bitstring.
+const ap:bitstring.
+
+const g:bitstring.
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+const none:bitstring.
+const gtk_fake:bitstring.
+const dh_valid:bitstring.
+
+free probe_tk:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+(* 临时 DH 公钥合法性校验，排除 gAP = g 之类的退化值 *)
+reduc forall x:bitstring; dh_ok(exp(g,x)) = dh_valid.
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+fun pk(bitstring):bitstring.
+fun sign(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, sk:bitstring;
+  checksign(sign(m,sk), pk(sk)) = m.
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+event StaStart(bitstring,bitstring,bitstring).
+event ApFinish(bitstring,bitstring,bitstring).
+event StaFinish(bitstring,bitstring,bitstring).
+event StaPTK(bitstring,bitstring,bitstring,bitstring).
+event ApPTK(bitstring,bitstring,bitstring,bitstring).
+
+query attacker(probe_tk).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)).
+query s1:bitstring, a1:bitstring, se1:bitstring,
+      s2:bitstring, a2:bitstring, se2:bitstring, k:bitstring;
+  event(StaPTK(s1,a1,se1,k)) && event(StaPTK(s2,a2,se2,k)) ==> se1 = se2.
+
+(* ---------------- STA ---------------- *)
+let sta_proc(sta:bitstring, ap:bitstring, skS:bitstring, pkA:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  (* M1：只发临时 DH 公钥与 nonce，不做身份认证 *)
+  out(c, (sta, ap, gs, sn, sess));
+
+  (* M2 *)
+  in(c, (apR:bitstring, staR:bitstring, gaR:bitstring,
+         snR:bitstring, sessR:bitstring, anR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if snR = sn then
+  if sessR = sess then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR, sess)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    (* M3：错误！签名不含 gs / ga，攻击者可替换 DH 公钥 *)
+    let ka = sign((sn, anR, sta, ap, sess), skS) in
+    let aad = (sta, ap, sn, anR, sess) in
+    let ct = aead((aad, ka), kek) in
+    event StaStart(sta, ap, sess);
+    out(c, (sta, ap, sess, ct));
+
+    (* M4：验证 AP 的 KeyAuth，成功后才认为认证完成 *)
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+      let aad2 = (ap, sta, anR, sn, sess) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let kaAR:bitstring = pl2 in
+      if checksign(kaAR, pkA) = (anR, sn, ap, sta, sess) then
+        event StaFinish(sta, ap, sess);
+        event StaPTK(sta, ap, sess, ptk);
+        out(c, aead((label_data, probe_tk), tk)).
+
+(* ---------------- AP ---------------- *)
+let ap_proc(ap:bitstring, sta:bitstring, skA:bitstring, pkS:bitstring) =
+  (* M1：此时 AP 还不知道对端是谁 *)
+  in(c, (staR:bitstring, apR:bitstring, gsR:bitstring,
+         snR:bitstring, sessR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if dh_ok(gsR) = dh_valid then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an, sessR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    (* M2 *)
+    out(c, (ap, sta, ga, snR, sessR, an));
+
+    (* M3：验证 STA 的 KeyAuth *)
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+      let aad = (sta, ap, snR, an, sessR) in
+      let kaR = adec(ctR, aad, kek) in
+      if checksign(kaR, pkS) = (snR, an, sta, ap, sessR) then
+        event ApFinish(sta, ap, sessR);
+        event ApPTK(sta, ap, sessR, ptk);
+
+        (* M4：错误！签名不含 ga / gs *)
+        let kaap = sign((an, snR, ap, sta, sessR), skA) in
+        let aad2 = (ap, sta, an, snR, sessR) in
+        let ct2 = aead((aad2, kaap), kek) in
+        out(c, (ap, sta, sessR, ct2)).
+
+process
+  new skS:bitstring;
+  new skA:bitstring;
+  let pkS = pk(skS) in
+  let pkA = pk(skA) in
+  (* 预置公钥：把“身份 <-> 公钥”的绑定作为前提 *)
+  out(c, pkS);
+  out(c, pkA);
+  ( !sta_proc(sta, ap, skS, pkA)
+    | !ap_proc(ap, sta, skA, pkS) )

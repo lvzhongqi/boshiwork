@@ -1,0 +1,285 @@
+(* =====================================================================
+   FILS PK：无证书且没有预置/固定公钥（错误实现）—— ProVerif 模型
+   与 FILS_PK_RAW.pv 的唯一差别：
+     验签方不预置对端公钥，而是直接相信报文中携带的“对端公钥”
+     （TOFU / 只匹配 SHA-256 标识符 / 完全不做信任锚校验）。
+   攻击：
+     - 攻击者生成自己的 (skE, pkE)，在报文中声明 pkE；
+     - 验签方用 pkE 验证攻击者的签名，必然通过；
+     - 攻击者即可冒充 sta1 或 ap1，形成完整中间人。
+   预期结果：
+     - attacker(gtk_val)          false
+     - ApFinish ==> StaStart      false
+     - StaFinish ==> ApFinish     false
+     - StaPTK ==> ApPTK           false
+   说明：FILS Indication 里的 Public Key Identifier = SHA-256(pk)
+        只是“选哪把公钥”的标识符；若 STA 把“信标里的哈希”当作信任，
+        攻击者只要广播自己的哈希即可，仍然没有信任锚。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta1:bitstring.
+const ap1:bitstring.
+
+const g:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+const gtk_fake:bitstring.
+const dh_valid:bitstring.
+
+free gtk_val:bitstring [private].
+free probe_tk:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+(* 临时 DH 公钥合法性校验 *)
+reduc forall x:bitstring; dh_ok(exp(g,x)) = dh_valid.
+
+fun h(bitstring):bitstring.
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+fun pk(bitstring):bitstring.
+fun sign(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, sk:bitstring;
+  checksign(sign(m,sk), pk(sk)) = m.
+
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+event StaStart(bitstring,bitstring,bitstring).
+event ApFinish(bitstring,bitstring,bitstring).
+event StaFinish(bitstring,bitstring,bitstring).
+event StaPTK(bitstring,bitstring,bitstring,bitstring).
+event ApPTK(bitstring,bitstring,bitstring,bitstring).
+event RogueAccept(bitstring,bitstring,bitstring).
+
+query attacker(gtk_val).
+query attacker(probe_tk).
+
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)).
+
+(* ---------------- STA：直接信任 M2/M4 中携带的 AP 公钥 ---------------- *)
+let sta_bad(sta:bitstring, ap:bitstring, skS:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta, ap, seq1, dhgrp, gs, sn, sess, rsne, h(pk(skS))));
+
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring, pkAR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR, sess)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+    let ka = sign((gs, gaR, sn, anR, sta, ap, sess), skS) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    let ct = aead((aad, ka), kek) in
+    event StaStart(sta, ap, sess);
+    out(c, (sta, ap, sess, pk(skS), ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, pkAR2:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      (* ★ 错误：用报文中携带的 pkAR2 验签，而不是预置的 pkA *)
+      if checksign(kaAR, pkAR2) = (gaR, gs, anR, sn, ap, sta, sess) then
+        event StaFinish(sta, ap, sess);
+        event StaPTK(sta, ap, sess, ptk);
+        out(c, aead((label_data, probe_tk), tk)).
+
+(* ---------------- AP：直接信任 M3 中携带的 STA 公钥 ---------------- *)
+let ap_bad(ap:bitstring, sta:bitstring, skA:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring, dhR:bitstring,
+         gsR:bitstring, snR:bitstring, sessR:bitstring, rsneR:bitstring,
+         pkSRh:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if rsneR = rsne then
+  if dh_ok(gsR) = dh_valid then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an, sessR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (ap, sta, seq2, st_ok, dhgrp, ga, snR, sessR, rsne, an, pk(skA)));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           pkSR:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+      let aad = (sta, ap, snR, an, sessR, rsne) in
+      let kaR = adec(ctR, aad, kek) in
+      (* ★ 错误：用报文中携带的 pkSR 验签，而不是预置的 pkS *)
+      if checksign(kaR, pkSR) = (gsR, ga, snR, an, sta, ap, sessR) then
+        event ApFinish(sta, ap, sessR);
+        event ApPTK(sta, ap, sessR, ptk);
+
+        let kaap = sign((ga, gsR, an, snR, ap, sta, sessR), skA) in
+        let aad2 = (ap, sta, an, snR, sessR, rsne) in
+        let ct2 = aead((aad2, (kaap, gtk_val)), kek) in
+        out(c, (ap, sta, sessR, st_ok, pk(skA), ct2)).
+
+(* ---------------- 恶意 STA：冒充 sta1 ---------------- *)
+let rogue_sta(sta:bitstring, ap:bitstring, skE:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta, ap, seq1, dhgrp, gs, sn, sess, rsne, h(pk(skE))));
+
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring, pkAR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR, sess)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let ka = sign((gs, gaR, sn, anR, sta, ap, sess), skE) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    let ct = aead((aad, ka), kek) in
+    out(c, (sta, ap, sess, pk(skE), ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, pkAR2:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if checksign(kaAR, pkAR2) = (gaR, gs, anR, sn, ap, sta, sess) then
+        event RogueAccept(sta, ap, sess);
+        out(c, gtkR).
+
+(* ---------------- 恶意 AP：冒充 ap1 ---------------- *)
+let rogue_ap(sta:bitstring, ap:bitstring, skE:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring, dhR:bitstring,
+         gsR:bitstring, snR:bitstring, sessR:bitstring, rsneR:bitstring,
+         pkSRh:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if rsneR = rsne then
+  if dh_ok(gsR) = dh_valid then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an, sessR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (ap, sta, seq2, st_ok, dhgrp, ga, snR, sessR, rsne, an, pk(skE)));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           pkSR:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+      let aad = (sta, ap, snR, an, sessR, rsne) in
+      let kaR = adec(ctR, aad, kek) in
+      if checksign(kaR, pkSR) = (gsR, ga, snR, an, sta, ap, sessR) then
+        event RogueAccept(sta, ap, sessR);
+        let kaap = sign((ga, gsR, an, snR, ap, sta, sessR), skE) in
+        let aad2 = (ap, sta, an, snR, sessR, rsne) in
+        let ct2 = aead((aad2, (kaap, gtk_fake)), kek) in
+        out(c, (ap, sta, sessR, st_ok, pk(skE), ct2));
+        (* 冒充 AP 成功后，解密 STA 的 TK 保护数据帧 *)
+        in(c, ctDataR:bitstring);
+        let pr = adec(ctDataR, label_data, tk) in
+        out(c, pr).
+
+process
+  new skS1:bitstring;
+  new skA1:bitstring;
+  new skE:bitstring;
+  new skE2:bitstring;
+
+  let pkS1 = pk(skS1) in
+  let pkA1 = pk(skA1) in
+  let pkE  = pk(skE)  in
+  let pkE2 = pk(skE2) in
+
+  out(c, pkS1);
+  out(c, pkA1);
+  out(c, pkE);
+  out(c, pkE2);
+  out(c, h(pkS1));
+  out(c, h(pkA1));
+  out(c, skE);
+  out(c, skE2);
+
+  ( !sta_bad(sta1, ap1, skS1)
+    | !ap_bad(ap1, sta1, skA1)
+    | !rogue_sta(sta1, ap1, skE)
+    | !rogue_ap(sta1, ap1, skE2) )

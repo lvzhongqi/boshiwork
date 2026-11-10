@@ -1,0 +1,118 @@
+(* =====================================================================
+   FILS：未认证 M1 迫使 AP 先做昂贵工作（DoS 前提）—— ProVerif 模型
+   目的：
+     形式化“攻击者/未预置公钥的 STA 只发 Authentication Seq=1，
+     不完成 M3 身份认证”时，AP 是否会在没有任何 STA 认证事件的情况下
+     先做 DH、派生 PTK、分配状态并回复 M2。
+   重要边界：
+     ProVerif 没有时间、CPU、内存、队列等可用性语义，因此本模型
+     证明的是“未认证工作可达”这一 DoS 前提，而不是定量证明 AP 被打垮。
+     真正的 DoS 是否成立，取决于 AP 的速率限制、状态上限、超时和
+     anti-clogging 实现。
+   预期：
+     event(ApWork(a,s,se,gs)) ==> event(StaStart(s,a,se)) 为 false
+     —— 存在“AP 已工作，但对应 STA 从未启动”的轨迹。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta1:bitstring.
+const ap1:bitstring.
+const g:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const dh_valid:bitstring.
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+(* DH 公钥合法性抽象：只接受形如 g^x 的群元素 *)
+reduc forall x:bitstring; dh_ok(exp(g,x)) = dh_valid.
+
+fun hmac(bitstring,bitstring):bitstring.
+
+(* 事件 *)
+event StaStart(bitstring,bitstring,bitstring).
+(* ApWork(AP, 声称的 STA, Session, gSTA)：AP 在认证前做的昂贵工作 *)
+event ApWork(bitstring,bitstring,bitstring,bitstring).
+event ApAuth(bitstring,bitstring,bitstring).
+event ApFinish(bitstring,bitstring,bitstring).
+
+(* ★ 核心查询：AP 工作是否一定对应一个真实 STA 的启动？ *)
+query a:bitstring, s:bitstring, se:bitstring, gs:bitstring;
+  event(ApWork(a,s,se,gs)) ==> event(StaStart(s,a,se)).
+
+(* 辅助查询：认证完成之前一定做过工作（说明工作是认证的必要前提） *)
+query s:bitstring, a:bitstring, se:bitstring, gs:bitstring;
+  event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs)).
+
+(* ---------------- AP：收到 M1 立即做昂贵工作 ---------------- *)
+let ap(ap:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring, dhR:bitstring,
+         gsR:bitstring, snR:bitstring, sessR:bitstring, rsneR:bitstring));
+  if apR = ap then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if dh_ok(gsR) = dh_valid then
+
+    (* 昂贵工作：分配状态、生成 ANonce/gAP、做 DH、派生 PTK、回 M2 *)
+    event ApWork(ap, staR, sessR, gsR);
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    out(c, (ap, staR, seq2, st_ok, dhgrp, ga, snR, sessR, rsne, an));
+
+    (* 等待 M3；攻击者可以永远不发，AP 状态保持到超时 *)
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring, okR:bitstring));
+    if sta2R = staR then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if okR = hmac((gsR, ga, snR, an, sessR), dhss) then
+      event ApAuth(ap, staR, sessR);
+      event ApFinish(staR, ap, sessR).
+
+(* ---------------- 诚实 STA：正常发起并完成 ---------------- *)
+let sta(sta:bitstring, ap:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  event StaStart(sta, ap, sess);
+  out(c, (sta, ap, seq1, dhgrp, gs, sn, sess, rsne));
+
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let ok = hmac((gs, gaR, sn, anR, sess), dhss) in
+    out(c, (sta, ap, sess, ok)).
+
+(* ---------------- 恶意/未预置 STA：只发 M1，不发 M3 ---------------- *)
+let fake(ap:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+  (* 不触发 StaStart，也不完成 M3 *)
+  out(c, (sta1, ap, seq1, dhgrp, gs, sn, sess, rsne)).
+
+process
+  ( !ap(ap1)
+    | !sta(sta1, ap1)
+    | !fake(ap1) )

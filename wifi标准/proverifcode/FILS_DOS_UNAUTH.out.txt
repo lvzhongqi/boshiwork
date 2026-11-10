@@ -1,0 +1,200 @@
+Linear part:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Completing equations...
+Completed equations:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Convergent part: No equation.
+Process 0 (that is, the initial process):
+(
+    {1}!
+    {2}let ap_1: bitstring = ap1 in
+    {3}in(c, (staR: bitstring,apR: bitstring,seqR: bitstring,dhR: bitstring,gsR: bitstring,snR: bitstring,sessR: bitstring,rsneR: bitstring));
+    {4}if (apR = ap_1) then
+    {5}if (seqR = seq1) then
+    {6}if (dhR = dhgrp) then
+    {7}if (dh_ok(gsR) = dh_valid) then
+    {8}event ApWork(ap_1,staR,sessR,gsR);
+    {9}new an: bitstring;
+    {10}new sA: bitstring;
+    {11}let ga: bitstring = exp(g,sA) in
+    {12}let dhss: bitstring = exp(gsR,sA) in
+    {13}out(c, (ap_1,staR,seq2,st_ok,dhgrp,ga,snR,sessR,rsne,an));
+    {14}in(c, (sta2R: bitstring,ap2R: bitstring,sess2R: bitstring,okR: bitstring));
+    {15}if (sta2R = staR) then
+    {16}if (ap2R = ap_1) then
+    {17}if (sess2R = sessR) then
+    {18}if (okR = hmac((gsR,ga,snR,an,sessR),dhss)) then
+    {19}event ApAuth(ap_1,staR,sessR);
+    {20}event ApFinish(staR,ap_1,sessR)
+) | (
+    {21}!
+    {22}let sta_1: bitstring = sta1 in
+    {23}let ap_2: bitstring = ap1 in
+    {24}new sn: bitstring;
+    {25}new sS: bitstring;
+    {26}let gs: bitstring = exp(g,sS) in
+    {27}new sess: bitstring;
+    {28}event StaStart(sta_1,ap_2,sess);
+    {29}out(c, (sta_1,ap_2,seq1,dhgrp,gs,sn,sess,rsne));
+    {30}in(c, (apR_1: bitstring,staR_1: bitstring,seqR_1: bitstring,stR: bitstring,dhR_1: bitstring,gaR: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,anR: bitstring));
+    {31}if (apR_1 = ap_2) then
+    {32}if (staR_1 = sta_1) then
+    {33}if (seqR_1 = seq2) then
+    {34}if (stR = st_ok) then
+    {35}if (dhR_1 = dhgrp) then
+    {36}if (snR_1 = sn) then
+    {37}if (sessR_1 = sess) then
+    {38}if (rsneR_1 = rsne) then
+    {39}if (dh_ok(gaR) = dh_valid) then
+    {40}let dhss_1: bitstring = exp(gaR,sS) in
+    {41}let ok: bitstring = hmac((gs,gaR,sn,anR,sess),dhss_1) in
+    {42}out(c, (sta_1,ap_2,sess,ok))
+) | (
+    {43}!
+    {44}let ap_3: bitstring = ap1 in
+    {45}new sn_1: bitstring;
+    {46}new sS_1: bitstring;
+    {47}let gs_1: bitstring = exp(g,sS_1) in
+    {48}new sess_1: bitstring;
+    {49}out(c, (sta1,ap_3,seq1,dhgrp,gs_1,sn_1,sess_1,rsne))
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {1}!
+    {3}in(c, (staR: bitstring,apR: bitstring,seqR: bitstring,dhR: bitstring,gsR: bitstring,snR: bitstring,sessR: bitstring,rsneR: bitstring));
+    {2}let ap_1: bitstring = ap1 in
+    {4}if (apR = ap_1) then
+    {5}if (seqR = seq1) then
+    {6}if (dhR = dhgrp) then
+    {7}if (dh_ok(gsR) = dh_valid) then
+    {8}event ApWork(ap_1,staR,sessR,gsR);
+    {9}new an: bitstring;
+    {10}new sA: bitstring;
+    {11}let ga: bitstring = exp(g,sA) in
+    {13}out(c, (ap_1,staR,seq2,st_ok,dhgrp,ga,snR,sessR,rsne,an));
+    {14}in(c, (sta2R: bitstring,ap2R: bitstring,sess2R: bitstring,okR: bitstring));
+    {15}if (sta2R = staR) then
+    {16}if (ap2R = ap_1) then
+    {17}if (sess2R = sessR) then
+    {12}let dhss: bitstring = exp(gsR,sA) in
+    {18}if (okR = hmac((gsR,ga,snR,an,sessR),dhss)) then
+    {19}event ApAuth(ap_1,staR,sessR);
+    {20}event ApFinish(staR,ap_1,sessR)
+) | (
+    {21}!
+    {24}new sn: bitstring;
+    {25}new sS: bitstring;
+    {27}new sess: bitstring;
+    {23}let ap_2: bitstring = ap1 in
+    {22}let sta_1: bitstring = sta1 in
+    {28}event StaStart(sta_1,ap_2,sess);
+    {26}let gs: bitstring = exp(g,sS) in
+    {29}out(c, (sta_1,ap_2,seq1,dhgrp,gs,sn,sess,rsne));
+    {30}in(c, (apR_1: bitstring,staR_1: bitstring,seqR_1: bitstring,stR: bitstring,dhR_1: bitstring,gaR: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,anR: bitstring));
+    {31}if (apR_1 = ap_2) then
+    {32}if (staR_1 = sta_1) then
+    {33}if (seqR_1 = seq2) then
+    {34}if (stR = st_ok) then
+    {35}if (dhR_1 = dhgrp) then
+    {36}if (snR_1 = sn) then
+    {37}if (sessR_1 = sess) then
+    {38}if (rsneR_1 = rsne) then
+    {39}if (dh_ok(gaR) = dh_valid) then
+    {40}let dhss_1: bitstring = exp(gaR,sS) in
+    {41}let ok: bitstring = hmac((gs,gaR,sn,anR,sess),dhss_1) in
+    {42}out(c, (sta_1,ap_2,sess,ok))
+) | (
+    {43}!
+    {45}new sn_1: bitstring;
+    {46}new sS_1: bitstring;
+    {48}new sess_1: bitstring;
+    {47}let gs_1: bitstring = exp(g,sS_1) in
+    {44}let ap_3: bitstring = ap1 in
+    {49}out(c, (sta1,ap_3,seq1,dhgrp,gs_1,sn_1,sess_1,rsne))
+)
+
+-- Query event(ApWork(a,s,se,gs_2)) ==> event(StaStart(s,a,se)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+Starting query event(ApWork(a,s,se,gs_2)) ==> event(StaStart(s,a,se))
+goal reachable: attacker(s) && attacker(exp(g,x)) && attacker(se) -> event(ApWork(ap1,s,se,exp(g,x)))
+
+Derivation:
+
+1. The attacker has some term rsneR_2.
+attacker(rsneR_2).
+
+2. We assume as hypothesis that
+attacker(se).
+
+3. The attacker has some term snR_2.
+attacker(snR_2).
+
+4. We assume as hypothesis that
+attacker(exp(g,x)).
+
+5. Using the function dhgrp the attacker may obtain dhgrp.
+attacker(dhgrp).
+
+6. Using the function seq1 the attacker may obtain seq1.
+attacker(seq1).
+
+7. Using the function ap1 the attacker may obtain ap1.
+attacker(ap1).
+
+8. We assume as hypothesis that
+attacker(s).
+
+9. By 8, the attacker may know s.
+By 7, the attacker may know ap1.
+By 6, the attacker may know seq1.
+By 5, the attacker may know dhgrp.
+By 4, the attacker may know exp(g,x).
+By 3, the attacker may know snR_2.
+By 2, the attacker may know se.
+By 1, the attacker may know rsneR_2.
+Using the function 8-tuple the attacker may obtain (s,ap1,seq1,dhgrp,exp(g,x),snR_2,se,rsneR_2).
+attacker((s,ap1,seq1,dhgrp,exp(g,x),snR_2,se,rsneR_2)).
+
+10. The message (s,ap1,seq1,dhgrp,exp(g,x),snR_2,se,rsneR_2) that the attacker may have by 9 may be received at input {3}.
+So event ApWork(ap1,s,se,exp(g,x)) may be executed at {8}.
+event(ApWork(ap1,s,se,exp(g,x))).
+
+11. By 10, event(ApWork(ap1,s,se,exp(g,x))).
+The goal is reached, represented in the following fact:
+event(ApWork(ap1,s,se,exp(g,x))).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+in(c, (a,ap1,seq1,dhgrp,exp(g,a_1),a_2,a_3,a_4)) at {3} in copy a_5
+
+event ApWork(ap1,a,a_3,exp(g,a_1)) at {8} in copy a_5 (goal)
+
+The event ApWork(ap1,a,a_3,exp(g,a_1)) is executed at {8} in copy a_5.
+A trace has been found.
+RESULT event(ApWork(a,s,se,gs_2)) ==> event(StaStart(s,a,se)) is false.
+-- Query event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs_2)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp(g,x))/-5000
+Completing...
+Starting query event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs_2))
+goal reachable: attacker(x) && b-event(ApWork(ap1,s,se,exp(g,x))) && attacker(s) && attacker(exp(g,x)) && attacker(se) -> event(ApFinish(s,ap1,se))
+goal reachable: b-event(ApWork(ap1,s,sess_2,exp(g,sS_2))) && attacker(s) -> event(ApFinish(s,ap1,sess_2))
+Abbreviations:
+sess_2 = sess[!1 = @sid]
+sS_2 = sS[!1 = @sid]
+RESULT event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs_2)) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(ApWork(a,s,se,gs_2)) ==> event(StaStart(s,a,se)) is false.
+
+Query event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs_2)) is true.
+
+--------------------------------------------------------------
+

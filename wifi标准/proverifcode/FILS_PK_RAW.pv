@@ -1,0 +1,244 @@
+(* =====================================================================
+   FILS PK：无证书 / 预置原始公钥（Raw Public Key）—— ProVerif 模型
+   适用：IEEE 802.11-2024 §12.11.2.2 的 FILS Public Key 元素
+         Key Type = 2（RFC 5480 编码）或 3（RFC 3279 编码）。
+   信任模型：
+     - 没有 CA、没有 X.509 证书链；
+     - STA 在带外（配置、DPP、二维码、企业下发等）预先获得并信任
+       “ap1 的原始公钥 pkA1”；
+     - AP 同样预先获得并信任“sta1 的原始公钥 pkS1”；
+     - FILS Indication 里的 Public Key Identifier = SHA-256(pk)
+       只是“选择/匹配”用的标识符，本身不是信任凭证。
+   结论（预期）：全部 true。
+        攻击者用自己的 pkE 冒充 sta1/ap1 时，验签用预置的 pkS1/pkA1，
+        签名验证失败，认证不成立。
+   对照：FILS_PK_RAW_bad.pv 不预置公钥、直接信任报文中携带的公钥
+        （TOFU / 无锚点），攻击者可以中间人冒充。
+   ===================================================================== *)
+
+free c:channel.
+
+const sta1:bitstring.
+const ap1:bitstring.
+
+const g:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+const gtk_fake:bitstring.
+const dh_valid:bitstring.
+
+free gtk_val:bitstring [private].
+free probe_tk:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+(* 临时 DH 公钥合法性校验 *)
+reduc forall x:bitstring; dh_ok(exp(g,x)) = dh_valid.
+
+fun h(bitstring):bitstring.
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+fun pk(bitstring):bitstring.
+fun sign(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, sk:bitstring;
+  checksign(sign(m,sk), pk(sk)) = m.
+
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+event StaStart(bitstring,bitstring,bitstring).
+event ApFinish(bitstring,bitstring,bitstring).
+event StaFinish(bitstring,bitstring,bitstring).
+event StaPTK(bitstring,bitstring,bitstring,bitstring).
+event ApPTK(bitstring,bitstring,bitstring,bitstring).
+event RogueAccept(bitstring,bitstring,bitstring).
+
+query attacker(gtk_val).
+query attacker(probe_tk).
+
+query s:bitstring, a:bitstring, se:bitstring;
+  event(StaFinish(s,a,se)) ==> event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(StaFinish(s,a,se)) ==> inj-event(ApFinish(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  event(ApFinish(s,a,se)) ==> event(StaStart(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring;
+  inj-event(ApFinish(s,a,se)) ==> inj-event(StaStart(s,a,se)).
+query s:bitstring, a:bitstring, se:bitstring, k:bitstring;
+  event(StaPTK(s,a,se,k)) ==> event(ApPTK(s,a,se,k)).
+
+(* ---------------- STA：预置并信任 AP 的原始公钥 pkA ---------------- *)
+let sta_raw(sta:bitstring, ap:bitstring, skS:bitstring, pkA:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta, ap, seq1, dhgrp, gs, sn, sess, rsne, h(pk(skS))));
+
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring, pkAR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+  (* ★ 预置公钥匹配：报文中声明的 AP 公钥必须就是带外信任的那把 *)
+  if pkAR = pkA then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR, sess)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = sign((gs, gaR, sn, anR, sta, ap, sess), skS) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    let ct = aead((aad, ka), kek) in
+    event StaStart(sta, ap, sess);
+    out(c, (sta, ap, sess, pk(skS), ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, pkAR2:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+    if pkAR2 = pkA then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if checksign(kaAR, pkA) = (gaR, gs, anR, sn, ap, sta, sess) then
+        event StaFinish(sta, ap, sess);
+        event StaPTK(sta, ap, sess, ptk);
+        out(c, aead((label_data, probe_tk), tk)).
+
+(* ---------------- AP：预置并信任 STA 的原始公钥 pkS ---------------- *)
+let ap_raw(ap:bitstring, sta:bitstring, skA:bitstring, pkS:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring, dhR:bitstring,
+         gsR:bitstring, snR:bitstring, sessR:bitstring, rsneR:bitstring,
+         pkSRh:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if rsneR = rsne then
+  if dh_ok(gsR) = dh_valid then
+  (* FILS Indication 中的标识符只做匹配，不构成信任 *)
+  if pkSRh = h(pkS) then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an, sessR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (ap, sta, seq2, st_ok, dhgrp, ga, snR, sessR, rsne, an, pk(skA)));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           pkSR:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+    (* ★ 预置公钥匹配 *)
+    if pkSR = pkS then
+      let aad = (sta, ap, snR, an, sessR, rsne) in
+      let kaR = adec(ctR, aad, kek) in
+      if checksign(kaR, pkS) = (gsR, ga, snR, an, sta, ap, sessR) then
+        event ApFinish(sta, ap, sessR);
+        event ApPTK(sta, ap, sessR, ptk);
+
+        let kaap = sign((ga, gsR, an, snR, ap, sta, sessR), skA) in
+        let aad2 = (ap, sta, an, snR, sessR, rsne) in
+        let ct2 = aead((aad2, (kaap, gtk_val)), kek) in
+        out(c, (ap, sta, sessR, st_ok, pk(skA), ct2)).
+
+(* ---------------- 恶意方：拥有自己的密钥对，但没有被预置 ---------------- *)
+let rogue(sta:bitstring, ap:bitstring, skE:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta, ap, seq1, dhgrp, gs, sn, sess, rsne, h(pk(skE))));
+
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring, pkAR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR, sess)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let ka = sign((gs, gaR, sn, anR, sta, ap, sess), skE) in
+    let aad = (sta, ap, sn, anR, sess, rsne) in
+    let ct = aead((aad, ka), kek) in
+    out(c, (sta, ap, sess, pk(skE), ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, pkAR2:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+      let aad2 = (ap, sta, anR, sn, sess, rsne) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if checksign(kaAR, pkAR2) = (gaR, gs, anR, sn, ap, sta, sess) then
+        event RogueAccept(sta, ap, sess);
+        out(c, gtkR).
+
+process
+  new skS1:bitstring;
+  new skA1:bitstring;
+  new skE:bitstring;
+
+  let pkS1 = pk(skS1) in
+  let pkA1 = pk(skA1) in
+  let pkE  = pk(skE)  in
+
+  (* 公钥本身是公开的；可信性来自“带外预置”，不是来自公开 *)
+  out(c, pkS1);
+  out(c, pkA1);
+  out(c, pkE);
+  (* FILS Indication 中的 Public Key Identifier（选择器） *)
+  out(c, h(pkS1));
+  out(c, h(pkA1));
+
+  ( !sta_raw(sta1, ap1, skS1, pkA1)
+    | !ap_raw(ap1, sta1, skA1, pkS1)
+    | !rogue(sta1, ap1, skE) )

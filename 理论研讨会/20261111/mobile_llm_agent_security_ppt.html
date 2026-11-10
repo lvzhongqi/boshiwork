@@ -1,0 +1,2698 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从助手到对手：移动 LLM Agent 的安全风险探索</title>
+<style>
+  :root{
+    --paper:#f5f0e6;
+    --paper-deep:#ece4d5;
+    --ink:#19222d;
+    --ink-2:#263340;
+    --muted:#69737d;
+    --line:#d7cdbd;
+    --line-strong:#bfb19e;
+    --red:#d84f38;
+    --red-deep:#a93222;
+    --red-soft:#f3c7b9;
+    --teal:#0e7169;
+    --teal-soft:#c9e3dc;
+    --gold:#a87932;
+    --white:#fffdf8;
+    --sans:"Microsoft YaHei","PingFang SC","Noto Sans SC","Segoe UI",Arial,sans-serif;
+    --serif:"Georgia","Times New Roman","Songti SC","STSong","SimSun",serif;
+    --mono:"Cascadia Mono","Consolas","SFMono-Regular",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0a0f15}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:geometricPrecision;
+  }
+
+  .viewport{
+    position:fixed;
+    inset:0;
+    display:grid;
+    place-items:center;
+    background:
+      radial-gradient(circle at 18% 8%, rgba(42,67,82,.42), transparent 34%),
+      radial-gradient(circle at 82% 92%, rgba(93,41,31,.25), transparent 32%),
+      #0a0f15;
+  }
+
+  .stage{
+    position:relative;
+    width:1600px;
+    height:900px;
+    overflow:hidden;
+    background:var(--paper);
+    box-shadow:0 38px 110px rgba(0,0,0,.58), 0 0 0 1px rgba(255,255,255,.06);
+    transform-origin:center center;
+  }
+
+  .slide{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    padding:58px 78px 56px;
+    opacity:0;
+    visibility:hidden;
+    transform:translateX(30px) scale(.994);
+    transition:opacity .38s ease, transform .55s cubic-bezier(.2,.8,.2,1), visibility .38s;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 91% 7%, rgba(216,79,56,.055), transparent 28%),
+      radial-gradient(circle at 7% 96%, rgba(14,113,105,.055), transparent 30%),
+      var(--paper);
+  }
+  .slide::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background-image:radial-gradient(rgba(25,34,45,.13) .7px, transparent .7px);
+    background-size:24px 24px;
+    opacity:.17;
+    mask-image:linear-gradient(120deg, transparent 30%, black 100%);
+  }
+  .slide::after{
+    content:"";
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:6px;
+    background:linear-gradient(180deg,var(--red),rgba(216,79,56,0) 58%);
+    opacity:.82;
+  }
+  .slide.active{
+    opacity:1;
+    visibility:visible;
+    transform:none;
+    pointer-events:auto;
+    z-index:2;
+  }
+  .slide.prev{transform:translateX(-30px) scale(.994)}
+  .slide.dark{
+    background:
+      radial-gradient(circle at 86% 12%, rgba(216,79,56,.18), transparent 30%),
+      radial-gradient(circle at 12% 88%, rgba(14,113,105,.17), transparent 35%),
+      #111a23;
+    color:var(--paper);
+  }
+  .slide.dark::before{opacity:.11}
+  .slide.dark::after{background:linear-gradient(180deg,#ee755d,rgba(238,117,93,0) 60%)}
+
+  .reveal{
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity .55s ease, transform .65s cubic-bezier(.2,.8,.2,1);
+  }
+  .slide.active .reveal{opacity:1;transform:translateY(0)}
+  .slide.active .d1{transition-delay:.08s}
+  .slide.active .d2{transition-delay:.16s}
+  .slide.active .d3{transition-delay:.24s}
+  .slide.active .d4{transition-delay:.32s}
+  .slide.active .d5{transition-delay:.40s}
+  .slide.active .d6{transition-delay:.48s}
+  .slide.active .d7{transition-delay:.56s}
+  .slide.active .d8{transition-delay:.64s}
+
+  h1,h2,h3,p{margin:0}
+  .kicker{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:11px;
+    line-height:1;
+    letter-spacing:.19em;
+    text-transform:uppercase;
+    font-weight:800;
+    color:var(--red);
+  }
+  .kicker::before{
+    content:"";
+    width:34px;
+    height:2px;
+    background:currentColor;
+    flex:none;
+  }
+  .kicker .cn{
+    letter-spacing:.12em;
+    color:var(--muted);
+    font-weight:700;
+  }
+  .slide.dark .kicker .cn{color:rgba(245,240,230,.58)}
+  h2{
+    margin-top:14px;
+    font-size:48px;
+    line-height:1.15;
+    letter-spacing:-.035em;
+    font-weight:800;
+    max-width:1400px;
+  }
+  h2 em{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:500;
+    color:var(--red);
+    letter-spacing:-.02em;
+  }
+  .lead{
+    margin-top:14px;
+    max-width:1030px;
+    color:var(--muted);
+    font-size:18px;
+    line-height:1.65;
+    letter-spacing:.005em;
+  }
+  .slide.dark .lead{color:rgba(245,240,230,.68)}
+  .head{margin-bottom:20px}
+  .body{flex:1;min-height:0;position:relative;z-index:1;display:flex;flex-direction:column}
+  .footer{
+    position:absolute;
+    left:78px;right:78px;bottom:24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+    color:rgba(25,34,45,.46);
+    font-size:9.5px;
+    line-height:1.2;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    z-index:3;
+  }
+  .footer .dot{color:var(--red);font-size:13px;line-height:0;margin:0 7px}
+  .footer .num{
+    font-family:var(--serif);
+    font-size:15px;
+    letter-spacing:.02em;
+    color:var(--ink);
+  }
+  .slide.dark .footer{color:rgba(245,240,230,.45)}
+  .slide.dark .footer .num{color:var(--paper)}
+
+  .source{
+    font-size:10px;
+    color:rgba(25,34,45,.48);
+    letter-spacing:.02em;
+    line-height:1.5;
+  }
+  .slide.dark .source{color:rgba(245,240,230,.46)}
+  .mono{font-family:var(--mono)}
+  .accent{color:var(--red)}
+  .teal{color:var(--teal)}
+  .muted{color:var(--muted)}
+  .nowrap{white-space:nowrap}
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 13px;
+    border:1px solid rgba(25,34,45,.14);
+    border-radius:999px;
+    background:rgba(255,253,248,.52);
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.2;
+    white-space:nowrap;
+  }
+  .pill b{color:var(--ink);font-weight:800}
+  .pill.red{border-color:rgba(216,79,56,.32);background:rgba(216,79,56,.07);color:var(--red-deep)}
+  .pill.teal{border-color:rgba(14,113,105,.28);background:rgba(14,113,105,.07);color:var(--teal)}
+  .slide.dark .pill{background:rgba(255,255,255,.04);border-color:rgba(245,240,230,.16);color:rgba(245,240,230,.68)}
+
+  .card{
+    position:relative;
+    background:rgba(255,253,248,.62);
+    border:1px solid rgba(25,34,45,.11);
+    border-radius:18px;
+    padding:24px;
+    box-shadow:0 1px 0 rgba(255,255,255,.75) inset;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;height:3px;
+    background:var(--line);
+    opacity:.8;
+  }
+  .card.red::before{background:var(--red)}
+  .card.teal::before{background:var(--teal)}
+  .card.gold::before{background:var(--gold)}
+  .card.dark-card{
+    background:#17212b;
+    border-color:rgba(255,255,255,.08);
+    color:var(--paper);
+  }
+  .card.dark-card::before{background:var(--red)}
+  .card-title{
+    font-size:20px;
+    line-height:1.3;
+    font-weight:800;
+    letter-spacing:-.015em;
+  }
+  .card-sub{
+    margin-top:7px;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.62;
+  }
+  .card.dark-card .card-sub{color:rgba(245,240,230,.64)}
+  .micro-label{
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:800;
+  }
+  .slide.dark .micro-label{color:rgba(245,240,230,.5)}
+
+  .figure{
+    position:relative;
+    background:#fff;
+    border:1px solid rgba(25,34,45,.13);
+    border-radius:14px;
+    padding:9px;
+    box-shadow:0 12px 28px rgba(25,34,45,.08);
+    overflow:hidden;
+  }
+  .figure img{display:block;width:100%;height:100%;object-fit:contain}
+  .figure-caption{
+    margin-top:8px;
+    color:rgba(25,34,45,.52);
+    font-size:10px;
+    line-height:1.45;
+    letter-spacing:.01em;
+  }
+  .figure-caption b{color:var(--ink);font-weight:800}
+
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .stack{display:flex;flex-direction:column}
+  .row{display:flex;align-items:center}
+  .grow{flex:1}
+
+  /* Title */
+  .title-slide{
+    display:grid;
+    grid-template-columns:1.45fr .55fr;
+    gap:50px;
+    align-items:center;
+    padding:70px 78px 64px;
+  }
+  .title-slide .title-left{position:relative;z-index:2}
+  .title-slide .kicker{color:#ee755d}
+  .title-slide .kicker .cn{color:rgba(245,240,230,.55)}
+  .title-en{
+    margin-top:24px;
+    font-family:var(--serif);
+    font-size:76px;
+    line-height:.94;
+    letter-spacing:-.045em;
+    font-weight:500;
+    max-width:970px;
+  }
+  .title-en .thin{display:block;color:rgba(245,240,230,.74);font-size:60px}
+  .title-en .hot{display:block;color:#ee755d;font-style:italic}
+  .title-cn{
+    margin-top:28px;
+    font-size:27px;
+    line-height:1.45;
+    font-weight:800;
+    letter-spacing:.03em;
+  }
+  .title-authors{
+    margin-top:18px;
+    color:rgba(245,240,230,.62);
+    font-size:12.5px;
+    line-height:1.75;
+  }
+  .title-meta{
+    margin-top:12px;
+    color:rgba(245,240,230,.42);
+    font-size:10.5px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+  }
+  .title-note{
+    margin-top:30px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    color:rgba(245,240,230,.38);
+    font-size:10px;
+    letter-spacing:.12em;
+  }
+  .title-note .line{width:42px;height:1px;background:rgba(245,240,230,.22)}
+  .risk-panel{
+    position:relative;
+    z-index:2;
+    width:350px;
+    justify-self:end;
+    border:1px solid rgba(245,240,230,.16);
+    border-radius:20px;
+    padding:26px 28px 22px;
+    background:linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
+    box-shadow:0 22px 60px rgba(0,0,0,.2);
+    backdrop-filter:blur(8px);
+  }
+  .risk-panel::before{
+    content:"SECURITY SNAPSHOT";
+    display:block;
+    color:rgba(245,240,230,.42);
+    font-size:9px;
+    letter-spacing:.2em;
+    margin-bottom:6px;
+  }
+  .risk-big{
+    font-family:var(--serif);
+    font-size:72px;
+    line-height:1;
+    color:#ee755d;
+    letter-spacing:-.04em;
+  }
+  .risk-big small{font-family:var(--sans);font-size:15px;color:rgba(245,240,230,.45);letter-spacing:0}
+  .risk-label{
+    color:rgba(245,240,230,.58);
+    font-size:11px;
+    line-height:1.5;
+    letter-spacing:.04em;
+  }
+  .risk-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:14px;
+    padding:15px 0;
+    border-top:1px solid rgba(245,240,230,.11);
+  }
+  .risk-row:first-of-type{margin-top:18px}
+  .risk-row strong{
+    font-family:var(--serif);
+    font-size:27px;
+    font-weight:500;
+    color:var(--paper);
+    letter-spacing:-.03em;
+  }
+  .risk-row span{
+    text-align:right;
+    color:rgba(245,240,230,.44);
+    font-size:9.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    line-height:1.4;
+  }
+  .orbit{
+    position:absolute;
+    border:1px solid rgba(238,117,93,.13);
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .orbit.o1{width:560px;height:560px;right:-210px;top:-215px}
+  .orbit.o2{width:390px;height:390px;right:-125px;top:-130px;border-color:rgba(14,113,105,.18)}
+  .orbit.o3{width:210px;height:210px;right:-35px;top:-40px;border-color:rgba(245,240,230,.09)}
+
+  /* Question slide */
+  .question-hero{
+    position:relative;
+    border-radius:20px;
+    background:#17212b;
+    color:var(--paper);
+    padding:28px 32px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:32px;
+    align-items:center;
+    overflow:hidden;
+  }
+  .question-hero::after{
+    content:"?";
+    position:absolute;
+    right:24px;
+    top:-58px;
+    font-family:var(--serif);
+    font-size:250px;
+    line-height:1;
+    color:rgba(238,117,93,.10);
+    pointer-events:none;
+  }
+  .question-hero p{
+    position:relative;
+    z-index:1;
+    font-size:31px;
+    line-height:1.42;
+    letter-spacing:-.02em;
+    font-weight:800;
+    max-width:1040px;
+  }
+  .question-hero em{font-family:var(--serif);font-style:italic;color:#ee755d;font-weight:500}
+  .q-tag{
+    position:relative;
+    z-index:1;
+    border-left:1px solid rgba(255,255,255,.16);
+    padding-left:28px;
+    min-width:190px;
+  }
+  .q-tag strong{display:block;font-family:var(--serif);font-size:38px;font-weight:500;color:#ee755d;line-height:1}
+  .q-tag span{display:block;margin-top:7px;color:rgba(245,240,230,.46);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;line-height:1.6}
+
+  .q-card{
+    position:relative;
+    padding:24px 24px 22px;
+    border:1px solid rgba(25,34,45,.11);
+    border-radius:18px;
+    background:rgba(255,253,248,.56);
+    overflow:hidden;
+  }
+  .q-card::before{
+    content:attr(data-q);
+    position:absolute;
+    right:17px;
+    top:10px;
+    font-family:var(--serif);
+    font-size:52px;
+    line-height:1;
+    color:rgba(25,34,45,.07);
+    font-style:italic;
+  }
+  .q-card .q-k{
+    font-family:var(--serif);
+    color:var(--red);
+    font-size:15px;
+    font-style:italic;
+    letter-spacing:.02em;
+  }
+  .q-card h3{margin-top:10px;font-size:19px;line-height:1.35;font-weight:800;max-width:290px}
+  .q-card p{margin-top:10px;color:var(--muted);font-size:12.5px;line-height:1.65}
+  .q-card .mini{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:16px;
+  }
+
+  .section-divider{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:var(--muted);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-weight:700;
+  }
+  .section-divider::after{content:"";height:1px;background:var(--line);flex:1}
+
+  /* Background slide */
+  .cap-strip{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-top:15px;
+  }
+  .cap-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 15px;
+    border-radius:12px;
+    background:rgba(255,253,248,.55);
+    border:1px solid rgba(25,34,45,.1);
+  }
+  .cap-item .idx{
+    font-family:var(--serif);
+    font-size:19px;
+    color:var(--red);
+    font-style:italic;
+    flex:none;
+  }
+  .cap-item b{display:block;font-size:12.5px;line-height:1.35}
+  .cap-item span{display:block;margin-top:2px;color:var(--muted);font-size:10.5px;line-height:1.35}
+
+  .flow-strip{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border:1px solid rgba(25,34,45,.12);
+    border-radius:12px;
+    overflow:hidden;
+    background:#17212b;
+    margin-top:16px;
+  }
+  .flow-strip .fs{
+    padding:12px 15px;
+    min-height:64px;
+  }
+  .flow-strip .fs + .fs{border-left:1px solid rgba(245,240,230,.1)}
+  .flow-strip .n{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:#ee755d}
+  .flow-strip b{display:block;margin-top:5px;color:var(--paper);font-size:11px;line-height:1.35}
+  .flow-strip span{display:block;margin-top:2px;color:rgba(245,240,230,.45);font-size:9px;line-height:1.4}
+
+  .bottom-band{
+    margin-top:15px;
+    padding:12px 16px;
+    border-radius:11px;
+    background:#17212b;
+    color:rgba(245,240,230,.62);
+    display:flex;
+    align-items:center;
+    gap:18px;
+    font-size:10.5px;
+    line-height:1.5;
+  }
+  .bottom-band b{color:var(--paper)}
+  .bottom-band .tag{
+    flex:none;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.12em;
+    color:#ee755d;
+    border:1px solid rgba(238,117,93,.32);
+    border-radius:5px;
+    padding:4px 7px;
+  }
+
+  .scope-panel{
+    margin-top:16px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    border:1px solid rgba(25,34,45,.11);
+    border-radius:13px;
+    overflow:hidden;
+    background:rgba(255,253,248,.52);
+  }
+  .scope-panel .scope{padding:14px 17px}
+  .scope-panel .scope + .scope{border-left:1px solid rgba(25,34,45,.1)}
+  .scope-panel .label{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .scope-panel p{margin-top:5px;font-size:10.5px;line-height:1.6;color:var(--muted)}
+  .scope-panel p b{color:var(--ink)}
+
+  .reading-guide{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:10px;
+  }
+  .reading-guide div{
+    padding:9px 12px;
+    border-radius:9px;
+    background:rgba(255,253,248,.54);
+    border:1px solid rgba(25,34,45,.08);
+    color:var(--muted);
+    font-size:9.5px;
+    line-height:1.45;
+  }
+  .reading-guide b{display:block;color:var(--ink);font-size:10px;margin-bottom:2px}
+
+  .defense-depth{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-top:15px;
+  }
+  .defense-depth div{
+    padding:11px 13px;
+    border-radius:10px;
+    background:rgba(255,253,248,.56);
+    border:1px solid rgba(25,34,45,.09);
+  }
+  .defense-depth .k{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--red)}
+  .defense-depth b{display:block;margin-top:5px;font-size:10.5px;line-height:1.4}
+  .defense-depth span{display:block;margin-top:2px;font-size:9px;line-height:1.4;color:var(--muted)}
+
+  /* Ecosystem */
+  .eco-card{
+    min-height:296px;
+    display:flex;
+    flex-direction:column;
+  }
+  .eco-card .top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .eco-card .num{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:38px;
+    line-height:1;
+    color:rgba(25,34,45,.13);
+  }
+  .eco-card .type{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--red);
+  }
+  .eco-card.teal .type{color:var(--teal)}
+  .eco-card.gold .type{color:var(--gold)}
+  .eco-card h3{font-size:22px;line-height:1.32;margin-top:10px;letter-spacing:-.02em}
+  .eco-card p{margin-top:10px;color:var(--muted);font-size:12.5px;line-height:1.65}
+  .eco-example{
+    margin-top:auto;
+    padding-top:15px;
+    border-top:1px dashed rgba(25,34,45,.16);
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.5;
+  }
+  .eco-example b{color:var(--ink)}
+  .eco-traits{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+  .eco-traits span{font-size:8.5px;letter-spacing:.05em;padding:4px 8px;border-radius:5px;background:rgba(25,34,45,.05);color:var(--muted);border:1px solid rgba(25,34,45,.07)}
+
+  /* Chapter 2 · taxonomy + threat model */
+  .model-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .model-card{
+    aspect-ratio:2.2/1;
+    padding:24px 26px;
+    display:grid;
+    grid-template-columns:1.55fr .95fr;
+    gap:22px;
+  }
+  .model-main{display:flex;flex-direction:column;min-width:0}
+  .model-type{
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .model-type b{font-size:11px;color:var(--red)}
+  .model-card.teal .model-type b{color:var(--teal)}
+  .model-card.gold .model-type b{color:var(--gold)}
+  .model-card h3{margin-top:13px;font-size:24px;line-height:1.2;letter-spacing:-.02em}
+  .model-en{margin-top:5px;font-family:var(--mono);font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .model-main p{margin-top:13px;font-size:11.5px;line-height:1.68;color:var(--muted)}
+  .model-side{
+    border-left:1px dashed rgba(25,34,45,.16);
+    padding-left:20px;
+    display:flex;flex-direction:column;justify-content:center;gap:9px;
+    min-width:0;
+  }
+  .model-side .side-label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .model-side .side-value{font-size:10.5px;line-height:1.55;color:var(--ink-2)}
+  .model-traits{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+  .model-traits span{font-size:8px;letter-spacing:.04em;padding:3px 7px;border-radius:5px;background:rgba(25,34,45,.05);color:var(--muted);border:1px solid rgba(25,34,45,.07)}
+  .model-foot{margin-top:auto;padding-top:10px;border-top:1px dashed rgba(25,34,45,.13);font-size:10px;line-height:1.45;color:var(--muted)}
+  .model-foot b{font-family:var(--mono);font-size:8px;letter-spacing:.11em;text-transform:uppercase;color:var(--red);margin-right:6px}
+  .model-card.teal .model-foot b{color:var(--teal)}
+  .model-card.gold .model-foot b{color:var(--gold)}
+  .model-ghost{
+    position:absolute;right:12px;bottom:-14px;
+    font-family:var(--serif);font-size:118px;line-height:1;font-style:italic;font-weight:500;
+    letter-spacing:-.06em;color:rgba(25,34,45,.045);pointer-events:none;
+  }
+  .model-card > *:not(.model-ghost){position:relative;z-index:1}
+
+  .threat-card{color:var(--paper)}
+  .threat-card .model-type{color:rgba(245,240,230,.5)}
+  .threat-card .model-type b{color:#ee755d}
+  .threat-card .model-en{color:rgba(245,240,230,.42)}
+  .threat-card .model-main p{color:rgba(245,240,230,.68)}
+  .threat-card .model-side{border-left-color:rgba(245,240,230,.18);justify-content:flex-start;gap:8px}
+  .threat-card .side-label{color:rgba(245,240,230,.42)}
+  .threat-card .side-value{color:rgba(245,240,230,.78)}
+  .threat-rows{display:flex;flex-direction:column;gap:7px}
+  .threat-rows > div b{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.13em;text-transform:uppercase;color:#ee755d;margin-bottom:1px}
+  .threat-rows > div span{display:block;font-size:10px;line-height:1.45;color:rgba(245,240,230,.74)}
+  .threat-card .model-ghost{color:rgba(245,240,230,.05)}
+  .threat-card .model-foot{border-top-color:rgba(245,240,230,.16);color:rgba(245,240,230,.56)}
+  .threat-card .model-foot b{color:#ee755d}
+
+  /* Chapter 3 · attack taxonomy */
+  .atk3-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .atk3-card{
+    position:relative;
+    aspect-ratio:3/4;
+    padding:30px 28px 24px;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
+  .a3-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .a3-kicker{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:700}
+  .atk3-card.gold .a3-kicker{color:var(--gold)}
+  .atk3-card.teal .a3-kicker{color:var(--teal)}
+  .a3-count{font-family:var(--serif);font-style:italic;font-size:52px;line-height:.9;color:rgba(25,34,45,.13)}
+  .atk3-card h3{margin-top:6px;font-size:30px;line-height:1.2;letter-spacing:-.02em}
+  .a3-en{margin-top:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .a3-principle{margin-top:18px;font-size:14.5px;line-height:1.8;color:var(--muted)}
+  .a3-rule{margin:20px 0 18px;border-top:1px dashed rgba(25,34,45,.15)}
+  .a3-list{display:flex;flex-direction:column;gap:9px}
+  .a3-item .n{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;color:var(--red);margin-right:5px}
+  .atk3-card.gold .a3-item .n{color:var(--gold)}
+  .atk3-card.teal .a3-item .n{color:var(--teal)}
+  .a3-item b{display:block;font-size:10.5px;line-height:1.35;font-weight:800;color:var(--ink)}
+  .a3-item > span{display:block;margin-top:2px;font-size:9.5px;line-height:1.45;color:var(--muted)}
+  .a3-foot{margin-top:auto;padding-top:14px;border-top:1px dashed rgba(25,34,45,.15);font-size:12px;line-height:1.55;color:var(--muted)}
+  .a3-foot b{display:block;margin-bottom:3px;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);font-weight:700}
+
+  .atk4-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .atk4-card{
+    position:relative;
+    aspect-ratio:2.15/1;
+    padding:24px 26px;
+    display:grid;grid-template-rows:auto 1fr auto;
+    overflow:hidden;
+  }
+  .a4-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .a4-left{display:flex;align-items:center;gap:9px}
+  .a4-no{font-family:var(--serif);font-style:italic;font-size:30px;line-height:1;color:rgba(25,34,45,.2)}
+  .a4-layer{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);font-weight:700}
+  .atk4-card.gui .a4-layer{color:var(--gold)}
+  .a4-stat{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--ink-2);background:rgba(216,79,56,.07);border:1px solid rgba(216,79,56,.2);padding:4px 8px;border-radius:999px;white-space:nowrap}
+  .atk4-card.gui .a4-stat{background:rgba(168,121,50,.08);border-color:rgba(168,121,50,.24)}
+  .a4-body{display:grid;grid-template-columns:1.4fr .92fr;gap:18px;min-height:0;margin-top:4px}
+  .a4-main{display:flex;flex-direction:column;min-width:0}
+  .atk4-card h3{margin-top:8px;font-size:30px;line-height:1.2;letter-spacing:-.02em}
+  .a4-cn{margin-top:6px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
+  .atk4-card p{margin-top:12px;font-size:15.5px;line-height:1.85;color:var(--muted)}
+  .a4-side{border-left:1px dashed rgba(25,34,45,.16);padding-left:16px;display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:0}
+  .a4-side-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2px}
+  .a4-srow{display:flex;gap:7px;align-items:flex-start}
+  .a4-srow i{flex:none;margin-top:1px;width:18px;height:18px;border-radius:50%;border:1px solid rgba(216,79,56,.35);display:grid;place-items:center;font-family:var(--mono);font-style:normal;font-size:8px;color:var(--red)}
+  .atk4-card.gui .a4-srow i{border-color:rgba(168,121,50,.4);color:var(--gold)}
+  .a4-srow b{display:block;font-size:13px;line-height:1.4;color:var(--ink)}
+  .a4-srow span{display:block;font-size:12px;line-height:1.55;color:var(--muted)}
+  .a4-observed{margin-top:0;padding-top:10px;border-top:1px dashed rgba(25,34,45,.13);font-size:12.5px;line-height:1.55;color:var(--muted)}
+  .a4-observed b{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-right:5px}
+  .atk4-card.gui .a4-observed b{color:var(--gold)}
+
+  .a3-flow{margin-top:15px;display:flex;flex-direction:column}
+  .a3-node{position:relative;margin-left:5px;padding:0 0 16px 24px;border-left:1px solid rgba(25,34,45,.16)}
+  .a3-node:last-child{padding-bottom:0;border-left-color:transparent}
+  .a3-node::before{content:"";position:absolute;left:-4px;top:3px;width:7px;height:7px;border-radius:50%;background:var(--red)}
+  .atk3-card.gold .a3-node::before{background:var(--gold)}
+  .atk3-card.teal .a3-node::before{background:var(--teal)}
+  .a3-node b{display:block;font-size:13px;line-height:1.3;color:var(--ink)}
+  .a3-node span{display:block;margin-top:2px;font-size:11.5px;line-height:1.55;color:var(--muted)}
+  .a3-stats{display:flex;gap:16px;margin-top:14px;padding-top:11px;border-top:1px dashed rgba(25,34,45,.13)}
+  .a3-stats b{display:block;font-family:var(--serif);font-size:20px;line-height:1;color:var(--ink)}
+  .a3-stats span{display:block;margin-top:3px;font-size:8px;color:var(--muted);line-height:1.35}
+  .a3-note{margin-top:16px;font-size:12px;line-height:1.65;color:var(--muted)}
+  .a3-note b{display:block;margin-bottom:2px;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  .a3-impact{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+  .a3-impact span{font-size:8.5px;padding:3px 8px;border-radius:5px;background:rgba(14,113,105,.07);border:1px solid rgba(14,113,105,.2);color:var(--teal)}
+  .a3-ghost{position:absolute;right:14px;bottom:0;font-family:var(--serif);font-style:italic;font-weight:500;font-size:104px;line-height:1;letter-spacing:-.06em;color:rgba(14,113,105,.075);pointer-events:none}
+  .atk3-card > *:not(.a3-ghost){position:relative;z-index:1}
+
+  .a3-cn{margin-top:4px;font-size:10.5px;letter-spacing:.05em;color:var(--muted)}
+  .d-steps{margin-top:18px;display:flex;flex-direction:column;gap:11px}
+  .d-step{position:relative;padding-left:24px}
+  .d-step i{position:absolute;left:0;top:0;width:17px;height:17px;border-radius:50%;border:1px solid rgba(14,113,105,.4);display:grid;place-items:center;font-family:var(--mono);font-style:normal;font-size:7px;color:var(--teal)}
+  .d-step span{display:block;font-size:10px;line-height:1.5;color:var(--muted)}
+  .d-step b{display:block;font-size:10.5px;line-height:1.35;color:var(--ink);margin-bottom:2px}
+
+  .pull-quote{
+    margin-top:16px;
+    padding:19px 24px;
+    border-radius:12px;
+    background:#17212b;
+    color:rgba(245,240,230,.72);
+    font-family:var(--serif);
+    font-size:18px;
+    line-height:1.5;
+    letter-spacing:-.01em;
+  }
+  .pull-quote b{color:#ee755d;font-weight:600}
+  .pull-quote span{display:block;margin-top:6px;font-family:var(--sans);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,240,230,.35)}
+  .threat-banner{
+    margin-top:17px;
+    display:grid;
+    grid-template-columns:168px 1fr;
+    gap:24px;
+    align-items:center;
+    border-radius:16px;
+    padding:18px 22px;
+    background:#17212b;
+    color:var(--paper);
+  }
+  .atk{
+    display:flex;
+    align-items:center;
+    gap:13px;
+  }
+  .atk-badge{
+    width:44px;height:44px;
+    border-radius:50%;
+    display:grid;place-items:center;
+    background:rgba(238,117,93,.13);
+    border:1px solid rgba(238,117,93,.35);
+    color:#ee755d;
+    font-family:var(--mono);
+    font-size:12px;
+    font-weight:700;
+    flex:none;
+  }
+  .atk b{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+  .atk span{display:block;margin-top:4px;color:rgba(245,240,230,.46);font-size:9.5px;letter-spacing:.08em}
+  .threat-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    color:rgba(245,240,230,.58);
+    font-size:11.5px;
+    line-height:1.55;
+  }
+  .threat-line b{color:var(--paper)}
+  .threat-line i{color:#ee755d;font-style:normal;margin-right:6px}
+
+  /* Status */
+  .status-card{min-height:276px}
+  .status-card h3{font-size:18px;line-height:1.35;margin-top:9px}
+  .status-card ul{margin:12px 0 0;padding:0;list-style:none}
+  .status-card li{
+    position:relative;
+    padding-left:14px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.7;
+  }
+  .status-card li::before{content:"";position:absolute;left:0;top:.72em;width:4px;height:4px;border-radius:50%;background:var(--line-strong)}
+  .status-icon{
+    width:38px;height:38px;
+    border-radius:11px;
+    display:grid;place-items:center;
+    background:rgba(216,79,56,.08);
+    border:1px solid rgba(216,79,56,.2);
+    color:var(--red);
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:19px;
+  }
+  .status-card.teal .status-icon{background:rgba(14,113,105,.08);border-color:rgba(14,113,105,.2);color:var(--teal)}
+  .status-card.gold .status-icon{background:rgba(168,121,50,.09);border-color:rgba(168,121,50,.2);color:var(--gold)}
+  .gap-panel{
+    margin-top:17px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    border:1px solid rgba(25,34,45,.12);
+    border-radius:16px;
+    overflow:hidden;
+    background:rgba(255,253,248,.52);
+  }
+  .gap-panel .half{padding:19px 23px}
+  .gap-panel .half + .half{border-left:1px solid rgba(25,34,45,.1);background:rgba(216,79,56,.035)}
+  .gap-panel .label{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .gap-panel .half:last-child .label{color:var(--red)}
+  .gap-panel p{margin-top:7px;font-size:12.5px;line-height:1.6;color:var(--muted)}
+  .gap-panel p b{color:var(--ink)}
+
+  /* Workflow & taxonomy */
+  .workflow-figure{width:100%;height:388px}
+  .workflow-figure img{object-fit:contain}
+  .workflow-note{
+    margin-top:13px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+  }
+  .workflow-note div{
+    padding:11px 14px;
+    border-left:2px solid var(--red);
+    background:rgba(255,253,248,.5);
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.5;
+  }
+  .workflow-note b{color:var(--ink)}
+
+  .layer-grid{display:grid;grid-template-columns:.82fr 1.55fr .88fr;gap:16px;height:100%}
+  .layer-card{
+    border-radius:18px;
+    border:1px solid rgba(25,34,45,.11);
+    background:rgba(255,253,248,.56);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .layer-card.red{background:linear-gradient(180deg,rgba(216,79,56,.075),rgba(255,253,248,.56) 52%)}
+  .layer-card.gold{background:linear-gradient(180deg,rgba(168,121,50,.09),rgba(255,253,248,.56) 52%)}
+  .layer-card.teal{background:linear-gradient(180deg,rgba(14,113,105,.075),rgba(255,253,248,.56) 52%)}
+  .layer-head{display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:13px;border-bottom:1px solid rgba(25,34,45,.11)}
+  .layer-head .l-kicker{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .layer-head h3{font-size:20px;line-height:1.2;margin-top:4px}
+  .layer-count{font-family:var(--serif);font-size:43px;line-height:1;color:var(--red);font-style:italic}
+  .layer-card.gold .layer-count{color:var(--gold)}
+  .layer-card.teal .layer-count{color:var(--teal)}
+  .surface-list{display:flex;flex-direction:column;gap:7px;margin-top:13px}
+  .surface{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    padding:8px 9px;
+    border-radius:9px;
+    background:rgba(255,255,255,.5);
+    border:1px solid rgba(25,34,45,.065);
+  }
+  .surface .n{
+    flex:none;
+    font-family:var(--mono);
+    font-size:9px;
+    color:var(--red);
+    padding-top:2px;
+  }
+  .layer-card.teal .surface .n{color:var(--teal)}
+  .surface b{display:block;font-size:11.5px;line-height:1.35}
+  .surface span{display:block;font-size:9.5px;line-height:1.4;color:var(--muted);margin-top:2px}
+  .layer-card.gui .surface{padding:6px 9px}
+  .layer-card.gui .surface-list{gap:5px}
+  .layer-card.gui .surface b{font-size:11px}
+  .layer-card.gui .surface span{font-size:9px}
+  .taxonomy-foot{
+    margin-top:13px;
+    padding:10px 15px;
+    border-radius:11px;
+    background:#17212b;
+    color:rgba(245,240,230,.62);
+    font-size:11px;
+    line-height:1.5;
+    display:flex;
+    gap:18px;
+    align-items:center;
+  }
+  .taxonomy-foot b{color:var(--paper)}
+  .taxonomy-foot .badge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:#ee755d;border:1px solid rgba(238,117,93,.32);padding:4px 8px;border-radius:5px}
+
+  /* AgentScan */
+  .scan-layout{display:grid;grid-template-columns:1.02fr .98fr;gap:30px;align-items:stretch}
+  .scan-figure{min-height:385px;display:flex;flex-direction:column;justify-content:center}
+  .scan-figure .figure{height:340px}
+  .step-list{display:flex;flex-direction:column;gap:8px}
+  .step{
+    display:grid;
+    grid-template-columns:36px 1fr;
+    gap:12px;
+    padding:9px 0;
+    border-bottom:1px dashed rgba(25,34,45,.16);
+  }
+  .step:last-child{border-bottom:0}
+  .step .n{
+    width:30px;height:30px;
+    border-radius:50%;
+    display:grid;place-items:center;
+    border:1px solid rgba(216,79,56,.32);
+    color:var(--red);
+    font-family:var(--mono);
+    font-size:10px;
+    background:rgba(216,79,56,.055);
+  }
+  .step b{display:block;font-size:12.5px;line-height:1.35}
+  .step span{display:block;margin-top:2px;color:var(--muted);font-size:10.5px;line-height:1.5}
+  .scan-foot{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+  }
+  .scan-foot div{
+    padding:9px 11px;
+    border-radius:9px;
+    background:rgba(255,253,248,.56);
+    border:1px solid rgba(25,34,45,.09);
+    font-size:10px;
+    line-height:1.4;
+    color:var(--muted);
+  }
+  .scan-foot b{display:block;color:var(--ink);font-size:11px;margin-bottom:2px}
+
+  /* Experiment */
+  .stat-card{
+    min-height:166px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .stat-card .v{
+    font-family:var(--serif);
+    font-size:54px;
+    line-height:1;
+    letter-spacing:-.04em;
+    color:var(--red);
+  }
+  .stat-card:nth-child(2) .v{color:var(--gold)}
+  .stat-card:nth-child(3) .v{color:var(--teal)}
+  .stat-card:nth-child(4) .v{color:var(--ink)}
+  .stat-card .v small{font-family:var(--sans);font-size:12px;color:var(--muted);letter-spacing:0;margin-left:4px}
+  .stat-card .lab{font-size:12px;line-height:1.45;font-weight:800}
+  .stat-card .note{font-size:10px;line-height:1.5;color:var(--muted);margin-top:5px}
+  .test-strip{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:0;
+    border:1px solid rgba(25,34,45,.11);
+    border-radius:14px;
+    overflow:hidden;
+    background:rgba(255,253,248,.54);
+  }
+  .test-strip div{
+    position:relative;
+    padding:16px 17px;
+    min-height:92px;
+  }
+  .test-strip div + div{border-left:1px solid rgba(25,34,45,.09)}
+  .test-strip .n{font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:.1em}
+  .test-strip b{display:block;font-size:12px;margin-top:7px}
+  .test-strip span{display:block;font-size:10px;line-height:1.45;color:var(--muted);margin-top:3px}
+  .env-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+
+  /* Heatmap */
+  .heat-layout{display:grid;grid-template-columns:340px 1fr;gap:34px;height:100%;align-items:start}
+  .heat-metrics{padding-top:5px}
+  .heat-big{font-family:var(--serif);font-size:88px;line-height:.9;letter-spacing:-.055em;color:var(--red)}
+  .heat-big small{font-family:var(--sans);font-size:13px;letter-spacing:0;color:var(--muted);margin-left:7px}
+  .heat-desc{margin-top:10px;font-size:12px;line-height:1.55;color:var(--muted);max-width:285px}
+  .metric-line{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid rgba(25,34,45,.12)}
+  .metric-line:first-of-type{margin-top:20px}
+  .metric-line strong{font-family:var(--serif);font-size:30px;font-weight:500;letter-spacing:-.03em}
+  .metric-line span{font-size:9.5px;line-height:1.45;text-align:right;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .metric-line em{font-style:normal;color:var(--red)}
+  .heat-wrap{overflow:hidden;border:1px solid rgba(25,34,45,.13);border-radius:12px;background:rgba(255,253,248,.68)}
+  table.heat{width:100%;border-collapse:collapse;table-layout:fixed}
+  table.heat th,table.heat td{padding:0;text-align:center;border-right:1px solid rgba(25,34,45,.07);border-bottom:1px solid rgba(25,34,45,.07)}
+  table.heat tr:last-child td{border-bottom:0}
+  table.heat th:last-child,table.heat td:last-child{border-right:0}
+  table.heat thead th{
+    height:52px;
+    font-size:8.4px;
+    line-height:1.22;
+    letter-spacing:.01em;
+    color:var(--muted);
+    font-weight:800;
+    vertical-align:bottom;
+    padding-bottom:7px;
+    background:rgba(25,34,45,.035);
+  }
+  table.heat thead th:first-child{text-align:left;padding-left:11px;width:188px;font-size:8px;letter-spacing:.08em}
+  table.heat tbody td{height:31px;font-family:var(--mono);font-size:9.5px;color:var(--ink)}
+  table.heat tbody th{
+    height:31px;
+    text-align:left;
+    padding-left:11px;
+    font-size:9.8px;
+    font-weight:700;
+    color:var(--ink-2);
+    white-space:nowrap;
+    background:rgba(255,253,248,.45);
+    width:188px;
+  }
+  table.heat tbody tr:hover td{outline:1px solid rgba(25,34,45,.22);outline-offset:-1px}
+  td.h0{background:rgba(25,34,45,.045);color:rgba(25,34,45,.34)}
+  td.h1{background:#fbe1d5}
+  td.h2{background:#f4b9a7}
+  td.h3{background:#e47a60;color:#fff}
+  td.h4{background:#c34430;color:#fff}
+  td.hna{background:rgba(25,34,45,.025);color:rgba(25,34,45,.22)}
+  td.hyes{background:#b83a2a;color:#fff}
+  td.hno{background:rgba(25,34,45,.045);color:rgba(25,34,45,.32)}
+  .heat-key{display:flex;align-items:center;gap:12px;margin-top:9px;color:rgba(25,34,45,.48);font-size:8.5px;letter-spacing:.04em}
+  .heat-key .sw{width:15px;height:8px;border-radius:2px}
+  .heat-key .sw.low{background:#fbe1d5}.heat-key .sw.mid{background:#f4b9a7}.heat-key .sw.high{background:#c34430}.heat-key .sw.none{background:rgba(25,34,45,.08)}
+
+  /* GUI slide */
+  .gui-layout{display:grid;grid-template-columns:530px 1fr;gap:32px;align-items:start}
+  .gui-stat{
+    display:flex;
+    align-items:baseline;
+    gap:13px;
+    padding:13px 0;
+    border-bottom:1px solid rgba(25,34,45,.12);
+  }
+  .gui-stat strong{font-family:var(--serif);font-size:34px;line-height:1;color:var(--red);font-weight:500;letter-spacing:-.03em;min-width:84px}
+  .gui-stat b{font-size:13px;line-height:1.35}
+  .gui-stat span{display:block;font-size:10.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+  .gui-figure .figure{height:266px}
+  .gui-figure{min-width:0}
+  .gui-insight{
+    margin-top:14px;
+    padding:14px 17px;
+    border-radius:12px;
+    background:rgba(216,79,56,.055);
+    border:1px solid rgba(216,79,56,.16);
+    color:var(--muted);
+    font-size:11.5px;
+    line-height:1.6;
+  }
+  .gui-insight b{color:var(--ink)}
+  .gui-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .gui-stat-card{padding:13px 14px;border-radius:10px;border:1px solid rgba(25,34,45,.1);background:rgba(255,253,248,.58)}
+  .gui-stat-card strong{display:block;font-family:var(--serif);font-size:30px;line-height:1;color:var(--red);font-weight:500;letter-spacing:-.03em}
+  .gui-stat-card b{display:block;margin-top:7px;font-size:10.5px;line-height:1.35}
+  .gui-stat-card span{display:block;margin-top:3px;font-size:9px;line-height:1.45;color:var(--muted)}
+
+  /* Two layer slide */
+  .layer-compare{display:grid;grid-template-columns:1fr 1fr;gap:22px;height:100%}
+  .compare-col{border-radius:18px;border:1px solid rgba(25,34,45,.11);background:rgba(255,253,248,.55);padding:23px;display:flex;flex-direction:column}
+  .compare-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(25,34,45,.1);padding-bottom:13px}
+  .compare-head h3{font-size:21px;line-height:1.3}
+  .compare-head .tag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+  .compare-head .big{font-family:var(--serif);font-size:45px;line-height:1;color:var(--red);font-style:italic}
+  .compare-col.system .compare-head .big{color:var(--teal)}
+  .bar-row{margin-top:15px}
+  .bar-row .top{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;line-height:1.35}
+  .bar-row .top span{color:var(--muted);font-size:10px}
+  .bar{height:8px;border-radius:999px;background:rgba(25,34,45,.08);margin-top:7px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:inherit;background:var(--red)}
+  .compare-col.system .bar i{background:var(--teal)}
+  .bar-note{font-size:9.5px;color:var(--muted);line-height:1.45;margin-top:5px}
+  .compare-extra{
+    margin-top:15px;
+    padding:11px 14px;
+    border-left:2px solid rgba(216,79,56,.45);
+    background:rgba(216,79,56,.045);
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.55;
+  }
+  .compare-col.system .compare-extra{border-left-color:rgba(14,113,105,.45);background:rgba(14,113,105,.045)}
+  .compare-extra b{display:block;color:var(--ink);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+  .compare-foot{
+    margin-top:auto;
+    padding-top:14px;
+    border-top:1px dashed rgba(25,34,45,.15);
+    font-size:10.5px;
+    line-height:1.55;
+    color:var(--muted);
+  }
+  .compare-foot b{color:var(--ink)}
+  .insight-banner{
+    margin-top:15px;
+    padding:12px 17px;
+    background:#17212b;
+    color:rgba(245,240,230,.65);
+    border-radius:11px;
+    font-size:11.5px;
+    line-height:1.5;
+  }
+  .insight-banner b{color:var(--paper)}
+  .insight-banner i{color:#ee755d;font-style:normal}
+
+  /* Impact */
+  .impact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;height:100%}
+  .impact-card{padding:20px 18px;display:flex;flex-direction:column}
+  .impact-card .no{font-family:var(--serif);font-size:34px;line-height:1;color:rgba(25,34,45,.16);font-style:italic}
+  .impact-card h3{font-size:17px;line-height:1.3;margin-top:14px}
+  .impact-card .cn{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-top:4px}
+  .impact-card p{font-size:11.5px;line-height:1.62;color:var(--muted);margin-top:12px}
+  .impact-example{margin-top:14px;padding:11px 12px;border-radius:9px;background:rgba(25,34,45,.045);font-size:10px;line-height:1.55;color:var(--muted)}
+  .impact-example b{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.11em;color:var(--red);margin-bottom:4px}
+  .impact-watermark{position:absolute;right:12px;top:31%;font-family:var(--serif);font-size:80px;line-height:1;font-style:italic;font-weight:500;letter-spacing:-.06em;color:rgba(216,79,56,.065);pointer-events:none;z-index:0}
+  .impact-card.teal .impact-watermark{color:rgba(14,113,105,.075)}
+  .impact-card > *:not(.impact-watermark){position:relative;z-index:1}
+  .impact-card.teal .impact-example b{color:var(--teal)}
+  .impact-card .related{margin-top:auto;padding-top:13px;border-top:1px dashed rgba(25,34,45,.16);font-size:9.5px;line-height:1.55;color:rgba(25,34,45,.52)}
+  .impact-card .related b{color:var(--ink);display:block;margin-bottom:2px;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+  .impact-card.red{background:linear-gradient(180deg,rgba(216,79,56,.09),rgba(255,253,248,.62) 48%)}
+  .impact-card.gold{background:linear-gradient(180deg,rgba(168,121,50,.09),rgba(255,253,248,.62) 48%)}
+  .impact-card.teal{background:linear-gradient(180deg,rgba(14,113,105,.08),rgba(255,253,248,.62) 48%)}
+
+  /* Contributions */
+  .contrib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .contrib-card{
+    position:relative;
+    aspect-ratio:1/1;
+    padding:26px 28px 22px;
+    border-radius:16px;
+    border:1px solid rgba(25,34,45,.12);
+    background:linear-gradient(165deg,rgba(255,253,248,.96),rgba(255,253,248,.6));
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 12px 34px rgba(25,34,45,.05);
+  }
+  .contrib-card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--red)}
+  .contrib-card.gold::before{background:var(--gold)}
+  .contrib-card.teal::before{background:var(--teal)}
+  .contrib-ghost{
+    position:absolute;right:16px;bottom:2px;
+    font-family:var(--serif);font-size:150px;line-height:1;font-style:italic;font-weight:500;
+    letter-spacing:-.06em;color:rgba(25,34,45,.045);
+    pointer-events:none;
+  }
+  .contrib-card > *:not(.contrib-ghost){position:relative;z-index:1}
+  .contrib-top{
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .contrib-top .idx{color:var(--red);font-size:10px;font-weight:700}
+  .contrib-card.gold .contrib-top .idx{color:var(--gold)}
+  .contrib-card.teal .contrib-top .idx{color:var(--teal)}
+  .contrib-card h3{margin-top:22px;font-size:27px;line-height:1.2;letter-spacing:-.02em}
+  .contrib-card .sub{margin-top:7px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .contrib-card p{margin-top:15px;min-height:69px;font-size:13px;line-height:1.75;color:var(--muted)}
+  .contrib-metrics{
+    margin-top:18px;padding:12px 0;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+    border-top:1px solid rgba(25,34,45,.1);
+    border-bottom:1px solid rgba(25,34,45,.1);
+  }
+  .contrib-metrics b{display:block;font-family:var(--serif);font-size:23px;line-height:1;font-weight:600;color:var(--ink)}
+  .contrib-metrics b.txt{font-family:var(--sans);font-size:14px;line-height:1.35;font-weight:800}
+  .contrib-metrics span{display:block;margin-top:5px;font-size:8.5px;letter-spacing:.07em;color:var(--muted)}
+  .contrib-points{margin-top:16px;display:flex;flex-direction:column;gap:7px}
+  .contrib-points div{position:relative;padding-left:15px;font-size:11px;line-height:1.5;color:var(--muted)}
+  .contrib-points div::before{content:"→";position:absolute;left:0;color:var(--red);font-size:9px}
+  .contrib-card.gold .contrib-points div::before{color:var(--gold)}
+  .contrib-card.teal .contrib-points div::before{color:var(--teal)}
+  .contrib-note{margin-top:auto;padding-top:13px;border-top:1px dashed rgba(25,34,45,.14);display:flex;align-items:center;gap:9px;font-size:10.5px;color:var(--ink-2)}
+  .contrib-note b{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+  .contrib-card.gold .contrib-note b{color:var(--gold)}
+  .contrib-card.teal .contrib-note b{color:var(--teal)}
+
+  /* Case */
+  .case-layout{display:grid;grid-template-columns:1fr 650px;gap:30px;align-items:start}
+  .case-figure .figure{height:560px}
+  .case-kicker{border-left:2px solid var(--red);padding-left:17px;margin-bottom:16px}
+  .case-kicker h3{font-size:22px;line-height:1.35}
+  .case-kicker p{font-size:10.5px;line-height:1.55;color:var(--muted);margin-top:6px}
+  .case-steps{display:flex;flex-direction:column;gap:0}
+  .case-step{position:relative;padding:0 0 18px 44px;border-left:1px solid rgba(25,34,45,.18);margin-left:12px}
+  .case-step:last-child{border-left-color:transparent;padding-bottom:0}
+  .case-step .n{position:absolute;left:-13px;top:0;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--paper);border:1px solid var(--red);color:var(--red);font-family:var(--mono);font-size:9px}
+  .case-step b{display:block;font-size:13px;line-height:1.35}
+  .case-step span{display:block;margin-top:4px;font-size:11px;line-height:1.58;color:var(--muted)}
+  .case-result{
+    margin-top:2px;
+    padding:13px 15px;
+    border-radius:11px;
+    background:rgba(216,79,56,.065);
+    border:1px solid rgba(216,79,56,.18);
+    font-size:11px;
+    line-height:1.55;
+    color:var(--muted);
+  }
+  .case-result b{color:var(--red-deep)}
+  .case-chain{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}
+  .case-chain div{padding:9px 10px;border-radius:8px;border:1px solid rgba(25,34,45,.09);background:rgba(255,253,248,.52)}
+  .case-chain b{display:block;font-size:8px;font-family:var(--mono);letter-spacing:.09em;color:var(--red)}
+  .case-chain span{display:block;margin-top:3px;font-size:9.5px;line-height:1.45;color:var(--muted)}
+  .case-figure .figure-caption{max-width:650px}
+
+  /* Defense */
+  .def-layout{display:grid;grid-template-columns:480px 1fr;gap:32px;height:auto;align-items:start}
+  .def-principles{display:flex;flex-direction:column;gap:11px}
+  .def-principle{display:grid;grid-template-columns:33px 1fr;gap:12px;padding:13px 14px;border-radius:11px;background:rgba(255,253,248,.54);border:1px solid rgba(25,34,45,.09)}
+  .def-principle .n{font-family:var(--serif);font-size:18px;font-style:italic;color:var(--red)}
+  .def-principle b{display:block;font-size:12px;line-height:1.4}
+  .def-principle span{display:block;margin-top:3px;font-size:10px;line-height:1.5;color:var(--muted)}
+  .def-table{width:100%;border-collapse:collapse}
+  .def-table th{font-size:8.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:left;padding:0 7px 8px;border-bottom:1px solid rgba(25,34,45,.14)}
+  .def-table th:nth-child(2),.def-table th:nth-child(3){text-align:center}
+  .def-table td{padding:5px 7px;border-bottom:1px solid rgba(25,34,45,.07);font-size:9.5px;line-height:1.3}
+  .def-table td:nth-child(2),.def-table td:nth-child(3){text-align:center;font-family:var(--mono);font-size:9px}
+  .def-table td:first-child{width:38%}
+  .def-table .before{color:var(--red);font-weight:700}
+  .def-table .after{color:var(--teal);font-weight:700}
+  .def-table .after.zero{color:var(--teal);background:rgba(14,113,105,.07);border-radius:4px}
+  .def-note{
+    margin-top:12px;
+    display:flex;
+    gap:9px;
+    flex-wrap:wrap;
+  }
+  .def-caveat{
+    margin-top:12px;
+    padding:11px 14px;
+    border-left:2px solid var(--gold);
+    background:rgba(168,121,50,.065);
+    color:var(--muted);
+    font-size:10.5px;
+    line-height:1.55;
+  }
+  .def-caveat b{color:var(--ink)}
+
+  /* Conclusion */
+  .conclusion-slide{display:flex;flex-direction:column;justify-content:center}
+  .conclusion-lead{
+    font-family:var(--serif);
+    font-size:43px;
+    line-height:1.25;
+    letter-spacing:-.035em;
+    max-width:1180px;
+    margin-top:10px;
+  }
+  .conclusion-lead em{color:#ee755d;font-style:italic}
+  .takeaway-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:50px;margin-top:35px;align-items:start}
+  .takeaways{display:flex;flex-direction:column;gap:0}
+  .takeaway{display:grid;grid-template-columns:48px 1fr;gap:16px;padding:16px 0;border-top:1px solid rgba(245,240,230,.13)}
+  .takeaway .n{font-family:var(--serif);font-size:27px;font-style:italic;color:#ee755d;line-height:1}
+  .takeaway b{display:block;font-size:14px;line-height:1.4}
+  .takeaway span{display:block;margin-top:4px;color:rgba(245,240,230,.55);font-size:11px;line-height:1.55}
+  .qa-panel{
+    border:1px solid rgba(245,240,230,.16);
+    border-radius:16px;
+    padding:22px 24px;
+    background:rgba(255,255,255,.035);
+  }
+  .qa-panel .q{font-family:var(--serif);font-size:38px;color:var(--paper);line-height:1;margin-bottom:15px}
+  .qa-panel p{color:rgba(245,240,230,.5);font-size:10px;line-height:1.5;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+  .discussion{list-style:none;padding:0;margin:0}
+  .discussion li{position:relative;padding-left:14px;color:rgba(245,240,230,.62);font-size:11px;line-height:1.55;margin-top:9px}
+  .discussion li::before{content:"→";position:absolute;left:0;color:#ee755d}
+  .closing-meta{display:flex;align-items:center;gap:12px;margin-top:26px;color:rgba(245,240,230,.34);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase}
+  .closing-meta .line{height:1px;width:45px;background:rgba(245,240,230,.18)}
+
+  /* Controls */
+  .progress{
+    position:fixed;
+    left:0;right:0;top:0;height:3px;
+    background:rgba(255,255,255,.08);
+    z-index:20;
+  }
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ee755d,#d84f38);transition:width .35s ease}
+  .controls{
+    position:fixed;
+    right:14px;top:12px;
+    z-index:30;
+    display:flex;align-items:center;gap:6px;
+    opacity:.42;
+    transition:opacity .2s;
+  }
+  .controls:hover,.controls:focus-within{opacity:1}
+  .controls button{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(12,18,24,.72);
+    color:rgba(255,255,255,.8);
+    cursor:pointer;
+    display:grid;place-items:center;
+    font-size:14px;
+    backdrop-filter:blur(6px);
+    transition:background .2s,transform .2s;
+  }
+  .controls button:hover{background:rgba(216,79,56,.72);transform:translateY(-1px)}
+  .controls button:disabled{opacity:.3;cursor:default;transform:none}
+  .hint{
+    position:fixed;
+    left:50%;
+    bottom:16px;
+    transform:translateX(-50%);
+    z-index:25;
+    color:rgba(255,255,255,.55);
+    mix-blend-mode:difference;
+    font-size:9px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    pointer-events:none;
+    transition:opacity .5s;
+  }
+  .hint.hide{opacity:0}
+
+  @media (max-width:700px){
+    .controls{right:8px;top:8px}
+    .hint{display:none}
+  }
+
+  @media print{
+    @page{size:1600px 900px;margin:0}
+    html,body{overflow:visible;background:#fff;height:auto}
+    .viewport{position:static;display:block;background:#fff}
+    .stage{width:1600px;height:auto;box-shadow:none;transform:none!important;background:#fff}
+    .slide{
+      position:relative;
+      display:flex!important;
+      opacity:1!important;
+      visibility:visible!important;
+      transform:none!important;
+      width:1600px;
+      height:900px;
+      page-break-after:always;
+      break-after:page;
+      pointer-events:auto;
+    }
+    .slide:last-child{page-break-after:auto;break-after:auto}
+    .reveal{opacity:1!important;transform:none!important}
+    .progress,.controls,.hint{display:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="progress"><i id="progressBar"></i></div>
+
+<div class="viewport">
+  <div class="stage" id="stage">
+    <!-- 01 -->
+    <section class="slide title-slide dark" data-title="封面">
+      <div class="orbit o1"></div>
+      <div class="orbit o2"></div>
+      <div class="orbit o3"></div>
+      <div class="title-left">
+        <div class="kicker reveal">Paper Review <span class="cn">移动智能体安全 · 论文研读</span></div>
+        <h1 class="title-en reveal d1">
+          <span class="thin">From Assistants</span>
+          <span class="hot">to Adversaries</span>
+        </h1>
+        <div class="title-cn reveal d2">从助手到对手：移动 LLM Agent 的安全风险探索</div>
+        <div class="title-authors reveal d3">
+          Liangxuan Wu, Chao Wang, Tianming Liu, Yanjie Zhao, Haoyu Wang<br>
+          华中科技大学 · Huazhong University of Science and Technology
+        </div>
+        <div class="title-meta reveal d4">arXiv:2505.12981v2 &nbsp;·&nbsp; 2025-05-20 &nbsp;·&nbsp; cs.CR</div>
+        <div class="title-note reveal d5">
+          <span class="line"></span>
+          理论研讨会 · 2026.11.11
+          <span class="line"></span>
+          20 slides / ~24 min
+        </div>
+      </div>
+
+      <aside class="risk-panel reveal d3">
+        <div class="risk-big">9<small>/ 9</small></div>
+        <div class="risk-label">受测 Agent 全部存在可被利用的安全漏洞</div>
+        <div class="risk-row"><strong>11</strong><span>attack surfaces<br>LLM · GUI · System</span></div>
+        <div class="risk-row"><strong>6.3<small style="font-size:12px;color:rgba(245,240,230,.45)"> / 11</small></strong><span>average exposure<br>per agent</span></div>
+        <div class="risk-row"><strong>0</strong><span>agents achieving<br>full protection</span></div>
+      </aside>
+
+      <div class="footer">
+        <span>Wu et al. <span class="dot">·</span> arXiv:2505.12981v2</span>
+        <span class="num">01 / 20</span>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="slide" data-title="研究问题">
+      <div class="head">
+        <div class="kicker reveal">Research Questions <span class="cn">研究问题</span></div>
+        <h2 class="reveal d1">当 Agent 同时拥有推理、感知与系统权限，<br><em>传统安全边界还成立吗？</em></h2>
+      </div>
+
+      <div class="body">
+        <div class="question-hero reveal d2">
+          <p>移动 LLM Agent 把“自然语言意图”变成真实设备上的连续操作。它不再只是一个模型，而是一个<em>能看、能点、能调用系统能力</em>的执行主体。</p>
+          <div class="q-tag">
+            <strong>3</strong>
+            <span>questions<br>one evidence chain</span>
+          </div>
+        </div>
+
+        <div class="grid-3" style="margin-top:18px">
+          <article class="q-card reveal d3" data-q="Q1">
+            <div class="q-k">Why now?</div>
+            <h3>为什么移动端是新的风险前沿？</h3>
+            <p>LLM 的非确定性决策、GUI 的多模态感知、系统级高权限执行，三者叠加后形成传统 App 安全之外的新攻击面。</p>
+            <div class="mini"><span class="pill red"><b>能力栈</b> 变化</span><span class="pill"><b>权限</b> 升级</span></div>
+          </article>
+          <article class="q-card reveal d4" data-q="Q2">
+            <div class="q-k">How to find?</div>
+            <h3>如何系统性地发现这些风险？</h3>
+            <p>先从真实 Agent 反推出统一工作流，再把威胁映射到 LLM / GUI / System 三层，最后用半自动框架复现。</p>
+            <div class="mini"><span class="pill teal"><b>11</b> surfaces</span><span class="pill"><b>AgentScan</b></span></div>
+          </article>
+          <article class="q-card reveal d5" data-q="Q3">
+            <div class="q-k">How bad?</div>
+            <h3>风险到底有多严重，能否防住？</h3>
+            <p>9 款真实 Agent 的实测结果：平均暴露 6.3 / 11 个攻击面；补丁能显著降低成功率，但无法归零。</p>
+            <div class="mini"><span class="pill red"><b>9 / 9</b> vulnerable</span><span class="pill"><b>0</b> full protection</span></div>
+          </article>
+        </div>
+
+        <div class="flow-strip reveal d6">
+          <div class="fs"><span class="n">STEP 01</span><b>还原真实工作流</b><span>逆向 9 款 Agent，抽象五阶段执行链</span></div>
+          <div class="fs"><span class="n">STEP 02</span><b>映射 11 个攻击面</b><span>LLM 2 + GUI 6 + System 3</span></div>
+          <div class="fs"><span class="n">STEP 03</span><b>AgentScan 半自动评测</b><span>真实设备 + 可控攻击场景</span></div>
+          <div class="fs"><span class="n">STEP 04</span><b>影响归因与防御验证</b><span>9 款 Agent 实测 + 补丁对比</span></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Research questions <span class="dot">·</span> from capability stack to attack surface</span>
+        <span class="num">02 / 20</span>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="slide" data-title="第一章 · 主要贡献">
+      <div class="head">
+        <div class="kicker reveal">01 · Introduction <span class="cn">第一章 · 主要贡献</span></div>
+        <h2 class="reveal d1">三项核心贡献：从“首次刻画”到<em>可复现评测</em></h2>
+        <p class="lead reveal d2">论文的贡献不止于“发现漏洞”，而是建立了从能力刻画、攻击面抽象到真实评测的完整链路。</p>
+      </div>
+
+      <div class="body">
+        <div class="contrib-grid">
+          <article class="contrib-card reveal d2">
+            <div class="contrib-ghost">01</div>
+            <div class="contrib-top"><span class="idx">C 01</span><span>Characterization</span></div>
+            <h3>系统刻画</h3>
+            <div class="sub">First cross-form characterization</div>
+            <p>首次在同一框架下拆解系统级、第三方与框架型 Agent；将工作流抽象为 LLM / GUI / System 三层，识别 11 个攻击面。</p>
+            <div class="contrib-metrics">
+              <div><b>3</b><span>部署形态</span></div>
+              <div><b>3</b><span>能力层</span></div>
+              <div><b>11</b><span>攻击面</span></div>
+            </div>
+            <div class="contrib-points">
+              <div>覆盖 9 款真实 Agent、3 类部署形态</div>
+              <div>统一为 5 阶段执行链与 11 个攻击入口</div>
+              <div>11 个入口逐一映射回真实执行阶段</div>
+            </div>
+            <div class="contrib-note"><b>Answer</b>风险藏在哪里</div>
+          </article>
+
+          <article class="contrib-card gold reveal d3">
+            <div class="contrib-ghost">02</div>
+            <div class="contrib-top"><span class="idx">C 02</span><span>Framework</span></div>
+            <h3>分析框架</h3>
+            <div class="sub">AgentScan · semi-automated framework</div>
+            <p>设计并实现半自动安全测试框架：统一任务执行、攻击注入与行为观测，支持扩展攻击能力，并在真实设备上复现跨层攻击。</p>
+            <div class="contrib-metrics">
+              <div><b class="txt">半自动</b><span>测试模式</span></div>
+              <div><b class="txt">3 类</b><span>注入方式</span></div>
+              <div><b class="txt">开源</b><span>框架与用例</span></div>
+            </div>
+            <div class="contrib-points">
+              <div>三类注入：恶意 App / 浮层 / 指令</div>
+              <div>真实设备执行，记录截图、日志与轨迹</div>
+              <div>统一 GPT-4o 后端，隔离模型差异</div>
+            </div>
+            <div class="contrib-note"><b>Answer</b>如何稳定复现</div>
+          </article>
+
+          <article class="contrib-card teal reveal d4">
+            <div class="contrib-ghost">03</div>
+            <div class="contrib-top"><span class="idx">C 03</span><span>Evaluation</span></div>
+            <h3>真实评测</h3>
+            <div class="sub">9 agents in the wild · responsible disclosure</div>
+            <p>用 AgentScan 评测 9 款在野 Agent：全部存在可利用漏洞，最高暴露 8 / 11 个攻击面；发现已通过负责任披露反馈给两家 OEM。</p>
+            <div class="contrib-metrics">
+              <div><b>9/9</b><span>Agent 中招</span></div>
+              <div><b>8/11</b><span>最高暴露</span></div>
+              <div><b>2</b><span>OEM 回复</span></div>
+            </div>
+            <div class="contrib-points">
+              <div>平均暴露 6.3 / 11，最高达 8 / 11</div>
+              <div>两家 OEM 确认问题并致谢</div>
+              <div>补丁后风险下降，但仍无法归零</div>
+            </div>
+            <div class="contrib-note"><b>Answer</b>影响有多严重</div>
+          </article>
+        </div>
+
+        <div class="insight-banner reveal d5" style="margin-top:16px"><b>一句话总结：</b>首个覆盖三类移动 LLM Agent 的系统性安全研究——既给出攻击面地图，也给出可复用的评测基线与防御建议。</div>
+      </div>
+
+      <div class="footer">
+        <span>Introduction <span class="dot">·</span> three contributions of this paper</span>
+        <span class="num">03 / 20</span>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="slide" data-title="研究背景">
+      <div class="head">
+        <div class="kicker reveal">01 · Background <span class="cn">研究背景</span></div>
+        <h2 class="reveal d1">一句话，把跨 App 的复杂操作交给 Agent</h2>
+        <p class="lead reveal d2">用户只说“给 John 发微信，提醒他 3 点开会”，Agent 就能把意图拆成可执行的 UI 步骤——这正是移动交互从“人操作 App”转向“人委托 Agent”的转折点。</p>
+      </div>
+
+      <div class="body">
+        <div class="figure reveal d3" style="height:352px">
+          <img src="assets/fig1.png" alt="论文 Figure 1：Agent 执行微信消息任务的六个步骤">
+        </div>
+        <div class="figure-caption reveal d3"><b>Fig. 1</b> &nbsp; Agent 将一条自然语言指令分解为 6 个连续 GUI 动作，并自主完成点击、输入与发送。</div>
+
+        <div class="cap-strip reveal d4">
+          <div class="cap-item"><span class="idx">01</span><div><b>自然语言入口</b><span>意图理解与任务分解</span></div></div>
+          <div class="cap-item"><span class="idx">02</span><div><b>屏幕级感知</b><span>截图 OCR / 图标定位 / ViewTree</span></div></div>
+          <div class="cap-item"><span class="idx">03</span><div><b>系统级动作</b><span>Intent / ADB / 无障碍 / 原生输入</span></div></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Fig. 1 <span class="dot">·</span> mobile interaction paradigm shift</span>
+        <span class="num">04 / 20</span>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="slide" data-title="第二章 · 智能体分类与威胁模型">
+      <div class="head">
+        <div class="kicker reveal">02 · Threat Model <span class="cn">第二章 · 智能体分类与威胁模型</span></div>
+        <h2 class="reveal d1">三类智能体，一个共同的<em>攻击者假设</em></h2>
+      </div>
+
+      <div class="body">
+        <div class="model-grid">
+          <article class="card red model-card reveal d2">
+            <div class="model-ghost">01</div>
+            <div class="model-main">
+              <div class="model-type"><span>System-level</span><b>01</b></div>
+              <h3>系统级 Agent</h3>
+              <div class="model-en">Pre-installed · deep OS integration</div>
+              <p>由手机厂商预装并深度集成，可直接调用系统 API、输入管理与特权服务，通常拥有更高的执行权限。</p>
+              <div class="model-foot"><b>Security lens</b>权限越高，单点漏洞的影响越大</div>
+            </div>
+            <div class="model-side">
+              <div class="side-label">Representative</div>
+              <div class="side-value">Honor YOYO Assistant<br>vivo 蓝心助理</div>
+              <div class="model-traits"><span>预装</span><span>高权限</span><span>系统 API</span></div>
+            </div>
+          </article>
+
+          <article class="card teal model-card reveal d3">
+            <div class="model-ghost">02</div>
+            <div class="model-main">
+              <div class="model-type"><span>Third-party Universal</span><b>02</b></div>
+              <h3>第三方通用 Agent</h3>
+              <div class="model-en">Regular app · accessibility automation</div>
+              <p>以普通 Android App 形态部署，主要依赖无障碍服务模拟点击与输入，强调跨设备兼容与广泛分发。</p>
+              <div class="model-foot"><b>Security lens</b>UI 与输入直接暴露给第三方 App</div>
+            </div>
+            <div class="model-side">
+              <div class="side-label">Representative</div>
+              <div class="side-value">Zhipu AI AutoGLM</div>
+              <div class="model-traits"><span>普通 App</span><span>Accessibility</span><span>跨设备</span></div>
+            </div>
+          </article>
+
+          <article class="card gold model-card reveal d4">
+            <div class="model-ghost">03</div>
+            <div class="model-main">
+              <div class="model-type"><span>Agent Framework</span><b>03</b></div>
+              <h3>新兴 Agent 框架</h3>
+              <div class="model-en">PC + client / server · ADB</div>
+              <p>采用 PC + 手机客户端 / 服务端架构，通过 ADB 扩展自动化与调试能力，适合复杂任务编排与评测。</p>
+              <div class="model-foot"><b>Security lens</b>调试接口把攻击面延伸到 PC 端</div>
+            </div>
+            <div class="model-side">
+              <div class="side-label">Representative</div>
+              <div class="side-value">Mobile-Agent · AppAgent<br>AutoDroid · DroidBot-GPT</div>
+              <div class="model-traits"><span>PC + ADB</span><span>可调试</span><span>复杂编排</span></div>
+            </div>
+          </article>
+
+          <article class="card dark-card threat-card model-card reveal d5">
+            <div class="model-ghost">04</div>
+            <div class="model-main">
+              <div class="model-type"><span>Threat Model</span><b>04</b></div>
+              <h3>攻击者模型</h3>
+              <div class="model-en">Benign-looking app · no root required</div>
+              <p>三类形态共享 LLM × GUI × System 能力栈；攻击者控制一个看似正常的第三方 App，无需 root 即可诱导授权与注入。</p>
+              <div class="model-foot"><b>Core insight</b>能力越强，可达的攻击面越大</div>
+            </div>
+            <div class="model-side">
+              <div class="threat-rows">
+                <div><b>Precondition</b><span>控制普通第三方 App，可诱导授予悬浮窗等权限</span></div>
+                <div><b>Capability</b><span>注入误导输入 · 覆盖 UI · 触发非预期动作</span></div>
+                <div><b>Goal</b><span>操纵 Agent 行为，或窃取用户数据</span></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Background <span class="dot">·</span> agent taxonomy and attacker model</span>
+        <span class="num">05 / 20</span>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="slide" data-title="研究现状">
+      <div class="head">
+        <div class="kicker reveal">01 · Related Work <span class="cn">研究现状</span></div>
+        <h2 class="reveal d1">三条研究线已成熟，但移动端仍缺一面“总账”</h2>
+        <p class="lead reveal d2">LLM、GUI 与系统安全各自都有积累，但既往工作多聚焦 Web Agent 或单点漏洞，尚未覆盖移动 Agent 的完整执行链。</p>
+      </div>
+
+      <div class="body">
+        <div class="grid-3">
+          <article class="card red status-card reveal d2">
+            <div class="status-icon">L</div>
+            <div class="micro-label" style="margin-top:12px">Model layer</div>
+            <h3>LLM 层：输出可被操纵</h3>
+            <ul>
+              <li>提示注入、越狱与后门攻击</li>
+              <li>Glitch Tokens 触发异常推理</li>
+              <li>模型对“看似合法”的恶意输入缺乏稳定防御</li>
+            </ul>
+          </article>
+          <article class="card teal status-card reveal d3">
+            <div class="status-icon">G</div>
+            <div class="micro-label" style="margin-top:12px">GUI layer</div>
+            <h3>GUI 层：感知可被欺骗</h3>
+            <ul>
+              <li>UI deception、透明浮层与点击劫持</li>
+              <li>ViewTree / 层级注入污染结构理解</li>
+              <li>视觉与结构两套感知路径各有盲区</li>
+            </ul>
+          </article>
+          <article class="card gold status-card reveal d4">
+            <div class="status-icon">S</div>
+            <div class="micro-label" style="margin-top:12px">System layer</div>
+            <h3>System 层：能力可被滥用</h3>
+            <ul>
+              <li>Intent / Deeplink 劫持与包名伪造</li>
+              <li>日志未脱敏导致上下文泄漏</li>
+              <li>高权限执行放大单点漏洞的影响</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="gap-panel reveal d5">
+          <div class="half">
+            <div class="label">Gap · 既有工作的空白</div>
+            <p>Web/GUI Agent 研究较多，但移动环境独有的<b>系统权限、UI 结构、多模态输入</b>没有被放进同一威胁模型；缺少可复用的端到端评测方法。</p>
+          </div>
+          <div class="half">
+            <div class="label">This paper · 本文定位</div>
+            <p>论文主张这是<b>首个</b>覆盖三类移动 LLM Agent 的系统性安全分析：统一工作流 → <b>11 个攻击面</b> → <b>AgentScan</b> 半自动评测。</p>
+          </div>
+        </div>
+
+        <div class="bottom-band reveal d6">
+          <span class="tag">KEY SHIFT</span>
+          <span><b>不是把三个领域简单拼起来：</b>移动 Agent 的独特性在于三层能力被同一个执行闭环串起来，单层防御无法覆盖跨层组合攻击。</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Related work <span class="dot">·</span> from isolated vulnerabilities to an end-to-end mobile threat model</span>
+        <span class="num">06 / 20</span>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section class="slide" data-title="Agent工作流">
+      <div class="head">
+        <div class="kicker reveal">02 · Method <span class="cn">方法：工作流还原</span></div>
+        <h2 class="reveal d1">先还原 Agent 怎么工作，再问它会在哪里失守</h2>
+        <p class="lead reveal d2">作者逆向分析了 9 款代表性 Agent，把执行过程抽象为五个阶段。每个阶段都对应一种可被攻击者介入的“接口”。</p>
+      </div>
+
+      <div class="body">
+        <div class="figure workflow-figure reveal d3">
+          <img src="assets/fig2.png" alt="论文 Figure 2：LLM-powered Mobile Agents 工作流">
+        </div>
+        <div class="figure-caption reveal d3"><b>Fig. 2</b> &nbsp; 从指令理解、屏幕理解、决策生成，到动作执行与反思完成的闭环。</div>
+
+        <div class="workflow-note reveal d4">
+          <div><b>感知路径</b><br>截图 + OCR / 图标定位 / 多模态模型，或直接解析 ViewTree。</div>
+          <div><b>决策路径</b><br>规则驱动的 Logic-Oriented Planning，或逐步推理的 LLM-Centric Reasoning。</div>
+          <div><b>执行路径</b><br>System Intents、ADB、无障碍服务、原生输入模拟与用户确认。</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Fig. 2 <span class="dot">·</span> generalized execution pipeline of mobile LLM agents</span>
+        <span class="num">07 / 20</span>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="slide" data-title="第四章 A · 攻击分类">
+      <div class="head">
+        <div class="kicker reveal">Ch.4 · Attack Taxonomy <span class="cn">第四章 A · 智能体攻击分类</span></div>
+        <h2 class="reveal d1">11 个攻击面，三种<em>作用方式</em></h2>
+      </div>
+
+      <div class="body">
+        <div class="atk3-grid">
+          <article class="card red atk3-card reveal d2">
+            <div class="a3-top"><div class="a3-kicker">模型层</div><div class="a3-count">02</div></div>
+            <h3>模型层攻击</h3>
+            <div class="a3-en">指令理解与推理决策</div>
+            <p class="a3-principle">攻击对象是模型对指令与上下文的理解。攻击者把恶意目标包装成正常任务，或用异常字符扰乱推理，让模型在“看似合理”的判断中改写计划、跳过校验，把错误决策交给执行层。</p>
+            <div class="a3-rule"></div>
+            <div class="a3-flow">
+              <div class="a3-node"><b>输入污染</b><span>恶意任务或异常字符进入模型上下文</span></div>
+              <div class="a3-node"><b>推理偏移</b><span>原始目标被覆盖，计划与约束失效</span></div>
+              <div class="a3-node"><b>动作越权</b><span>错误决策被直接执行到真实设备</span></div>
+            </div>
+            <div class="a3-note"><b>为什么有效</b>Agent 被设计为忠实执行、少人工确认；模型输出又直接驱动真实操作，一次判断偏差就会被放大成设备上的动作。</div>
+            <div class="a3-foot"><b>作用点</b>指令理解 · 任务分解 · 决策生成</div>
+          </article>
+
+          <article class="card gold atk3-card reveal d3">
+            <div class="a3-top"><div class="a3-kicker">界面层 · 覆盖最广</div><div class="a3-count">06</div></div>
+            <h3>界面层攻击</h3>
+            <div class="a3-en">屏幕感知与点击决策</div>
+            <p class="a3-principle">攻击对象是屏幕感知与点击决策。攻击者伪造控件、图标或界面文本，污染 ViewTree 或遮挡层级，让 Agent 看到的界面与真实状态不一致，从而点错目标、走错页面。</p>
+            <div class="a3-rule"></div>
+            <div class="a3-flow">
+              <div class="a3-node"><b>界面伪造</b><span>假控件、仿冒图标与恶意屏幕文本</span></div>
+              <div class="a3-node"><b>感知污染</b><span>OCR 定位偏移，控件树结构被篡改</span></div>
+              <div class="a3-node"><b>交互劫持</b><span>点击被重定向，或任务直接中断</span></div>
+            </div>
+            <div class="a3-note"><b>为什么有效</b>截图、OCR、控件树与坐标点击都可能被注入；感知层缺少可信基准，越依赖视觉就越容易被误导。</div>
+            <div class="a3-foot"><b>作用点</b>屏幕理解 · 控件定位 · 点击执行</div>
+          </article>
+
+          <article class="card teal atk3-card reveal d4">
+            <div class="a3-top"><div class="a3-kicker">系统层</div><div class="a3-count">03</div></div>
+            <h3>系统层攻击</h3>
+            <div class="a3-en">系统调用与接口滥用</div>
+            <p class="a3-principle">攻击对象是系统调用接口。攻击者注册同名包、构造恶意 Deeplink，或读取运行时日志，把 Agent 的启动、跳转与上下文暴露变成可利用的入口。</p>
+            <div class="a3-rule"></div>
+            <div class="a3-flow">
+              <div class="a3-node"><b>接口伪造</b><span>同名包、恶意 URI 或可读取的日志</span></div>
+              <div class="a3-node"><b>目标重定向</b><span>启动恶意组件或进入钓鱼页面</span></div>
+              <div class="a3-node"><b>数据外泄</b><span>查询参数、屏幕状态与指令被带走</span></div>
+            </div>
+            <div class="a3-note"><b>为什么有效</b>系统接口默认信任调用方；包名、URI 与日志缺少校验或脱敏，单点缺口就能放大为应用劫持与隐私泄漏。</div>
+            <div class="a3-foot"><b>作用点</b>应用启动 · 页面跳转 · 运行日志</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>攻击分类 <span class="dot">·</span> 三种交互层与十一个攻击面</span>
+        <span class="num">08 / 20</span>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section class="slide" data-title="第四章 B/C · 攻击实现（一）">
+      <div class="head">
+        <div class="kicker reveal">Ch.4 · LLM + GUI <span class="cn">第四章 B/C · 攻击实现（一）</span></div>
+        <h2 class="reveal d1">从指令到视觉：让 Agent <em>说错、看错</em></h2>
+      </div>
+
+      <div class="body">
+        <div class="atk4-grid">
+          <article class="card red atk4-card reveal d2">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">01</span><span class="a4-layer">模型层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>恶意指令</h3>
+                <div class="a4-cn">把恶意目标包装成正常任务</div>
+                <p>把恶意目标包装成正常子任务，利用模型对指令的服从覆盖原始目标；缺少校验时，Agent 会直接执行越权操作，甚至把攻击步骤当成任务的一部分。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>恶意包装</b><span>把攻击目标写成子任务</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>模型顺从</b><span>覆盖原始意图与边界</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>越权执行</b><span>发消息、删文件、取数据</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>发送消息 · 删除文件 · 读取敏感数据</div>
+          </article>
+
+          <article class="card red atk4-card reveal d3">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">02</span><span class="a4-layer">模型层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>异常字符注入</h3>
+                <div class="a4-cn">用异常字符破坏推理稳定性</div>
+                <p>在输入中注入异常字符或对抗后缀，使模型输出漂移、遗忘目标或执行非预期动作；这类输入还可绕过关键词过滤，常作为复合攻击的触发器。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>异常注入</b><span>插入异常字符或对抗后缀</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>推理漂移</b><span>输出偏离原始目标</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>行为异常</b><span>执行非预期动作</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>任务偏离 · 输出失控 · 绕过过滤</div>
+          </article>
+
+          <article class="card gold atk4-card gui reveal d4">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">03</span><span class="a4-layer">GUI 层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>界面元素伪造</h3>
+                <div class="a4-cn">伪造按钮与输入框，诱导错误点击</div>
+                <p>伪造与真实控件视觉一致的按钮、输入框或图标，利用 OCR 与视觉定位的盲区，让 Agent 把伪造元素当成真实控件并点击。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>伪造控件</b><span>复制真实按钮与输入框</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>视觉误判</b><span>OCR 与定位被欺骗</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>错误点击</b><span>触发攻击者控件</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>误触 · 误输入 · 跳转钓鱼页</div>
+          </article>
+
+          <article class="card gold atk4-card gui reveal d5">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">04</span><span class="a4-layer">GUI 层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>应用仿冒</h3>
+                <div class="a4-cn">同名同图标，诱导启动恶意克隆</div>
+                <p>安装与合法 App 同名、同图标的恶意克隆，利用 Agent 对图标与名称的视觉信任，诱导其打开仿冒应用，并由恶意组件接管后续交互。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>仿冒应用</b><span>同名同图标的恶意克隆</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>视觉信任</b><span>Agent 按图标与名称启动</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>接管交互</b><span>恶意组件接收后续操作</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>应用劫持 · 凭据窃取 · 数据外传</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>攻击实现 <span class="dot">·</span> 模型层与视觉伪造</span>
+        <span class="num">09 / 20</span>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide" data-title="第四章 C · 攻击实现（二）">
+      <div class="head">
+        <div class="kicker reveal">Ch.4 · GUI Layer <span class="cn">第四章 C · 攻击实现（二）</span></div>
+        <h2 class="reveal d1">结构污染与交互劫持：让 Agent <em>找不到、点错</em></h2>
+      </div>
+
+      <div class="body">
+        <div class="atk4-grid">
+          <article class="card gold atk4-card gui reveal d2">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">05</span><span class="a4-layer">GUI 层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>视图树干扰</h3>
+                <div class="a4-cn">污染界面层级，让 Agent 误判结构</div>
+                <p>通过浮层或悬浮组件污染视图树的层级与控件属性，使 Agent 找不到关键控件、误判界面状态，进入无限重试或直接终止任务。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>污染层级</b><span>注入浮层与伪造属性</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>结构误判</b><span>找不到关键控件</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>任务中断</b><span>重试、误判或终止</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>任务中断 · 无限重试 · 错误决策</div>
+          </article>
+
+          <article class="card gold atk4-card gui reveal d3">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">06</span><span class="a4-layer">GUI 层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>屏幕文本注入</h3>
+                <div class="a4-cn">把恶意提示混入可见文本</div>
+                <p>把“取消任务”“立即安装”等提示写进屏幕文本；LLM 会把所有可见文本当作上下文，从而改写决策、引导 Agent 执行攻击者指定的动作。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>写入文本</b><span>屏幕出现恶意提示</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>上下文污染</b><span>LLM 把文本当指令</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>决策改写</b><span>取消任务或安装应用</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>任务取消 · 应用安装 · 决策被改写</div>
+          </article>
+
+          <article class="card gold atk4-card gui reveal d4">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">07</span><span class="a4-layer">GUI 层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>透明浮层</h3>
+                <div class="a4-cn">用不可见窗口劫持点击</div>
+                <p>用不可见浮层覆盖真实按钮，触摸事件被拦截并重定向到攻击者控制的界面；视觉上几乎无法察觉，常能绕过常规的界面检测。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>覆盖浮层</b><span>透明窗口盖住真按钮</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>拦截触摸</b><span>事件被重定向</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>劫持点击</b><span>进入攻击者界面</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>点击劫持 · 转账重定向 · 操作失控</div>
+          </article>
+
+          <article class="card gold atk4-card gui reveal d5">
+            <div class="a4-top">
+              <div class="a4-left"><span class="a4-no">08</span><span class="a4-layer">GUI 层</span></div>
+            </div>
+            <div class="a4-body">
+              <div class="a4-main">
+                <h3>弹窗干扰</h3>
+                <div class="a4-cn">在决策与执行之间插入窗口</div>
+                <p>在点击决策完成、动作执行之前弹出窗口，遮挡或抢占交互；依赖坐标点击的 Agent 往往不会重新校验屏幕状态，点击会被导向弹窗内容。</p>
+              </div>
+              <div class="a4-side">
+                <div class="a4-side-label">攻击链</div>
+                <div class="a4-srow"><i>1</i><div><b>决策完成</b><span>Agent 已选定目标</span></div></div>
+                <div class="a4-srow"><i>2</i><div><b>插入弹窗</b><span>执行前抢占界面</span></div></div>
+                <div class="a4-srow"><i>3</i><div><b>交互偏移</b><span>点击被导向弹窗</span></div></div>
+              </div>
+            </div>
+            <div class="a4-observed"><b>后果</b>交互抢占 · 任务偏离 · 恶意流程触发</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>攻击实现 <span class="dot">·</span> 界面结构与交互劫持</span>
+        <span class="num">10 / 20</span>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide" data-title="第四章 D · 系统层攻击">
+      <div class="head">
+        <div class="kicker reveal">Ch.4 · System Layer <span class="cn">第四章 D · 系统层攻击</span></div>
+        <h2 class="reveal d1">系统层：三种<em>接口级</em>攻击</h2>
+      </div>
+
+      <div class="body">
+        <div class="atk3-grid">
+          <article class="card teal atk3-card reveal d2">
+            <div class="a3-ghost">09</div>
+            <div class="a3-top"><div class="a3-kicker">系统层</div><div class="a3-count">01</div></div>
+            <h3>包名伪造</h3>
+            <div class="a3-cn">同名包与图标仿冒</div>
+            <p class="a3-principle">注册与合法 App 相同的包名与图标，利用 Agent 只按包名启动、缺少签名与身份校验的缺陷，让恶意克隆接管后续交互。</p>
+            <div class="a3-rule"></div>
+            <div class="d-steps">
+              <div class="d-step"><i>1</i><span><b>注册同名包</b>复制合法 App 的包名、图标与名称</span></div>
+              <div class="d-step"><i>2</i><span><b>诱导启动</b>Agent 按包名或视觉线索选择应用</span></div>
+              <div class="d-step"><i>3</i><span><b>接管操作</b>恶意克隆接收并记录后续交互</span></div>
+            </div>
+            <div class="a3-note"><b>前置条件</b>目标 Agent 通过包名或视觉线索启动应用，且未校验签名。</div>
+            <div class="a3-impact"><span>应用劫持</span><span>凭据窃取</span></div>
+            <div class="a3-note"><b>为什么有效</b>系统 Intent 只按包名寻址，缺少签名与来源校验，Agent 无法区分同名应用。</div>
+            <div class="a3-foot"><b>影响</b>仿冒应用可长期驻留，持续窃取操作与凭据。</div>
+          </article>
+
+          <article class="card teal atk3-card reveal d3">
+            <div class="a3-ghost">10</div>
+            <div class="a3-top"><div class="a3-kicker">系统层</div><div class="a3-count">02</div></div>
+            <h3>深度链接伪造</h3>
+            <div class="a3-cn">劫持跳转与查询参数</div>
+            <p class="a3-principle">拦截或覆盖 Agent 使用的 URI 跳转，把导航重定向到恶意页面；查询参数还可能携带位置、账号等隐私数据。</p>
+            <div class="a3-rule"></div>
+            <div class="d-steps">
+              <div class="d-step"><i>1</i><span><b>构造 URI</b>伪造指向攻击者页面的深度链接</span></div>
+              <div class="d-step"><i>2</i><span><b>覆盖跳转</b>拦截或替换合法导航链路</span></div>
+              <div class="d-step"><i>3</i><span><b>重定向</b>页面跳转，查询参数被一并带走</span></div>
+            </div>
+            <div class="a3-note"><b>前置条件</b>目标使用可被覆盖的 URI 跳转，且未校验最终页面。</div>
+            <div class="a3-impact"><span>钓鱼跳转</span><span>参数泄漏</span></div>
+            <div class="a3-note"><b>为什么有效</b>URI 跳转默认信任调用方，Agent 不校验最终落地页与参数归属。</div>
+            <div class="a3-foot"><b>影响</b>Agent 被引向钓鱼页面，敏感参数随 URL 一并泄漏。</div>
+          </article>
+
+          <article class="card teal atk3-card reveal d4">
+            <div class="a3-ghost">11</div>
+            <div class="a3-top"><div class="a3-kicker">系统层</div><div class="a3-count">03</div></div>
+            <h3>日志泄漏</h3>
+            <div class="a3-cn">从运行日志重建上下文</div>
+            <p class="a3-principle">Agent 把屏幕状态、点击坐标与用户指令写入系统日志；其他应用读取后即可还原任务、界面与敏感信息。</p>
+            <div class="a3-rule"></div>
+            <div class="d-steps">
+              <div class="d-step"><i>1</i><span><b>读取日志</b>其他应用访问 Android 系统日志</span></div>
+              <div class="d-step"><i>2</i><span><b>重建上下文</b>还原屏幕状态、点击坐标与指令</span></div>
+              <div class="d-step"><i>3</i><span><b>提取数据</b>定位账号、位置或银行卡等信息</span></div>
+            </div>
+            <div class="a3-note"><b>前置条件</b>Agent 将运行时状态写入其他应用可读取的日志。</div>
+            <div class="a3-impact"><span>上下文重建</span><span>隐私外泄</span></div>
+            <div class="a3-note"><b>为什么有效</b>日志对同用户应用可读，Agent 又把完整上下文写入 logcat。</div>
+            <div class="a3-foot"><b>影响</b>攻击者无需接触设备，即可还原任务与界面状态。</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>攻击实现 <span class="dot">·</span> 意图、链接与日志</span>
+        <span class="num">11 / 20</span>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="slide" data-title="AgentScan架构">
+      <div class="head">
+        <div class="kicker reveal">02 · System Design <span class="cn">方法：框架设计</span></div>
+        <h2 class="reveal d1">AgentScan：把攻击场景变成可重复实验</h2>
+        <p class="lead reveal d2">一套 client–server 的半自动测试框架：PC 端负责编排与注入，手机端运行真实 Agent，最后统一收集行为与安全评估。</p>
+      </div>
+
+      <div class="body">
+        <div class="scan-layout">
+          <div class="scan-figure reveal d3">
+            <div class="figure" style="height:342px;display:grid;place-items:center">
+              <img src="assets/fig3.png" alt="论文 Figure 3：AgentScan 工作流">
+            </div>
+            <div class="figure-caption"><b>Fig. 3</b> &nbsp; Server 通过 ADB 向 Client 下发攻击场景，并在真实设备上观测结果。</div>
+          </div>
+
+          <div class="reveal d4">
+            <div class="step-list">
+              <div class="step"><span class="n">01</span><div><b>Attack Scenario · 场景注入</b><span>Server 选择目标 Agent 与攻击类型，通过 ADB 推送恶意 APK / 浮层 / 指令。</span></div></div>
+              <div class="step"><span class="n">02</span><div><b>Command · 指令驱动</b><span>用预定义任务与恶意输入驱动 Agent；统一 GPT-4o 作为后端多模态模型。</span></div></div>
+              <div class="step"><span class="n">03</span><div><b>Action · 真实执行</b><span>Agent 在手机端完成点击、输入、跳转与系统调用，保留完整交互轨迹。</span></div></div>
+              <div class="step"><span class="n">04</span><div><b>Outcomes · 行为观测</b><span>记录任务是否偏离、界面是否被劫持、敏感数据是否进入恶意组件。</span></div></div>
+              <div class="step"><span class="n">05</span><div><b>Assessment · 安全评估</b><span>生成结构化报告，标注成功的攻击面、影响类型与复现条件。</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scan-foot reveal d5">
+          <div><b>半自动</b>人工定义场景，框架批量执行</div>
+          <div><b>真实设备</b>不是模拟器中的“纸上攻击”</div>
+          <div><b>三类注入</b>恶意 App / 浮层 / 指令</div>
+          <div><b>统一后端</b>GPT-4o 控制推理变量</div>
+          <div><b>可复用</b>面向新 Agent 扩展测试</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Fig. 3 <span class="dot">·</span> AgentScan client–server architecture</span>
+        <span class="num">12 / 20</span>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section class="slide" data-title="实验设计">
+      <div class="head">
+        <div class="kicker reveal">02 · Evaluation Setup <span class="cn">实验设计</span></div>
+        <h2 class="reveal d1">让 9 款 Agent 在同一把尺子上比较</h2>
+        <p class="lead reveal d2">统一任务集、统一攻击流程、统一后端模型，尽量把“Agent 自身的安全差异”从环境噪声中分离出来。</p>
+      </div>
+
+      <div class="body">
+        <div class="grid-4">
+          <article class="card stat-card reveal d2">
+            <div class="v">9<small>agents</small></div>
+            <div><div class="lab">真实 Agent 样本</div><div class="note">5 个 Agent Frameworks + 4 个匿名商用 Agent（A–D）</div></div>
+          </article>
+          <article class="card stat-card reveal d3">
+            <div class="v">44<small>tasks</small></div>
+            <div><div class="lab">基础任务集</div><div class="note">改编自 Android in the Wild，覆盖 19 个目标 App</div></div>
+          </article>
+          <article class="card stat-card reveal d4">
+            <div class="v">10<small>trials</small></div>
+            <div><div class="lab">每个 LLM / GUI 攻击重复</div><div class="note">降低 LLM 幻觉与随机性对成功判定的影响</div></div>
+          </article>
+          <article class="card stat-card reveal d5">
+            <div class="v">11<small>surfaces</small></div>
+            <div><div class="lab">统一攻击矩阵</div><div class="note">LLM 2 + GUI 6 + System 3，逐项判定成功 / 失败 / 不适用</div></div>
+          </article>
+        </div>
+
+        <div class="section-divider reveal d4" style="margin:20px 0 10px">Testing process · 单次实验如何完成</div>
+        <div class="test-strip reveal d5">
+          <div><span class="n">01 / BASELINE</span><b>选择基础任务</b><span>确保 Agent 在无攻击时能正常完成</span></div>
+          <div><span class="n">02 / INJECT</span><b>注入攻击场景</b><span>恶意 App、浮层、指令或系统日志扰动</span></div>
+          <div><span class="n">03 / RUN</span><b>驱动 Agent 执行</b><span>记录每一步动作、屏幕状态与系统调用</span></div>
+          <div><span class="n">04 / OBSERVE</span><b>观察行为偏移</b><span>误点、跳转、循环、泄漏或任务终止</span></div>
+          <div><span class="n">05 / JUDGE</span><b>归类影响</b><span>按 PoC、任务中断、劫持、隐私泄漏判定</span></div>
+        </div>
+
+        <div class="env-row reveal d6">
+          <span class="pill red"><b>受控实验室</b> 无真实用户 / 服务</span>
+          <span class="pill"><b>OEM 旗舰机</b> 系统级 Agent 的原生环境</span>
+          <span class="pill"><b>同一设备</b> 第三方 Agent 公平对比</span>
+          <span class="pill teal"><b>GPT-4o</b> 统一决策后端</span>
+          <span class="pill"><b>隔离账号</b> 每次测试可重复</span>
+        </div>
+
+        <div class="scope-panel reveal d7">
+          <div class="scope">
+            <div class="label">What is measured · 测什么</div>
+            <p>单 Agent 对已知攻击的<b>鲁棒性</b>；真实设备上的行为偏移、任务完成度与数据暴露；同一任务重复 10 次的稳定成功率。</p>
+          </div>
+          <div class="scope">
+            <div class="label">What is not measured · 不测什么</div>
+            <p>多 Agent 协同、真实用户行为、端侧模型差异、长期演化与自适应攻击；结论应理解为<b>受控条件下的下界</b>。</p>
+          </div>
+        </div>
+
+        <div class="pull-quote reveal d8">“评测的目标，不是证明所有 Agent 都危险；而是建立一个<b>可比较、可复现、可扩展</b>的安全基线。”<span>Evaluation as a shared baseline, not a one-off demo</span></div>
+      </div>
+
+      <div class="footer">
+        <span>Evaluation setup <span class="dot">·</span> 9 agents / 44 tasks / 10 trials / 11 surfaces</span>
+        <span class="num">13 / 20</span>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide" data-title="结果总览">
+      <div class="head">
+        <div class="kicker reveal">03 · Results Overview <span class="cn">结果总览</span></div>
+        <h2 class="reveal d1">没有一款 Agent <em>全身而退</em></h2>
+      </div>
+
+      <div class="body">
+        <div class="heat-layout">
+          <div class="heat-metrics reveal d2">
+            <div class="heat-big">9<small>/ 9</small></div>
+            <div class="heat-desc">受测 Agent 全部存在至少一个可被成功利用的攻击面；没有一款达到完整防护。</div>
+
+            <div class="metric-line"><strong>6.3<small style="font-size:13px;color:var(--muted);margin-left:3px"> / 11</small></strong><span>average<br>exposure</span></div>
+            <div class="metric-line"><strong>8<small style="font-size:13px;color:var(--muted);margin-left:3px"> / 11</small></strong><span>highest<br>AppAgent</span></div>
+            <div class="metric-line"><strong>7<small style="font-size:13px;color:var(--muted);margin-left:3px"> / 9</small></strong><span>transparent overlay<br>successful</span></div>
+            <div class="metric-line"><strong>7<small style="font-size:13px;color:var(--muted);margin-left:3px"> / 9</small></strong><span>pop-up interference<br>successful</span></div>
+
+            <div style="margin-top:18px;padding:12px 14px;border-left:2px solid var(--red);background:rgba(216,79,56,.055);font-size:10.5px;line-height:1.55;color:var(--muted)">
+              <b style="color:var(--ink)">GUI 是最大攻击面。</b><br>视觉伪造、屏幕文本注入与点击劫持在多个 Agent 上稳定复现。
+            </div>
+          </div>
+
+          <div class="reveal d3">
+            <div class="heat-wrap">
+              <table class="heat">
+                <thead>
+                  <tr>
+                    <th>Attack surface</th>
+                    <th>Auto<br>Droid</th>
+                    <th>Mobile<br>Agent</th>
+                    <th>MA<br>v2</th>
+                    <th>App<br>Agent</th>
+                    <th>Droid<br>Bot</th>
+                    <th>A</th>
+                    <th>B</th>
+                    <th>C</th>
+                    <th>D<br>视觉</th>
+                    <th>D<br>结构</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th>Malicious Instructions</th><td class="h3">8</td><td class="h2">6</td><td class="h2">5</td><td class="h4">9</td><td class="h3">8</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td></tr>
+                  <tr><th>Glitch Tokens</th><td class="h1">3</td><td class="h1">1</td><td class="h1">2</td><td class="h2">4</td><td class="h1">2</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td></tr>
+                  <tr><th>Image Forgery (UI)</th><td class="h2">4</td><td class="h2">7</td><td class="h4">9</td><td class="h2">6</td><td class="h2">5</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h2">5</td><td class="h0">×</td></tr>
+                  <tr><th>Image Forgery (APP)</th><td class="hna">–</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="hna">–</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td></tr>
+                  <tr><th>Viewtree Interference</th><td class="h4">10</td><td class="h0">×</td><td class="h0">×</td><td class="h4">9</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h1">2</td><td class="h4">9</td></tr>
+                  <tr><th>Prompt Injection via Display</th><td class="h1">3</td><td class="h4">9</td><td class="h4">10</td><td class="h2">6</td><td class="h1">2</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h3">8</td><td class="h0">×</td></tr>
+                  <tr><th>Transparent Overlay</th><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h0">×</td><td class="h0">×</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td></tr>
+                  <tr><th>Pop-up Interference</th><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h4">10</td><td class="h0">×</td><td class="h4">10</td><td class="h4">10</td><td class="h0">×</td><td class="h0">×</td></tr>
+                  <tr><th>Package Name Forgery</th><td class="hna">–</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="hna">–</td><td class="hyes">✓</td><td class="hyes">✓</td><td class="hyes">✓</td><td class="hyes">✓</td><td class="hyes">✓</td></tr>
+                  <tr><th>Deeplink Forgery</th><td class="hna">–</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="hna">–</td><td class="hyes">✓</td><td class="hyes">✓</td><td class="hyes">✓</td><td class="hyes">✓</td><td class="hyes">✓</td></tr>
+                  <tr><th>Log Leakage</th><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="h0">×</td><td class="hyes">✓</td><td class="hyes">✓</td><td class="h0">×</td><td class="hyes">✓</td><td class="hyes">✓</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="heat-key">
+              <span class="sw low"></span>低
+              <span class="sw mid"></span>中
+              <span class="sw high"></span>高
+              <span class="sw none"></span>失败 / 不适用
+              <span style="margin-left:auto">LLM / GUI：10 次试验中的成功次数　·　System：✓ 成功 / × 失败 / – 不适用</span>
+            </div>
+            <div class="source" style="margin-top:7px">数据重绘自论文 Table II。表中保留 Agent-D 的视觉与结构两种模式，因此共 10 个配置、对应 9 款 Agent。</div>
+            <div class="reading-guide">
+              <div><b>横看 · 谁最脆弱</b>AppAgent 暴露 8 / 11 个攻击面；框架型 Agent 整体风险更高。</div>
+              <div><b>纵看 · 哪层最危险</b>GUI 行最“红”；透明浮层与弹窗干扰在 7 / 9 个 Agent 上成功。</div>
+              <div><b>看交叉 · 没有通吃</b>不同感知与决策策略，会交换 LLM 层与 GUI / System 层的风险。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Table II <span class="dot">·</span> security analysis of 9 mobile LLM agents</span>
+        <span class="num">14 / 20</span>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide" data-title="GUI层结果">
+      <div class="head">
+        <div class="kicker reveal">03 · GUI Layer <span class="cn">结果分析：GUI 层</span></div>
+        <h2 class="reveal d1">GUI 层：最宽的入口，最直接的劫持</h2>
+      </div>
+
+      <div class="body">
+        <div class="gui-figure reveal d2">
+          <div class="figure" style="height:405px">
+            <img src="assets/fig4.png" alt="论文 Figure 4：三类 GUI 攻击示例">
+          </div>
+          <div class="figure-caption"><b>Fig. 4</b> &nbsp; (a) 伪造“Send / Search”控件；(b) 伪造 App 图标诱导启动；(c) 在屏幕文本中注入恶意提示。</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <span class="pill red"><b>视觉伪造</b> 点击错误目标</span>
+            <span class="pill"><b>结构污染</b> 找不到正确控件</span>
+            <span class="pill teal"><b>文本注入</b> 改写决策上下文</span>
+          </div>
+        </div>
+
+        <div class="gui-stat-grid reveal d3">
+          <div class="gui-stat-card"><strong>7/9</strong><b>Transparent Overlay</b><span>透明浮层覆盖可点击元素，坐标点击被重定向。</span></div>
+          <div class="gui-stat-card"><strong>7/9</strong><b>Pop-up Interference</b><span>执行前弹出窗口，劫持即将发生的点击。</span></div>
+          <div class="gui-stat-card"><strong>5/5</strong><b>Prompt Injection via Display</b><span>全部框架型 Agent 均可被屏幕文本注入。</span></div>
+          <div class="gui-stat-card"><strong>10/10</strong><b>Viewtree Interference</b><span>AutoDroid 与 DroidBot-GPT 完全失守。</span></div>
+        </div>
+
+        <div class="bottom-band reveal d4">
+          <span class="tag">KEY DIFFERENCE</span>
+          <span><b>感知策略决定风险轮廓：</b>纯截图 / OCR 的 Agent 更怕视觉伪造；依赖 ViewTree 的 Agent 更怕结构污染。GUI 防御不能只做“看得见”的校验。</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Fig. 4 + Table II <span class="dot">·</span> GUI interaction is the broadest attack surface</span>
+        <span class="num">15 / 20</span>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide" data-title="LLM与System层结果">
+      <div class="head">
+        <div class="kicker reveal">03 · LLM &amp; System <span class="cn">结果分析：模型层与系统层</span></div>
+        <h2 class="reveal d1">模型层与系统层：两种<em>相反</em>的脆弱性</h2>
+        <p class="lead reveal d2">系统级 Agent 对 LLM 攻击更稳，却在系统调用与 UI 结构上暴露出另一组风险——安全并没有消失，只是换了位置。</p>
+      </div>
+
+      <div class="body">
+        <div class="layer-compare">
+          <article class="compare-col reveal d2">
+            <div class="compare-head">
+              <div><h3>LLM Interaction</h3><div class="tag">model · instruction · token</div></div>
+              <div class="big">5</div>
+            </div>
+
+            <div class="bar-row">
+              <div class="top"><b>Malicious Instructions</b><span>5 agents affected</span></div>
+              <div class="bar"><i style="width:90%"></i></div>
+              <div class="bar-note">最高成功率 9/10（AppAgent）；系统级 Agent 未被成功注入。</div>
+            </div>
+            <div class="bar-row">
+              <div class="top"><b>Glitch Tokens</b><span>5 agents affected</span></div>
+              <div class="bar"><i style="width:40%"></i></div>
+              <div class="bar-note">最高成功率 4/10；异常 token 会破坏推理稳定性，但影响弱于直接指令。</div>
+            </div>
+
+            <div class="compare-extra"><b>典型信号</b>Agent 忽略原始目标、执行屏幕中的“新指令”，或把恶意步骤当成任务子目标。</div>
+            <div class="compare-foot"><b>为什么系统级 Agent 更稳？</b><br>更偏规则驱动、任务模板化，减少了对 LLM 自由推理的依赖。</div>
+          </article>
+
+          <article class="compare-col system reveal d3">
+            <div class="compare-head">
+              <div><h3>System Interaction</h3><div class="tag">intent · deeplink · log</div></div>
+              <div class="big">4/4</div>
+            </div>
+
+            <div class="bar-row">
+              <div class="top"><b>Deeplink Forgery</b><span>4 / 4 系统级 Agent</span></div>
+              <div class="bar"><i style="width:100%"></i></div>
+              <div class="bar-note">URI 跳转与参数缺乏校验，可重定向到恶意页面或泄漏查询数据。</div>
+            </div>
+            <div class="bar-row">
+              <div class="top"><b>Package Name Forgery</b><span>4 / 4 系统级 Agent</span></div>
+              <div class="bar"><i style="width:100%"></i></div>
+              <div class="bar-note">包名/签名校验不足，Agent 可能启动攻击者伪造的“同名 App”。</div>
+            </div>
+            <div class="bar-row">
+              <div class="top"><b>Log Leakage</b><span>3 agents</span></div>
+              <div class="bar"><i style="width:75%"></i></div>
+              <div class="bar-note">日志暴露屏幕状态、点击坐标与用户指令，足以重建操作上下文。</div>
+            </div>
+
+            <div class="compare-extra"><b>典型信号</b>点击后跳到陌生 Activity、任务被重定向，或 logcat 中出现完整指令与点击坐标。</div>
+            <div class="compare-foot"><b>根因：</b>Intent 校验、包名/签名验证与日志脱敏不足；系统能力越强，单点缺口影响越大。</div>
+          </article>
+        </div>
+
+        <div class="insight-banner reveal d4"><b>非对称结论：</b>LLM 层攻击更像“让 Agent 想错”，System 层攻击更像“让 Agent 走错”。<i> 两者都需要在执行链上被验证。</i></div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Table II <span class="dot">·</span> layer-specific susceptibility</span>
+        <span class="num">16 / 20</span>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section class="slide" data-title="影响类型">
+      <div class="head">
+        <div class="kicker reveal">03 · Impact Analysis <span class="cn">结果分析：影响</span></div>
+        <h2 class="reveal d1">从“行为偏离”到“完整劫持”：四类后果</h2>
+        <p class="lead reveal d2">论文把观察到的失败模式归为四类。它们不是互斥的终点，而常常是同一条攻击链上的不同阶段。</p>
+      </div>
+
+      <div class="body">
+        <div class="impact-grid">
+          <article class="card red impact-card reveal d2">
+            <div class="no">01</div>
+            <div class="impact-watermark">9/10</div>
+            <h3>Poisoned CoT</h3>
+            <div class="cn">思维链污染</div>
+            <p>恶意指令、Glitch Token 或屏幕文本注入改写模型的推理上下文，让 Agent 把攻击步骤当成合法任务。</p>
+            <div class="impact-example"><b>OBSERVED</b>AppAgent 被诱导执行未授权的恢复出厂设置。</div>
+            <div class="related"><b>Related attacks</b>Malicious Instructions · Glitch Tokens · Prompt Injection via Display<br><b>Disturbed</b> LLM Processor</div>
+          </article>
+          <article class="card gold impact-card reveal d3">
+            <div class="no">02</div>
+            <div class="impact-watermark">10/10</div>
+            <h3>Task Interruption</h3>
+            <div class="cn">任务中断</div>
+            <p>ViewTree 被污染后，Agent 找不到关键控件或误判界面状态，进入无限重试、错误决策或直接终止。</p>
+            <div class="impact-example"><b>OBSERVED</b>AutoDroid / DroidBot-GPT 的 ViewTree 攻击 10/10 成功。</div>
+            <div class="related"><b>Related attacks</b>Viewtree Interference<br><b>Disturbed</b> GUI Collector</div>
+          </article>
+          <article class="card red impact-card reveal d4">
+            <div class="no">03</div>
+            <div class="impact-watermark">7/9</div>
+            <h3>Activity Hijacking</h3>
+            <div class="cn">活动劫持</div>
+            <p>包名伪造、Deeplink 劫持、透明浮层或弹窗把当前交互重定向到攻击者控制的 Activity / 钓鱼界面。</p>
+            <div class="impact-example"><b>OBSERVED</b>Transparent Overlay 在 7 / 9 个 Agent 上成功劫持点击。</div>
+            <div class="related"><b>Related attacks</b>Package / Deeplink Forgery · Overlay / Pop-up · Image Forgery<br><b>Disturbed</b> App Launcher / GUI Collector</div>
+          </article>
+          <article class="card teal impact-card reveal d5">
+            <div class="no">04</div>
+            <div class="impact-watermark">202504</div>
+            <h3>Privacy Leakage</h3>
+            <div class="cn">隐私泄漏</div>
+            <p>Deeplink 查询参数、日志与伪造界面可泄漏位置、通讯录、屏幕状态，甚至记忆中的银行卡密码。</p>
+            <div class="impact-example"><b>OBSERVED</b>复合攻击中，银行卡密码被从 Agent 记忆回填到恶意输入框。</div>
+            <div class="related"><b>Related attacks</b>Deeplink Forgery · Log Leakage · Image Forgery<br><b>Disturbed</b> LLM / App Launcher / Data Pipeline</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Table III <span class="dot">·</span> four impact patterns of agent risks</span>
+        <span class="num">17 / 20</span>
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section class="slide" data-title="案例研究">
+      <div class="head">
+        <div class="kicker reveal">03 · Case Study <span class="cn">案例研究</span></div>
+        <h2 class="reveal d1">端到端复合攻击：三步拿走银行密码</h2>
+      </div>
+
+      <div class="body">
+        <div class="case-layout">
+          <div class="reveal d2">
+            <div class="case-kicker">
+              <h3>单点漏洞不是终点，组合起来才是“杀伤链”</h3>
+              <p>论文以 Mobile-Agent-v2 为靶标，在受控实验中把三个层的漏洞串成一次完整攻击。</p>
+            </div>
+
+            <div class="case-steps">
+              <div class="case-step">
+                <span class="n">01</span>
+                <b>Transparent Overlay · 劫持转账确认</b>
+                <span>透明浮层覆盖银行 App 的转账确认按钮，Agent 的点击被重定向到攻击者控制的 Activity。</span>
+              </div>
+              <div class="case-step">
+                <span class="n">02</span>
+                <b>Malicious Instruction · 伪装“继续任务”</b>
+                <span>恶意指令把劫持后的页面包装成任务流程的一部分，诱导 Agent 继续执行而不是中止。</span>
+              </div>
+              <div class="case-step">
+                <span class="n">03</span>
+                <b>Prompt Injection via Display · 读取记忆</b>
+                <span>屏幕上的伪造提示触发模型回忆敏感信息；Agent 从记忆中取出银行卡密码并填入恶意输入框。</span>
+              </div>
+            </div>
+
+            <div class="case-result reveal d4"><b>结果：</b>受控实验截图中密码被回填（202504），页面显示 “pwned”。这说明 GUI 劫持 + 指令操纵 + 上下文泄漏可以形成端到端利用。</div>
+
+            <div class="case-chain reveal d5">
+              <div><b>LLM LAYER</b><span>提示注入改写意图</span></div>
+              <div><b>GUI LAYER</b><span>透明浮层劫持点击</span></div>
+              <div><b>SYSTEM LAYER</b><span>Activity 跳转与数据回填</span></div>
+            </div>
+            <div class="pull-quote reveal d6" style="font-size:15px;padding:15px 18px;margin-top:12px">“复合攻击的可怕之处，不是某一层失守；而是 Agent 把三层能力连成了攻击者的执行链。”<span>Composite risk &gt; sum of single-point bugs</span></div>
+          </div>
+
+          <div class="case-figure reveal d3">
+            <div class="figure" style="height:560px">
+              <img src="assets/fig5.png" alt="论文 Figure 5：从银行 App 记忆提取密码的复合攻击">
+            </div>
+            <div class="figure-caption"><b>Fig. 5</b> &nbsp; 复合攻击管线与受控实验截图：透明浮层 → 活动劫持 → 恶意指令 → 屏幕提示注入 → 密码回填。实验不涉及真实用户或真实银行服务。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Fig. 5 <span class="dot">·</span> composite attack on Mobile-Agent-v2</span>
+        <span class="num">18 / 20</span>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section class="slide" data-title="防御与缓解">
+      <div class="head">
+        <div class="kicker reveal">04 · Defense <span class="cn">防御与缓解</span></div>
+        <h2 class="reveal d1">打了补丁，风险显著下降，但<em>没有归零</em></h2>
+        <p class="lead reveal d2">作者对 Mobile-Agent-v2 做了三项初步加固。结果说明“执行前校验”有效，但单点补丁无法覆盖所有攻击面。</p>
+      </div>
+
+      <div class="body">
+        <div class="def-layout">
+          <div class="def-principles reveal d2">
+            <div class="def-principle"><span class="n">01</span><div><b>动作 ↔ 控件 ↔ 屏幕元素强关联</b><span>点击前确认目标控件真实存在、可见且与当前动作语义一致。</span></div></div>
+            <div class="def-principle"><span class="n">02</span><div><b>指令 ↔ 屏幕文本严格对齐</b><span>降低模型把屏幕中的恶意文本误读为用户意图的概率。</span></div></div>
+            <div class="def-principle"><span class="n">03</span><div><b>执行前屏幕校验</b><span>在关键动作前重新读取 UI 状态，拒绝“决策后被替换”的界面。</span></div></div>
+
+            <div class="def-note">
+              <span class="pill red"><b>最小权限</b></span>
+              <span class="pill"><b>多模态交叉验证</b></span>
+              <span class="pill teal"><b>敏感操作二次确认</b></span>
+              <span class="pill"><b>日志脱敏</b></span>
+            </div>
+
+            <div class="def-caveat"><b>仍然存在的风险：</b>Prompt Injection、Glitch Token 与 UI Forgery 只是被削弱，并未被消除；单 Agent 补丁不能替代架构级安全设计。</div>
+          </div>
+
+          <div class="reveal d3">
+            <table class="def-table">
+              <thead><tr><th>Attack</th><th>Unprotected</th><th>Protected</th></tr></thead>
+              <tbody>
+                <tr><td>Malicious Instructions</td><td class="before">5 / 10</td><td class="after">1 / 10</td></tr>
+                <tr><td>Glitch Tokens</td><td class="before">2 / 10</td><td class="after zero">0 / 10</td></tr>
+                <tr><td>Image Forgery (UI)</td><td class="before">9 / 10</td><td class="after">2 / 10</td></tr>
+                <tr><td>Image Forgery (APP)</td><td class="before">10 / 10</td><td class="after zero">0 / 10</td></tr>
+                <tr><td>Prompt Injection via Display</td><td class="before">10 / 10</td><td class="after">2 / 10</td></tr>
+                <tr><td>Transparent Overlay</td><td class="before">10 / 10</td><td class="after zero">0 / 10</td></tr>
+                <tr><td>Pop-up Interference</td><td class="before">10 / 10</td><td class="after zero">0 / 10</td></tr>
+              </tbody>
+            </table>
+            <div class="source" style="margin-top:8px">数据重绘自论文 Table IV；原文中 “X” 表示攻击失败，此处记为 0 / 10。</div>
+          </div>
+        </div>
+
+        <div class="defense-depth reveal d4">
+          <div><span class="k">LAYER 01</span><b>权限最小化</b><span>只授予任务所需的最小系统能力</span></div>
+          <div><span class="k">LAYER 02</span><b>多模态交叉验证</b><span>截图 / OCR 与 ViewTree 相互校验</span></div>
+          <div><span class="k">LAYER 03</span><b>动作可验证</b><span>点击前确认目标与当前意图一致</span></div>
+          <div><span class="k">LAYER 04</span><b>数据最小暴露</b><span>敏感记忆隔离、日志脱敏、二次确认</span></div>
+        </div>
+
+        <div class="pull-quote reveal d5">“补丁证明风险可以被降低，也证明：没有跨层验证，任何单点加固都只是<b>把攻击者推向下一层</b>。”<span>Defense must be layered, not local</span></div>
+      </div>
+
+      <div class="footer">
+        <span>Source: Table IV <span class="dot">·</span> preliminary mitigation on Mobile-Agent-v2</span>
+        <span class="num">19 / 20</span>
+      </div>
+    </section>
+
+    <!-- 16 -->
+    <section class="slide dark conclusion-slide" data-title="结论与讨论">
+      <div class="kicker reveal">05 · Conclusion <span class="cn">结论与讨论</span></div>
+      <p class="conclusion-lead reveal d1">当 Agent 获得“看屏幕、点屏幕、调系统”的能力，安全边界必须从<em>模型输出</em>扩展到<em>整条执行链</em>。</p>
+
+      <div class="takeaway-grid">
+        <div class="takeaways">
+          <div class="takeaway reveal d2"><span class="n">01</span><div><b>新能力栈 = 新攻击面</b><span>LLM × GUI × System 三层耦合，形成 11 个可落地攻击面；不能只用“提示注入”来理解 Agent 安全。</span></div></div>
+          <div class="takeaway reveal d3"><span class="n">02</span><div><b>风险不是理论上的</b><span>9 款真实 Agent 全部中招，平均暴露 6.3 / 11；GUI 操纵在多个 Agent 上稳定复现。</span></div></div>
+          <div class="takeaway reveal d4"><span class="n">03</span><div><b>评测与防御要一起设计</b><span>AgentScan 提供了可复用的评测骨架；执行前校验能降低风险，但需要权限、感知、意图与日志的协同防护。</span></div></div>
+        </div>
+
+        <aside class="qa-panel reveal d3">
+          <div class="q">Q &amp; A</div>
+          <p>Discussion</p>
+          <ul class="discussion">
+            <li>在你的应用场景里，LLM / GUI / System 哪一层应优先加固？</li>
+            <li>“可用性 vs 安全性”的权衡，应该如何量化？</li>
+            <li>端侧小模型会改变威胁模型，还是只是改变攻击成本？</li>
+          </ul>
+          <div class="closing-meta"><span class="line"></span>Wu et al. · arXiv:2505.12981v2</div>
+        </aside>
+      </div>
+
+      <div class="footer">
+        <span>Thanks for listening <span class="dot">·</span> questions &amp; discussion</span>
+        <span class="num">20 / 20</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="controls" aria-label="幻灯片导航">
+  <button id="prevBtn" aria-label="上一页">‹</button>
+  <button id="nextBtn" aria-label="下一页">›</button>
+</div>
+<div class="hint" id="hint">← → 翻页 · F 全屏 · P 打印</div>
+
+<script>
+  const stage = document.getElementById('stage');
+  const slides = [...document.querySelectorAll('.slide')];
+  const progress = document.getElementById('progressBar');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const hint = document.getElementById('hint');
+  let current = 0;
+  let hintTimer;
+
+  function fitStage(){
+    const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.transform = `scale(${s})`;
+  }
+
+  function show(index){
+    if(index < 0 || index >= slides.length) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.toggle('prev', index > current);
+    current = index;
+    slides.forEach((s, i) => {
+      s.classList.toggle('active', i === current);
+      s.setAttribute('aria-hidden', i === current ? 'false' : 'true');
+    });
+    slides[current].classList.remove('prev');
+    progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === slides.length - 1;
+    history.replaceState(null, '', `#${current + 1}`);
+  }
+
+  function next(){ show(Math.min(current + 1, slides.length - 1)); }
+  function prev(){ show(Math.max(current - 1, 0)); }
+
+  window.addEventListener('resize', fitStage);
+  window.addEventListener('keydown', e => {
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); next(); }
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); prev(); }
+    if(e.key === 'Home'){ e.preventDefault(); show(0); }
+    if(e.key === 'End'){ e.preventDefault(); show(slides.length - 1); }
+    if(e.key.toLowerCase() === 'f'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+    if(e.key.toLowerCase() === 'p'){ window.print(); }
+  });
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  const start = Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.replace('#',''), 10) || 1) - 1));
+  fitStage();
+  show(start);
+
+  hintTimer = setTimeout(() => hint.classList.add('hide'), 5000);
+</script>
+</body>
+</html>
