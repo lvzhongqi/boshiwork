@@ -393,6 +393,33 @@
   - 定期更新信任锚/CRL。
 - **严重性**：高。
 
+### B14. 重复 `(Re)Association` 导致 PTK 重装（KRACK / nonce 复用）
+
+- **未建模**（文本分析；详见 `../FILS密钥重装攻击_2024标准分析.md`）。
+- **条件**：AP 或 STA 在收到重放的 FILS `(Re)Association Request/Response`
+  时，仍把它当成一次成功关联，执行“删除旧 PTKSA + 安装 PTK”；
+  且没有“同一 FILS Session 已完成则丢弃/只重发缓存响应”的去重检查。
+- **为什么在 FILS 里尤其危险**：
+  - FILS 的 KeyAuth 绑定 `SNonce/ANonce`，重放帧里没有新 ANonce，
+    所以处理重复请求只能**复用同一把 PTK**（12.11.2.5.3）；
+  - FILS 没有重放计数器；`FILS Session` 只是会话标识，只做相等比较
+    （9.4.2.178、12.11.2.6.2）；
+  - 11.3.5.3(m) 规定成功关联时删除旧 PTKSA → 重新安装 → 发送 PN 复位；
+  - 12.11.2.1 只禁止重装 GTK/IGTK/BIGTK/WIGTK，**没有禁止重装 PTK**。
+- **影响**：AP（或 STA）发送方向 PN 归零 → 同一 PTK 下 nonce 复用 →
+  可解密、重放、可能伪造；攻击者只需嗅探 + 重放，不需要 MitM。
+- **2024 的间接缓解**：11.3.5.3(e) 的 SA Query 可在“已启用 PMF +
+  State 4”时拦住 AP 侧的重放请求；但 FILS 本身不强制 PMF，
+  且不覆盖 STA 侧重放的 Response，且依赖实现顺序。
+- **修复**：
+  - 维护 `{FILS Session, SNonce, ANonce, PTK, state, timestamp}`；
+  - `done` 状态收到重复请求/响应：只重发缓存响应或丢弃，
+    不得 `MLME-SETKEYS`、不得删/建 PTKSA、不得复位 PN；
+  - 不要把“关联成功”无条件等同于“删旧钥 + 装新钥”；
+  - 启用 PMF 作为兜底；
+  - 回归测试：重放后检查发送 PN 是否回到 1。
+- **严重性**：高（若实现未去重；现网 hostapd 已按 2017 年报告修复）。
+
 ---
 
 ## 5. C 类：证书/公钥信任锚问题（检查清单）
@@ -608,6 +635,7 @@ event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs))   true
 | `FILS_LATEAUTH.pv` | 先 DH、KeyAuth 覆盖完整 transcript + AEAD | 7 | 全部 true |
 | `FILS_LATEAUTH_nobind.pv` | KeyAuth 漏掉 gSTA/gAP | 7 | 双向完成 true，PTK 一致性 false、probe 泄露 false |
 | `FILS_DOS_UNAUTH.pv` | 未认证 M1 迫使 AP 先工作 | 2 | `ApWork=>StaStart` false；`ApFinish=>ApWork` true |
+| （文本分析）FILS KRACK | 重放 `(Re)Association` → PTK 重装 / PN 复位 | — | 2024 只禁止组密钥重装；PTK 重装未禁止（见 `../FILS密钥重装攻击_2024标准分析.md`） |
 
 > 计数说明：`FILS_PK_CERT_bad.pv` / `FILS_PK_RAW_bad.pv` 的输出中，
 > ProVerif 会对非单射查询额外打印 `(even ... is false)` 的补充说明；
@@ -661,6 +689,9 @@ event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs))   true
 - 未建模 **帧级攻击**（分片/聚合、实现内存错误）、**计算安全性/时序侧信道**；
 - `FILS_PRIVACY.pv` 的 observational equivalence 在 2.05 下为 `cannot be proved`；
   确定性链接性结论以 `FILS_PMKID_LINK.pv` 的 false 为准；
+- 未建模 **KRACK 式“重放 `(Re)Association` → 重装 PTK → PN 复位”**
+  （ProVerif 无计数器/PN 语义；当前结论来自 802.11-2024 文本分析，
+  见 `../FILS密钥重装攻击_2024标准分析.md`）；
 - 未联网核对具体论文/CVE 编号；本文只记录**本目录模型实际跑出的结果**与
   标准层面的通用结论。
 

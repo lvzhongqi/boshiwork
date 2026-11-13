@@ -302,3 +302,33 @@ event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs))   true
 - “没有预置公钥”不是前提：M1 没有证书/签名/持钥证明，攻击者不需要密钥；
   有密钥的 STA 也能被伪造。关键是 AP 是否对未认证 M1 做无界昂贵工作。
 - ProVerif 没有资源语义，所以这是 DoS 前提的可达性证明，不是定量打垮证明。
+
+---
+
+## 九、2026-11-13 补充：FILS KRACK（密钥重装）在 2024 标准中的状态
+
+对照 `3243734.3243807.pdf`（CCS'18, *Release the Kraken*）§4 / Figure 6
+与 `80211-2024.pdf`，结论：
+
+| 变体 | 2024 是否规范阻止 | 依据 |
+|---|---|---|
+| STA 重装 GTK/IGTK/BIGTK/WIGTK | ✅ | 12.11.2.1（p3102） |
+| AP 重装 PTK（无 PMF） | ❌ | 无重放计数器；11.3.5.3(m) 删旧 PTKSA；无 PTK 反重装条款 |
+| AP 重装 PTK（有 PMF） | ⚠️ 间接 | 11.3.5.3(e) SA Query（p2528），依赖实现顺序 |
+| STA 重装 PTK（重放 Response） | ❌ | 12.11.2.1 只管组密钥；PMF 不保护 Assoc Resp |
+
+关键点：
+
+- FILS 仍然没有重放计数器；`FILS Session` 只是会话标识（9.4.2.178），
+  AEAD AAD 里没有序号（12.11.2.6.2/6.3）。
+- `KeyAuth` 绑定 `SNonce/ANonce`，重放帧没有新 ANonce，所以处理重复
+  请求只能复用同一把 PTK —— “处理成功”在密码学上等价于“重装旧钥”。
+- 2024 只补了组密钥重装；PTK 重装仍留给实现（hostapd 2017 已修复）。
+- 现有 ProVerif 模型未覆盖“重放 → 重装 → PN 复位”，
+  `FILS_PK*` / `FILS_LATEAUTH*` 全 true 不代表抗 KRACK。
+
+完整分析见：
+
+- `../FILS密钥重装攻击_2024标准分析.md`
+- `FILS安全问题汇总.md` 的 B14 与 §7 表
+
