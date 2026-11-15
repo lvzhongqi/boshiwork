@@ -1,0 +1,196 @@
+(* =====================================================================
+   FILS PTK 密钥重装攻击（KRACK，AP 侧）—— bad 版：无去重
+   IEEE 802.11-2024 参照：
+     §12.11.2.6.2  KeyAuth / AAD（无重放计数器）
+     §12.11.2.5.3  PTK = PRF-X(PMK, …, SNonce || ANonce)
+     §11.3.5.3(m)  成功关联 ⇒ 删除旧 PTKSA（→ 重装 + PN 复位）
+     §12.11.2.1    只禁组密钥重装，未禁 PTK
+     9.4.2.178     FILS Session 只是标识，只做相等比较
+
+   模型要点：
+     - AP 完成一次密钥确认后进入等待状态，攻击者可把同一条
+       (Re)Association Request（同一 FILS Session、同一密文 ct）
+       原样重放；AP 再次校验通过并再次安装同一把 PTK。
+     - 用事件 ApInstalls / ApReinstalls 表示“装钥”；
+       PN 复位无法在 ProVerif 中直接建模，作为该事件的后果说明。
+     - 重放判据用 ct3 = ct（密文完全相同），确保轨迹是“重放”
+       而不是“新会话”。
+
+   期望结果（bad）：
+     event(ApReinstalls(a,se,k)) 可达 → 查询为 false（攻击成立）
+   ===================================================================== *)
+
+free c:channel.
+
+const sta:bitstring.
+const ap:bitstring.
+
+const g:bitstring.
+const aan6:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+
+free gtk:bitstring [private].
+free probe:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+
+fun pk(bitstring):bitstring.
+fun sign(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, sk:bitstring;
+  checksign(sign(m,sk), pk(sk)) = m.
+
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+event ApInstalls(bitstring,bitstring,bitstring).     (* ap, sess, ptk *)
+event ApReinstalls(bitstring,bitstring,bitstring).   (* 第二次装同一把 PTK *)
+event ApReplaySeen(bitstring,bitstring).            (* 非空性：重放分支可达 *)
+event ApDone(bitstring,bitstring,bitstring).
+event StaDone(bitstring,bitstring,bitstring).
+
+(* 基线：会话密钥仍保密 *)
+query attacker(gtk).
+query attacker(probe).
+
+(* 攻击目标：同一 (ap, session, PTK) 被安装两次 → 期望 false（可达） *)
+query a:bitstring, se:bitstring, k:bitstring;
+  event(ApReinstalls(a,se,k)).
+
+(* 非空性：确认 good 版也确实处理了重放（否则 reinstall 不可达可能是空验证） *)
+query a:bitstring, se:bitstring;
+  event(ApReplaySeen(a,se)).
+
+(* =====================================================================
+   STA：标准流程，只完成一次
+   ===================================================================== *)
+let sta_proc(skS:bitstring, pkA:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta, ap, aan6, seq1, dhgrp, gs, sn, sess, rsne));
+
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan6 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn, anR), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, sn, anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = sign((gs, gaR, sn, anR, sta, ap), skS) in
+    let ct = aead(((sta, ap, sn, anR, sess, rsne), ka), kek) in
+    out(c, (sta, ap, sess, rsne, ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+    if rsne2R = rsne then
+
+      let kaAR = adec(ct2R, (ap, sta, anR, sn, sess, rsne), kek) in
+      if checksign(kaAR, pkA) = (gaR, gs, anR, sn, ap, sta) then
+        event StaDone(sta, ap, sess);
+        out(c, aead((label_data, probe), tk)).
+
+(* =====================================================================
+   AP：无去重 —— 完成一次后，仍会处理重放的 M3 并再次装钥
+   ===================================================================== *)
+let ap_proc(skA:bitstring, pkS:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan6 then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let pmk = hmac((snR, an), dhss) in
+    let ptk = kdf(pmk, label_ptk, (sta, ap, snR, an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+
+    out(c, (ap, sta, aan6, seq2, st_ok, dhgrp, ga, snR, sessR, rsneR, an));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if rsne2R = rsneR then
+
+      let kaR = adec(ctR, (sta, ap, snR, an, sessR, rsne2R), kek) in
+      if checksign(kaR, pkS) = (gsR, ga, snR, an, sta, ap) then
+
+        (* 第一次装钥 *)
+        event ApInstalls(ap, sessR, ptk);
+
+        let kaap = sign((ga, gsR, an, snR, ap, sta), skA) in
+        let ct2 = aead(((ap, sta, an, snR, sessR, rsneR), (kaap, gtk)), kek) in
+        out(c, (ap, sta, sessR, st_ok, rsneR, ct2));
+        event ApDone(ap, sta, sessR);
+
+        (* ---- 攻击者重放同一条 M3（同密文 ct）---- *)
+        in(c, (sta3R:bitstring, ap3R:bitstring, sess3R:bitstring,
+               rsne3R:bitstring, ct3R:bitstring));
+        if sta3R = sta then
+        if ap3R = ap then
+        if sess3R = sessR then
+        if rsne3R = rsneR then
+        if ct3R = ctR then
+
+          event ApReplaySeen(ap, sessR);
+
+          (* 无去重：再次校验通过 → 再次装同一把 PTK *)
+          event ApInstalls(ap, sessR, ptk);
+          event ApReinstalls(ap, sessR, ptk);
+          out(c, (ap, sta, sessR, st_ok, rsneR, ct2)).
+
+(* =====================================================================
+   顶层
+   ===================================================================== *)
+process
+  new skS:bitstring;
+  new skA:bitstring;
+  let pkS = pk(skS) in
+  let pkA = pk(skA) in
+  out(c, pkS);
+  out(c, pkA);
+  ( sta_proc(skS, pkA) | ap_proc(skA, pkS) )

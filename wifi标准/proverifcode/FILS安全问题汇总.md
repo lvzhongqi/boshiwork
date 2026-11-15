@@ -1,14 +1,30 @@
 # FILS 协议安全问题汇总（含 DoS 分析）
 
-- 日期：2026-11-05
+- 日期：2026-11-05（初版）／**2026-11-14（全量复核更新）**
 - 范围：IEEE 802.11-2024 §12.11（FILS）中的 FILS PK（ANA=6）、FILS SK（ANA=4/5）、
   PMKSA 缓存、EAP-RP 接口、GTK rekey、status/失败处理、证书/原始公钥信任
 - 工具：ProVerif 2.05（`proverifcode/proverifbin2.05/proverif.exe`）
-- 模型目录：`wifi标准/proverifcode/`
+- 模型目录：`wifi标准/proverifcode/`（主集 12 个 `.pv`；实现偏差/历史模型 12 个在 `archive/`）
 - 配套文档：
-  - `FILS_VERIFICATION_SUMMARY.md`（逐模型结果）
+  - `FILS_VERIFICATION_SUMMARY.md`（逐模型结果与逐条结论）
   - `FILS_PK_证书与延迟认证分析.md`（证书/无证书/延迟认证专题）
+  - `../FILS密钥重装攻击_2024标准分析.md`（KRACK / PTK 重装专题）
   - 本文：把所有已分析出的问题按“合规残余风险 / 不合规实现 / 信任锚 / DoS”归类
+
+## 本次更新（2026-11-14）
+
+1. **全量重跑**：用当前目录的全部模型重新执行（`reverify_all.ps1`），
+   结果与本文表格一致；单模型最长 5.3 s，全部 `stderr` 为 0 字节。
+2. **新增 §12「复核记录」**：环境、耗时、逐模型结果摘要、可信度三项检查
+   （角色分离 / AAD 强制校验 / 非空性 + 阴性对照）。
+3. **新增 §13「Visio 流程图与标准的偏差」**：`协议流程.vsdx` 与
+   §12.11 文本的 6 处不一致，其中 2 处有安全含义（RSNE、AAD 范围），
+   本文结论一律**以标准为准**。
+4. **B14 与 KRACK 专题对齐**：补充论文 Figure 6 的 A–E 变体判定口径。
+5. 明确模型抽象边界：EAP-RP/TTP → `rMSK` 私有不变量；AEAD 采用
+   “AAD 不匹配即解密失败”的 reduction；DH 为固定群 + 交换律。
+6. **模型集重整**：主集收敛为 12 个；新增 `FILS_KRACK_PTK_bad/good.pv`，
+   在 ProVerif 中给出“同一 PTK 被安装两次”的轨迹；实现偏差/历史模型移入 `archive/`。
 
 > 说明：ProVerif 能证明机密性、认证性、对应性、单射性、密钥一致性、
 > 观测等价等性质；**不能**证明时间、CPU、内存、队列等可用性性质。
@@ -37,6 +53,12 @@
   如果攻击者随后不发 M3（或发无效 M3），AP 的状态会保持到超时。
   这是 FILS “1 个往返完成认证”设计的固有代价；是否被打垮取决于 AP 的
   anti-clogging、速率限制、状态上限和超时策略。
+- **复核结论（2026-11-14）**：`FILS_PK.pv` 17/17、`FILS_SK.pv` 22/22 查询为 true；
+  `FILS_PFS.pv` 中 PK 与 SK-ANA5 的 PFS 成立、SK-ANA4 不成立（标准允许）；
+  其余 10 个专项模型的结论与 §7 表格逐条一致。未发现新的密钥/认证类攻击。
+- **图-标准偏差**：Visio 流程图有 6 处与 §12.11 文本不一致，其中
+  “消息不含 RSNE 且无一致性校验”“AAD 未覆盖 Capability…FILS Session 帧体”
+  两处有安全含义（配置降级面）；本文与模型均按标准处理，详见 §13。
 
 ---
 
@@ -419,6 +441,15 @@
   - 启用 PMF 作为兜底；
   - 回归测试：重放后检查发送 PN 是否回到 1。
 - **严重性**：高（若实现未去重；现网 hostapd 已按 2017 年报告修复）。
+- **变体判定（对齐 `../FILS密钥重装攻击_2024标准分析.md` §0）**：
+
+  | 变体 | 2024 是否从规范上阻止 | 依据 |
+  |---|---|---|
+  | A. STA 重装 GTK/IGTK/BIGTK/WIGTK | ✅ 阻止 | 12.11.2.1 |
+  | B. AP 重放 `(Re)Assoc Req` 重装 PTK（无 PMF） | ❌ 未阻止 | 无重放计数器；11.3.5.3(m) |
+  | C. 同上但启用 PMF | ⚠️ 可被 SA Query 间接拦住，依赖实现顺序 | 11.3.5.3(e) |
+  | D. STA 重放 `(Re)Assoc Resp` 重装 PTK | ❌ 未阻止 | 12.11.2.1 仅覆盖组密钥；PMF 不保护 Assoc Resp |
+  | E. 重装导致发送 PN 归零 → nonce 复用 | ❌ 未阻止 | 删除/重建 PTKSA 即复位 PN |
 
 ---
 
@@ -609,39 +640,32 @@ event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs))   true
 
 ---
 
-## 7. 全部模型与结果总表
+## 7. 模型集与结果总表
 
-| 模型 | 验证内容 | 查询数 | 结果 |
-|---|---|---|---|
-| `FILS_PK.pv` | FILS PK 基线：GTK/TK/缓存 PMK 保密、双向认证、单射、PTK 一致性/唯一性、UKS、缓存一致性 | 17 | 全部 true |
-| `FILS_SK.pv` | FILS SK（ANA=4/5/5C）：GTK/TK/PMK/rMSK 保密、双向认证、单射、PTK 一致性/唯一性、UKS、跨 AKM 分离、同会话单 AKM | 22 | 全部 true |
-| `FILS_PFS.pv` | 前向保密：PK、SK5、SK4 | 3 | PK true、SK5 true、SK4 false（预期） |
-| `FILS_CACHE.pv` | 缓存一致/不同步 | 3 | 全部 true |
-| `FILS_KEYREUSE.pv` | RNG 失效 → PTK 重用 | 1 | false（重用成立） |
-| `FILS_EAPRP_SEQ.pv` | 正确校验 SEQ | 2 | 全部 true |
-| `FILS_EAPRP_SEQ_bad.pv` | 不校验 SEQ → PMK 重用 | 2 | 唯一性 false，rMSK 仍保密 |
-| `FILS_GTK_REPLAY_good.pv` | 校验 KeyID/epoch | 2 | true/true |
-| `FILS_GTK_REPLAY_bad.pv` | 不校验 KeyID/epoch → GTK 重放 | 2 | `StaAccept=>ApSend` true，inj false |
-| `FILS_PMKID_LINK.pv` | PMKID 链接性 | 1 | false（可链接） |
-| `FILS_PRIVACY.pv` | PMKID 观测等价 | 1 | cannot be proved（附区分轨迹） |
-| `FILS_REPLAY.pv` | Seq/消息重放、PTK 重用 | 3 | 全部 true |
-| `FILS_STATUS.pv` | status + 伪造错误 status（正确实现） | 3 | abort_flag false（DoS 可达）、probe true、认证 true |
-| `FILS_STATUS_faulty.pv` | 失败后回退旧密钥 | 3 | bad_flag false、old_ptk true、probe true |
-| `FILS_PK_old.pv` | 早期合并模型（历史版） | — | 仅参考 |
-| `FILS_PK_CERT.pv` | 证书链 + 主体绑定 + KeyAuth | 7 | 全部 true |
-| `FILS_PK_CERT_bad.pv` | 只验证书链、不验主体 | 7 | 全部 false（冒充/GTK/TK 泄露/UKS） |
-| `FILS_PK_RAW.pv` | 无证书、预置原始公钥 | 7 | 全部 true |
-| `FILS_PK_RAW_bad.pv` | 无证书、无预置（TOFU/信任报文中的公钥） | 7 | 全部 false（中间人） |
-| `FILS_LATEAUTH.pv` | 先 DH、KeyAuth 覆盖完整 transcript + AEAD | 7 | 全部 true |
-| `FILS_LATEAUTH_nobind.pv` | KeyAuth 漏掉 gSTA/gAP | 7 | 双向完成 true，PTK 一致性 false、probe 泄露 false |
-| `FILS_DOS_UNAUTH.pv` | 未认证 M1 迫使 AP 先工作 | 2 | `ApWork=>StaStart` false；`ApFinish=>ApWork` true |
-| （文本分析）FILS KRACK | 重放 `(Re)Association` → PTK 重装 / PN 复位 | — | 2024 只禁止组密钥重装；PTK 重装未禁止（见 `../FILS密钥重装攻击_2024标准分析.md`） |
+> 2026-11-14 重整：主集只保留“合规基线 + 标准级问题 + 密钥重装 + 标准依赖项”；
+> 实现偏差/历史模型已移入 `archive/`（原因见 `archive/README.md`）。
 
-> 计数说明：`FILS_PK_CERT_bad.pv` / `FILS_PK_RAW_bad.pv` 的输出中，
-> ProVerif 会对非单射查询额外打印 `(even ... is false)` 的补充说明；
-> “7 条主查询全部 false”指 7 条原始 query。
+| 模型 | 验证内容 | 结果 |
+|---|---|---|
+| `FILS_PK.pv` | FILS PK 基线：GTK/TK/缓存 PMK 保密；双向认证、单射；PTK 一致性/唯一性；缓存一致性 | 17/17 true |
+| `FILS_SK.pv` | FILS SK（ANA=4/5/5C）：GTK/TK/PMK/rMSK 保密；双向认证、单射；PTK 一致性/唯一性；跨 AKM 分离 | 22/22 true |
+| `FILS_DOS_UNAUTH.pv` | 先协商后认证：未认证 M1 迫使 AP 做 DH/状态分配 | `ApWork=>StaStart` **false**；`ApFinish=>ApWork` true |
+| `FILS_PMKID_LINK.pv` | 隐私：同一 PMKID 跨会话可链接 | **false（可链接）** |
+| `FILS_STATUS.pv` | status 未受保护：伪造 112 使 STA 中止 | abort **false**；probe true |
+| `FILS_PFS.pv` | 前向保密：PK / SK5 / SK4 | PK true、SK5 true、**SK4 false**（标准允许） |
+| `FILS_KRACK_PTK_bad.pv` | **PTK 重装**：无去重，重放 M3 再次装同一把 PTK | `ApReinstalls` **可达（false）** |
+| `FILS_KRACK_PTK_good.pv` | 同上 + 会话去重（只重发缓存 M4） | `ApReinstalls` **不可达（true）** |
+| `FILS_GTK_REPLAY_bad.pv` | 组密钥重装：不校验 KeyID/epoch | `inj` **false** |
+| `FILS_GTK_REPLAY_good.pv` | 校验 KeyID/epoch | true / true |
+| `FILS_EAPRP_SEQ_bad.pv` | 不校验 EAP-RP SEQ ⇒ PMK 重用 | 唯一性 **false**；rMSK 仍保密 |
+| `FILS_EAPRP_SEQ.pv` | 正确校验 SEQ | true / true |
 
----
+> 归档（12 个，仍在 `archive/` 可运行）：`FILS_PK_old`、`FILS_PRIVACY`、
+> `FILS_REPLAY`、`FILS_CACHE`、`FILS_KEYREUSE`、`FILS_STATUS_faulty`、
+> `FILS_PK_CERT`/`_bad`、`FILS_PK_RAW`/`_bad`、`FILS_LATEAUTH`/`_nobind`。
+>
+> 复核（2026-11-14 20:40）：主集 12/12 模型 OK，`stderr` 全 0，总耗时约 8 s
+> （`FILS_SK.pv` 4.2 s，`FILS_PK.pv` 3.0 s）。
 
 ## 8. 修复优先级建议
 
@@ -689,11 +713,23 @@ event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs))   true
 - 未建模 **帧级攻击**（分片/聚合、实现内存错误）、**计算安全性/时序侧信道**；
 - `FILS_PRIVACY.pv` 的 observational equivalence 在 2.05 下为 `cannot be proved`；
   确定性链接性结论以 `FILS_PMKID_LINK.pv` 的 false 为准；
-- 未建模 **KRACK 式“重放 `(Re)Association` → 重装 PTK → PN 复位”**
-  （ProVerif 无计数器/PN 语义；当前结论来自 802.11-2024 文本分析，
-  见 `../FILS密钥重装攻击_2024标准分析.md`）；
+- **PTK 重装已建模**（`FILS_KRACK_PTK_bad/good.pv`）：ProVerif 证明
+  “同一 PTK 被安装两次”可达/不可达；PN 复位是重装的后果
+  （ProVerif 无 PN 语义，由文本分析补充，见 `../FILS密钥重装攻击_2024标准分析.md`）；
 - 未联网核对具体论文/CVE 编号；本文只记录**本目录模型实际跑出的结果**与
   标准层面的通用结论。
+
+### 9.1 形式化抽象（结论适用范围）
+
+| 抽象 | 模型中的处理 | 影响 |
+|---|---|---|
+| EAP-RP / TTP | `rMSK` 为 STA 与 AP 共享的私有自由名（后端 out of scope） | 不验证 EAP-RP 的 MIC/SEQ；相关结论由 `FILS_EAPRP_SEQ*.pv` 单独覆盖 |
+| AEAD（AES-SIV） | `adec(aead((aad,p),k), aad, k) = p`，AAD 必须完全一致才解密 | 精确刻画“AAD 不匹配即失败”，不建模 SIV 细节/长度 |
+| DH | 固定群 + 交换律 `exp(exp(g,x),y)=exp(exp(g,y),x)` | 只覆盖被动安全；不覆盖小子群/无效点（由 B10 单独讨论） |
+| 签名/证书 | `sign/checksign` + 可信公钥白名单 | 等价于“证书链 + 主体校验通过”；不建模 ASN.1/路径细节 |
+| 失败路径 | AEAD 失败 = 进程停止 | 与“回 Status 112 并终止”等价，不影响保密性/一致性结论 |
+| GTK 重装（12.11.2.1） | 未建模 | 需计数器/PN 语义；见 KRACK 专题 |
+| FILS-FT（AKM 16/17） | 未建模 | MDE/FTE/PMKR1Name 不在本文范围 |
 
 ---
 
@@ -705,6 +741,10 @@ $dir = "C:\Users\10092\Desktop\boshiwork\wifi标准\proverifcode"
 
 # 单个模型
 & $pv "$dir\FILS_DOS_UNAUTH.pv"
+
+# 全量复核（带 600 s 看门狗，自动跳过 FILS_PK_old.pv，输出 REVERIFY_*.txt）
+powershell -NoProfile -ExecutionPolicy Bypass -File "$dir\reverify_all.ps1" `
+  -Pv "$pv" -Dir "$dir" -TimeoutSec 600
 
 # 批量生成 out/err
 foreach ($n in @(
@@ -742,3 +782,167 @@ foreach ($n in @(
 | 原始公钥编码 | RFC 5480 / RFC 3279 | 同 |
 | DH 公钥验证 | NIST SP 800-56A §5.6.2.3 | 同 |
 | EAP-RP | RFC 6696 | 同 |
+
+---
+
+## 12. 本次复核记录（2026-11-14）
+
+### 12.1 环境与命令
+
+- 工具：ProVerif 2.05（项目内 `proverifbin2.05/proverif.exe`）
+- 命令（600 s 看门狗，超时自动 Kill；跳过历史版 `FILS_PK_old.pv`）：
+
+  ```powershell
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\reverify_all.ps1 `
+    -Pv .\proverifbin2.05\proverif.exe -Dir . -TimeoutSec 600
+  ```
+
+- 结果：**21/21 模型 OK**，`stderr` 全部 0 字节，总耗时约 12 s；
+  原始输出见 `REVERIFY_20261114_110803.txt`（每次运行生成新文件）。
+
+### 12.2 逐模型耗时与结论
+
+> 注：本节是 2026-11-14 11:08 的**全量**运行记录；随后模型集已重整，
+> 现行主集与结果见 §7，归档模型见 `archive/`。
+
+| 模型 | 结果行 | 耗时(s) | 结论摘要 |
+|---|---:|---:|---|
+| `FILS_PK.pv` | 17 | 3.5 | 全部 true |
+| `FILS_SK.pv` | 22 | 5.3 | 全部 true |
+| `FILS_PFS.pv` | 3 | 0.5 | PK true、SK5 true、**SK4 false（预期）** |
+| `FILS_CACHE.pv` | 3 | 0.1 | 全部 true |
+| `FILS_KEYREUSE.pv` | 1 | 0.0 | **false（PTK 重用）** |
+| `FILS_EAPRP_SEQ.pv` | 2 | 0.0 | 全部 true |
+| `FILS_EAPRP_SEQ_bad.pv` | 2 | 0.0 | 唯一性 **false**；rMSK 仍保密 |
+| `FILS_GTK_REPLAY_good.pv` | 2 | 0.0 | true / true |
+| `FILS_GTK_REPLAY_bad.pv` | 3 | 0.0 | 非单射 **false**（含 1 行 `(but ...)` 说明） |
+| `FILS_PMKID_LINK.pv` | 1 | 0.0 | **false（可链接）** |
+| `FILS_PRIVACY.pv` | 1 | 0.0 | `cannot be proved` |
+| `FILS_REPLAY.pv` | 3 | 0.1 | 全部 true |
+| `FILS_STATUS.pv` | 3 | 0.1 | abort **false**；probe true；认证 true |
+| `FILS_STATUS_faulty.pv` | 3 | 0.0 | bad **false**；old_ptk true；probe true |
+| `FILS_PK_CERT.pv` | 7 | 0.3 | 全部 true |
+| `FILS_PK_CERT_bad.pv` | 9 | 0.7 | 7 条主查询全 **false**（+2 行 `(even ...)`） |
+| `FILS_PK_RAW.pv` | 7 | 0.4 | 全部 true |
+| `FILS_PK_RAW_bad.pv` | 9 | 0.6 | 7 条主查询全 **false**（+2 行 `(even ...)`） |
+| `FILS_LATEAUTH.pv` | 7 | 0.2 | 全部 true |
+| `FILS_LATEAUTH_nobind.pv` | 7 | 0.3 | PTK 一致性 **false**、probe **false** |
+| `FILS_DOS_UNAUTH.pv` | 2 | 0.1 | `ApWork=>StaStart` **false**；`ApFinish=>ApWork` true |
+
+### 12.3 模型可信度三项检查
+
+1. **角色分离**：`FILS_PK_old.pv` 中 STA 与 AP 写在同一进程（`in(c)/out(c)` 自问自答），
+   认证查询会退化为恒真；现行 `FILS_PK.pv` / `FILS_SK.pv` 把两侧拆成独立进程，
+   攻击者居中，查询才有意义。
+2. **AEAD 的 AAD 强制校验**：现行模型用
+   `adec(aead((aad,p),k), aad, k) = p`，AAD 不一致时 reduction 不适用（解密失败），
+   而不是“解密后再比较 AAD”。这样 AAD 绑定不会被弱化。
+3. **非空性 + 阴性对照**：
+   - 非空性：对 `StaFinish*` 事件做可达性查询，结果为 `false`（即**事件可达**），
+     排除“事件从不发生 ⇒ 蕴含式恒真”的假通过；
+   - 阴性对照：人为删除 STA 对 AP 签名的校验后，`StaFinishF ==> ApFinishF` 立刻
+     变为 **false**、`probe_tk` 泄露；说明模型对“缺失认证”是敏感的。
+
+> 结论：第 7 节表格中的 true 不是空验证的结果；第 12.2 节的 false 也都是可解释的
+> 预期结论（ANA=4 无 PFS、未认证 M1 的 DoS 前提、错误实现导致的攻击等）。
+
+---
+
+## 13. Visio 流程图（`协议流程.vsdx`）与标准的偏差
+
+`协议流程.vsdx` 有两个面板：左「FILS SK（ANA=4/5）」、右「FILS PK（ANA=6）」。
+两面板的 4 帧结构、KeyAuth 拼接顺序（含方向镜像）、DHss 是否进入 KeyAuth
+均与 §12.11 一致；以下 6 处需要按标准修正，本文与模型**一律以标准为准**。
+
+| # | Visio 画法 | 标准 | 安全影响 | 模型处理 |
+|---|---|---|---|---|
+| 1 | 消息中**不含 RSNE**，也没有 RSNE 一致性校验 | Auth 帧必须含 RSNE（§9.3.3.11 表 9-70 序 10；§12.11.2.4.2 要求 Cipher/AKM Count=1）；Assoc 帧的 RSNE 必须与 Auth 帧一致（§12.11.2.6.2/6.3） | **有**：AKM/cipher 可被降级 | RSNE 进入 M1–M4，并做等值校验 |
+| 2 | `AAD = (STA-MAC, AP-BSSID, SNonce, ANonce, Session)` | AAD 还包含帧体中 **Capability Information 到 FILS Session（含）** 的全部内容（§12.11.2.6.2） | **有**：图示 AAD 过窄，配置字段未被绑定 | 模型把 RSNE 等纳入 AAD |
+| 3 | `PMKID = Hash(gSTA‖gAP)`；SK 面板为 `Hash(WrappedData1)` | `PMKID = Truncate-128(Hash(...))`（§12.11.2.5.2） | 无（互操作/长度） | 模型用 `trunc128` |
+| 4 | SK 面板把 PTK 的 `[‖DHss]` 绑在“if PFS”上 | 方括号仅表示“做了 DH **且** 使用 PMKSA caching”；无缓存时 DHss 已混入 PMK，PTK 上下文不含 DHss（§12.11.2.5.3） | 无（双方一致即可），但**互操作风险** | 模型按标准区分 F/C 分支 |
+| 5 | 未画 OCI/OCVC、Association Delay Info、Key Delivery 的 IGTK/BIGTK/WIGTK | §12.11.2.6.2/6.3、§12.2.10 | 无（可选特性/不在核心 4 帧） | 未建模（已声明边界） |
+| 6 | 未画“生成 PMK/PMKID 后立即销毁 DHss 与 rMSK” | §12.11.2.5.2 强制 | 无（模型不复用即等价） | 模型不重复使用 |
+
+**判定**：以上偏差**不改变**“合规实现下未发现密钥/认证类攻击”的结论；
+但 #1、#2 若按图实现，会留下配置降级面（KeyAuth 与身份绑定仍在）。
+由于用户要求“图与标准不对应时以标准为准”，本文所有模型均按 §12.11 文本建模。
+
+---
+
+## 14. 模型集重整与 PTK 重装验证（2026-11-14 晚）
+
+### 14.1 保留集与归档集
+
+**保留（12 个，主集）**
+
+| 模型 | 角色 |
+|---|---|
+| `FILS_PK.pv` / `FILS_SK.pv` | 合规基线（证明标准流程本身无密钥/认证类缺陷） |
+| `FILS_DOS_UNAUTH.pv` | 标准级问题：先协商后认证 → 未认证 M1 迫使 AP 工作 |
+| `FILS_PMKID_LINK.pv` | 标准级问题：PMKID 稳定可链接（隐私） |
+| `FILS_STATUS.pv` | 标准级问题：status 不在 KeyAuth/AEAD 内 → 伪造 112 DoS |
+| `FILS_PFS.pv` | 标准取舍：ANA=4 无 PFS |
+| `FILS_KRACK_PTK_bad/good.pv` | 标准级问题：PTK 重装（新增） |
+| `FILS_GTK_REPLAY_bad/good.pv` | 标准级问题：组密钥重装（12.11.2.1 只覆盖这一半） |
+| `FILS_EAPRP_SEQ.pv` / `_bad.pv` | 标准依赖项：EAP-RP SEQ 决定 PMK 新鲜性 |
+
+**归档（12 个，移入 `archive/`，仍可运行）**
+
+`FILS_PK_old`（历史、单进程不可用）、`FILS_PRIVACY`（等价性无法证明，冗余）、
+`FILS_REPLAY`、`FILS_CACHE`（已被基线模型覆盖）、`FILS_KEYREUSE`、
+`FILS_STATUS_faulty`、`FILS_PK_CERT`/`_bad`、`FILS_PK_RAW`/`_bad`、
+`FILS_LATEAUTH`/`_nobind`（均为实现偏差或信任锚对照，不证明标准本身有问题）。
+逐项原因见 `archive/README.md`。
+
+### 14.2 新增：PTK 密钥重装（KRACK）模型
+
+- `FILS_KRACK_PTK_bad.pv`：AP 完成一次密钥确认后**不去重**；攻击者重放同一条
+  `(Re)Association Request`（同一 FILS Session、同一密文 `ct`），AP 再次校验通过
+  并再次安装**同一把 PTK**。
+- `FILS_KRACK_PTK_good.pv`：同一模型 + 会话去重（识别 `done` 后只重发缓存 M4，
+  不 `SETKEYS`、不删建 PTKSA、不复位 PN）。
+
+ProVerif 结果：
+
+```text
+bad : not attacker(gtk)          = true
+      not attacker(probe)        = true
+      not event(ApReinstalls)    = false   ← 重装可达
+      not event(ApReplaySeen)    = false   ← 重放分支可达（non-vacuous）
+good: not event(ApReinstalls)    = true    ← 去重后不可达
+      not event(ApReplaySeen)    = false   ← 重放仍被处理，排除空验证
+```
+
+`bad` 版轨迹（节选）：
+
+```text
+event ApInstalls(ap,sess_1,PTK) at {65}
+event ApInstalls(ap,sess_1,PTK) at {76}      ← 第二次装同一把钥
+event ApReinstalls(ap,sess_1,PTK) at {77}    ← 重放命中
+```
+
+要点：
+
+- 攻击**不泄露** PTK/GTK（两条机密性查询仍为 true），危害在于**同一 PTK 被装两次**
+  → 删建 PTKSA → 发送 PN 归零 → nonce 复用（PN 语义超出 ProVerif，由
+  `../FILS密钥重装攻击_2024标准分析.md` 补充）。
+- 这不是 802.11-2024 强制条款：§12.11.2.1 只禁组密钥重装，§11.3.5.3(m) 反而
+  要求成功关联时删旧 PTKSA；去重属实现级加固（图中那句“只重发缓存响应”）。
+
+### 14.3 与当前 Visio 绘图的一致性核对
+
+| 图元素 | 模型对应 | 结论 |
+|---|---|---|
+| M1/M2 的 `RSNE`、`RSNE2 与本地策略一致` | `rsne_pk`/`rsne_sk` 进消息并做等值检查 | 一致（模型用整元素等值，比标准的 AKM/cipher/RSN Caps 比较更严） |
+| AAD = `STA-MAC‖AP-BSSID‖SNonce‖ANonce‖(Capability…Session，含 RSNE)` | `(sta, ap, sn, an, sess, rsne)` 作为 AEAD 的 AAD | 一致（Capability/其余帧体被抽象） |
+| M3/M4 的 `PK_STA`/`PK_AP`（FILS Public Key 元素） | `pk(skS)` / `pkA` 置于 AEAD 明文 | 一致（证书/原始公钥未细分） |
+| `KeyAuth_STA/AP` 的方向镜像顺序 | `sign((gs,ga,sn,an,sta,ap))` / `sign((ga,gs,an,sn,ap,sta))` | 一致 |
+| 缓存分支 KeyAuth = HMAC(ICK, …) | `hmac(ick,(sn,an,sta,ap,gs,ga))` | 一致 |
+| `PTK = PRF(PMK, …, [‖DHss])` 的方括号条件 | 无缓存不含 DHss；缓存含 DHss | 一致 |
+| `install PTK`（验证成功后） | `ApFinish*` / `StaFinish*` 事件 | 语义一致（无 `SETKEYS`/PN 语义） |
+| MDE/FTE、OCI、Association Delay Info、Key Delivery 的 IGTK/BIGTK/WIGTK | 未建模 | 已声明边界（FILS-FT/OCV 不在本文范围） |
+
+### 14.4 复核
+
+主集 12/12 模型运行 OK，`stderr` 全 0，总耗时约 8 s
+（`FILS_SK.pv` 4.2 s、`FILS_PK.pv` 3.0 s、`FILS_KRACK_PTK_*` 各 0.1 s）。

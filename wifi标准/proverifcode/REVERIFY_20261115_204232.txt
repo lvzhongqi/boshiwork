@@ -1,0 +1,78 @@
+﻿# reverify report 2026-11-15T20:42:32
+[OK] FILS_DOS_UNAUTH.pv 0.1s  2 result lines
+    RESULT event(ApWork(a,s,se,gs_2)) ==> event(StaStart(s,a,se)) is false.
+    RESULT event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs_2)) is true.
+[OK] FILS_EAPRP_SEQ.pv 0s  2 result lines
+    RESULT event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 is true.
+    RESULT not attacker(rmsk[]) is true.
+[OK] FILS_EAPRP_SEQ_bad.pv 0s  2 result lines
+    RESULT event(UsePMK(s1,k)) && event(UsePMK(s2,k)) ==> s1 = s2 is false.
+    RESULT not attacker(rmsk[]) is true.
+[OK] FILS_GTK_REPLAY_bad.pv 0s  3 result lines
+    RESULT event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.
+    RESULT inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) is false.
+    RESULT (but event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.)
+[OK] FILS_GTK_REPLAY_good.pv 0s  2 result lines
+    RESULT event(StaAccept(k,g)) ==> event(ApSend(k,g)) is true.
+    RESULT inj-event(StaAccept(k,g)) ==> inj-event(ApSend(k,g)) is true.
+[OK] FILS_KRACK_PTK_bad.pv 0.1s  4 result lines
+    RESULT not attacker(gtk[]) is true.
+    RESULT not attacker(probe[]) is true.
+    RESULT not event(ApReinstalls(a,se,k)) is false.
+    RESULT not event(ApReplaySeen(a,se)) is false.
+[OK] FILS_KRACK_PTK_good.pv 0.1s  4 result lines
+    RESULT not attacker(gtk[]) is true.
+    RESULT not attacker(probe[]) is true.
+    RESULT not event(ApReinstalls(a,se,k)) is true.
+    RESULT not event(ApReplaySeen(a,se)) is false.
+[OK] FILS_PFS.pv 0.4s  3 result lines
+    RESULT not attacker_p1(probe_pk[]) is true.
+    RESULT not attacker_p1(probe_sk5[]) is true.
+    RESULT not attacker_p1(probe_sk4[]) is false.
+[OK] FILS_PK.pv 2.8s  17 result lines
+    RESULT not attacker(gtk_val[]) is true.
+    RESULT not attacker(probe_tk[]) is true.
+    RESULT not attacker(pmk_c1[]) is true.
+    RESULT not attacker(pmk_c2[]) is true.
+    RESULT event(StaFinishF(s,a,se)) ==> event(ApFinishF(s,a,se)) is true.
+    RESULT inj-event(StaFinishF(s,a,se)) ==> inj-event(ApFinishF(s,a,se)) is true.
+    RESULT event(ApFinishF(s,a,se)) ==> event(StaStartF(s,a,se)) is true.
+    RESULT inj-event(ApFinishF(s,a,se)) ==> inj-event(StaStartF(s,a,se)) is true.
+    RESULT event(StaFinishC(s,a,se)) ==> event(ApFinishC(s,a,se)) is true.
+    RESULT inj-event(StaFinishC(s,a,se)) ==> inj-event(ApFinishC(s,a,se)) is true.
+    RESULT event(ApFinishC(s,a,se)) ==> event(StaStartC(s,a,se)) is true.
+    RESULT inj-event(ApFinishC(s,a,se)) ==> inj-event(StaStartC(s,a,se)) is true.
+    RESULT event(StaPTKF(s,a,se,k)) ==> event(ApPTKF(s,a,se,k)) is true.
+    RESULT event(StaPTKC(s,a,se,k)) ==> event(ApPTKC(s,a,se,k)) is true.
+    RESULT event(StaPTKF(s1,a1,se1,k)) && event(StaPTKF(s2,a2,se2,k)) ==> se1 = se2 is true.
+    RESULT event(StaPTKC(s1,a1,se1,k)) && event(StaPTKC(s2,a2,se2,k)) ==> se1 = se2 is true.
+    RESULT event(CacheUse(s,a,p)) ==> event(CacheStore(s,a,p)) is true.
+[OK] FILS_PMKID_LINK.pv 0s  1 result lines
+    RESULT event(Sent(s1,p)) && event(Sent(s2,p)) ==> s1 = s2 is false.
+[OK] FILS_SK.pv 4.1s  22 result lines
+    RESULT not attacker(gtk_val[]) is true.
+    RESULT not attacker(probe_tk[]) is true.
+    RESULT not attacker(pmk_c1[]) is true.
+    RESULT not attacker(pmk_c2[]) is true.
+    RESULT not attacker(eaprp_rmsk1[]) is true.
+    RESULT not attacker(eaprp_rmsk2[]) is true.
+    RESULT event(StaFinish4(s,a,se)) ==> event(ApFinish4(s,a,se)) is true.
+    RESULT inj-event(StaFinish4(s,a,se)) ==> inj-event(ApFinish4(s,a,se)) is true.
+    RESULT event(ApFinish4(s,a,se)) ==> event(StaStart4(s,a,se)) is true.
+    RESULT inj-event(ApFinish4(s,a,se)) ==> inj-event(StaStart4(s,a,se)) is true.
+    RESULT event(StaFinish5(s,a,se)) ==> event(ApFinish5(s,a,se)) is true.
+    RESULT inj-event(StaFinish5(s,a,se)) ==> inj-event(ApFinish5(s,a,se)) is true.
+    RESULT event(ApFinish5(s,a,se)) ==> event(StaStart5(s,a,se)) is true.
+    RESULT inj-event(ApFinish5(s,a,se)) ==> inj-event(StaStart5(s,a,se)) is true.
+    RESULT event(StaFinish5C(s,a,se)) ==> event(ApFinish5C(s,a,se)) is true.
+    RESULT inj-event(StaFinish5C(s,a,se)) ==> inj-event(ApFinish5C(s,a,se)) is true.
+    RESULT event(ApFinish5C(s,a,se)) ==> event(StaStart5C(s,a,se)) is true.
+    RESULT inj-event(ApFinish5C(s,a,se)) ==> inj-event(StaStart5C(s,a,se)) is true.
+    RESULT event(StaPTK(akm,s,a,se,k)) ==> event(ApPTK(akm,s,a,se,k)) is true.
+    RESULT event(StaPTK(akm1,s1,a1,se1,k)) && event(StaPTK(akm2,s2,a2,se2,k)) ==> se1 = se2 is true.
+    RESULT event(StaPTK(aan4,s1,a1,se1,k)) && event(StaPTK(aan5,s2,a2,se2,k)) ==> se1 = se2 is true.
+    RESULT event(StaPTK(akm1,s,a,se,k1)) && event(StaPTK(akm2,s,a,se,k2)) ==> akm1 = akm2 is true.
+[OK] FILS_STATUS.pv 0.1s  3 result lines
+    RESULT not attacker(abort_flag[]) is false.
+    RESULT not attacker(probe[]) is true.
+    RESULT event(StaFinish(se)) ==> event(ApFinish(se)) is true.
