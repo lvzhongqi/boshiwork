@@ -2,6 +2,8 @@
 > 实现偏差/历史模型已移入 `archive/`。现行主集与结果见
 > `FILS安全问题汇总.md` §7 / §14，新增了 `FILS_KRACK_PTK_bad/good.pv`
 > （PTK 重装）。归档原因见 `archive/README.md`。
+> 文献调研见 `../FILS形式化分析调研.md`（是否已有 ProVerif/其他形式化工作、
+> 覆盖矩阵与新颖性表述建议）。
 
 # FILS 协议 ProVerif 验证 —— 今日工作总结
 
