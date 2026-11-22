@@ -1,0 +1,251 @@
+(* =====================================================================
+   FILS SK：实现偏差对安全目标的影响（绑定缺失）
+   对照：proverifcode/FILS_SK.pv（标准模型，ANA=5 无缓存分支）
+
+   本文件在同一模型里放两对 STA/AP：
+     - 标准对 (s1/a1)：STA 校验 FILS Session 与 RSNE，且两者进入 AEAD AAD
+     - 偏差对 (s2/a2)：STA 不校验 Session/RSNE，且 AAD 不含这两项
+       （对应实现：wpa.c:6958 只打印不失败；驱动不校验 AAD 的最坏情况）
+
+   攻击：攻击者改写 AP 的 (Re)Association Response 中的 Session/RSNE，
+   偏差对接受，标准对因 AAD/等值检查拒绝。
+
+   查询：
+     - 标准对：StaFinStd ==> ApFinStd 应为 true
+     - 偏差对：StaFinDev ==> ApFinDev 应为 false（会话/配置错绑）
+     - 两对的会话均可达（非空性）
+     - 探针仍保密（攻击是绑定问题，不是密钥泄露）
+   ===================================================================== *)
+
+free c:channel.
+
+const s1:bitstring.
+const a1:bitstring.
+const s2:bitstring.
+const a2:bitstring.
+
+const g:bitstring.
+const aan5:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsneA:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+
+free rmsk1:bitstring [private].
+free rmsk2:bitstring [private].
+free probe:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+event StaFinStd(bitstring,bitstring,bitstring,bitstring).
+event ApFinStd(bitstring,bitstring,bitstring,bitstring).
+event StaFinDev(bitstring,bitstring,bitstring,bitstring).
+event ApFinDev(bitstring,bitstring,bitstring,bitstring).
+
+(* 目标：会话 + 配置（RSNE）一致 *)
+query s:bitstring, a:bitstring, se:bitstring, r:bitstring;
+  event(StaFinStd(s,a,se,r)) ==> event(ApFinStd(s,a,se,r)).
+query s:bitstring, a:bitstring, se:bitstring, r:bitstring;
+  event(StaFinDev(s,a,se,r)) ==> event(ApFinDev(s,a,se,r)).
+
+(* 非空性 *)
+query s:bitstring, a:bitstring, se:bitstring, r:bitstring;
+  event(StaFinStd(s,a,se,r)).
+query s:bitstring, a:bitstring, se:bitstring, r:bitstring;
+  event(StaFinDev(s,a,se,r)).
+
+(* 机密性未受该偏差影响 *)
+query attacker(probe).
+
+(* =====================================================================
+   标准对：检查 + AAD 绑定
+   ===================================================================== *)
+let sta_std() =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (s1,a1,aan5,seq1,dhgrp,gs,sn,sess,rsneA));
+
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring));
+  if apR = a1 then
+  if staR = s1 then
+  if aanR = aan5 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsneA then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn,anR), (rmsk1,dhss)) in
+    let ptk = kdf(pmk, label_ptk, (s1,a1,sn,anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = hmac(ick, (sn,anR,s1,a1,gs,gaR)) in
+    let aad = (s1,a1,sn,anR,sess,rsneA) in
+    let ct = aead((aad,ka),kek) in
+    out(c, (s1,a1,sess,rsneA,ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = a1 then
+    if sta2R = s1 then
+    if sess2R = sess then
+    if rsne2R = rsneA then
+
+      let aad2 = (a1,s1,anR,sn,sess,rsneA) in
+      let kaAR = adec(ct2R, aad2, kek) in
+      if kaAR = hmac(ick, (anR,sn,a1,s1,gaR,gs)) then
+        event StaFinStd(s1,a1,sess,rsneA);
+        out(c, aead((label_data,probe),tk)).
+
+let ap_std() =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring));
+  if apR = a1 then
+  if staR = s1 then
+  if aanR = aan5 then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR,sA) in
+    let pmk = hmac((snR,an), (rmsk1,dhss)) in
+    let ptk = kdf(pmk, label_ptk, (s1,a1,snR,an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (a1,s1,aan5,seq2,st_ok,dhgrp,ga,snR,sessR,rsneR,an));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = s1 then
+    if ap2R = a1 then
+    if sess2R = sessR then
+    if rsne3R = rsneR then
+
+      let aad = (s1,a1,snR,an,sessR,rsne3R) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR,an,s1,a1,gsR,ga)) then
+        event ApFinStd(s1,a1,sessR,rsneR);
+        let kaap = hmac(ick, (an,snR,a1,s1,ga,gsR)) in
+        let aad2 = (a1,s1,an,snR,sessR,rsneR) in
+        let ct2 = aead((aad2,kaap),kek) in
+        out(c, (a1,s1,sessR,rsneR,ct2)).
+
+(* =====================================================================
+   偏差对：不检查 Session/RSNE，AAD 也不含它们
+   ===================================================================== *)
+let sta_dev() =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (s2,a2,aan5,seq1,dhgrp,gs,sn,sess,rsneA));
+
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring));
+  if apR = a2 then
+  if staR = s2 then
+  if aanR = aan5 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  (* 偏差：不校验 sessR / rsneR *)
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn,anR), (rmsk2,dhss)) in
+    let ptk = kdf(pmk, label_ptk, (s2,a2,sn,anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = hmac(ick, (sn,anR,s2,a2,gs,gaR)) in
+    (* 偏差：AAD 不含 Session / RSNE *)
+    let aad = (s2,a2,sn,anR) in
+    let ct = aead((aad,ka),kek) in
+    out(c, (s2,a2,sess,rsneA,ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = a2 then
+    if sta2R = s2 then
+    (* 偏差：不校验 Session 与 RSNE *)
+
+      let aad2 = (a2,s2,anR,sn) in
+      let kaAR = adec(ct2R, aad2, kek) in
+      if kaAR = hmac(ick, (anR,sn,a2,s2,gaR,gs)) then
+        (* 事件记录“实际收到的” Session/RSNE *)
+        event StaFinDev(s2,a2,sess2R,rsne2R);
+        out(c, aead((label_data,probe),tk)).
+
+let ap_dev() =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring));
+  if apR = a2 then
+  if staR = s2 then
+  if aanR = aan5 then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR,sA) in
+    let pmk = hmac((snR,an), (rmsk2,dhss)) in
+    let ptk = kdf(pmk, label_ptk, (s2,a2,snR,an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (a2,s2,aan5,seq2,st_ok,dhgrp,ga,snR,sessR,rsneR,an));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne3R:bitstring, ctR:bitstring));
+    if sta2R = s2 then
+    if ap2R = a2 then
+    if sess2R = sessR then
+    if rsne3R = rsneR then
+
+      let aad = (s2,a2,snR,an) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR,an,s2,a2,gsR,ga)) then
+        event ApFinDev(s2,a2,sessR,rsneR);
+        let kaap = hmac(ick, (an,snR,a2,s2,ga,gsR)) in
+        let aad2 = (a2,s2,an,snR) in
+        let ct2 = aead((aad2,kaap),kek) in
+        out(c, (a2,s2,sessR,rsneR,ct2)).
+
+process
+  ( sta_std() | ap_std() | sta_dev() | ap_dev() )

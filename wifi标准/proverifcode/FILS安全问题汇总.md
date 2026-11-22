@@ -664,6 +664,14 @@ event(ApFinish(s,a,se)) ==> event(ApWork(a,s,se,gs))   true
 | `FILS_GTK_REPLAY_good.pv` | 校验 KeyID/epoch | true / true |
 | `FILS_EAPRP_SEQ_bad.pv` | 不校验 EAP-RP SEQ ⇒ PMK 重用 | 唯一性 **false**；rMSK 仍保密 |
 | `FILS_EAPRP_SEQ.pv` | 正确校验 SEQ | true / true |
+| `FILS_SK_IMPL_BINDING.pv` | 实现偏差：Session/RSNE 绑定缺失 → 错绑 | 标准对 true；偏差对 **false**；探针 true |
+| `FILS_SK_IMPL_REPLAY.pv` | 实现偏差：重放 M3 → AP 断开 STA | bad **可达**；good 不可达；探针 true |
+
+> 2026-11-22 增补：新增两个“实现偏差 → 安全目标失败”模型
+> （`FILS_SK_IMPL_BINDING.pv`、`FILS_SK_IMPL_REPLAY.pv`），
+> 对应分析见 `../论文/04_实现偏差与安全影响.md`。
+> 目录中另有后续加入的 `FILS_KRACK_SK_*`、`FILS_*_PRIVACY*`、
+> `FILS_DOS_M1M2.pv`、`METHOD_4WAY_*` 等模型，见 `../论文/01_论文素材_现有工作.md`。
 
 > 归档（12 个，仍在 `archive/` 可运行）：`FILS_PK_old`、`FILS_PRIVACY`、
 > `FILS_REPLAY`、`FILS_CACHE`、`FILS_KEYREUSE`、`FILS_STATUS_faulty`、

@@ -1,0 +1,170 @@
+(* =====================================================================
+   FILS SK：实现偏差对安全目标的影响（重放 M3 → AP 断开 STA）
+   对照：hostapd
+     - wpa_auth.c:3711  tk_already_set → 返回 -1
+     - ieee802_11.c:8690-8699  fils_set_tk() < 0 → ap_sta_disconnect()
+
+   两对 STA/AP：
+     - bad 对：AP 不去重；重放同一 M3 → ApDeauth 可达
+     - good 对：AP 去重，只重发缓存 M4；ApDeauth 不可达
+
+   查询：
+     - ApDeauth 在 bad 对可达（false）
+     - ApDeauth 在 good 对不可达（true）
+     - ApReplaySeen 在两对均可达（非空性）
+     - 探针仍保密（攻击是可用性，不是密钥泄露）
+   ===================================================================== *)
+
+free c:channel.
+
+const sb:bitstring.
+const ab:bitstring.
+const sg:bitstring.
+const ag:bitstring.
+
+const g:bitstring.
+const aan5:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const none:bitstring.
+const yes:bitstring.
+const no:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+
+free rmsk_b:bitstring [private].
+free rmsk_g:bitstring [private].
+free probe:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+event ApDeauth(bitstring,bitstring).
+event ApReplaySeen(bitstring,bitstring).
+
+(* bad 对：重放 → 断开（期望 false，可达） *)
+query a:bitstring, s:bitstring; event(ApDeauth(a,s)).
+(* good 对：去重 → 不断开（期望 true，不可达） *)
+query event(ApDeauth(ag,sg)).
+(* 非空性：两对都真的处理了重放 *)
+query a:bitstring, s:bitstring; event(ApReplaySeen(a,s)).
+query event(ApReplaySeen(ag,sg)).
+(* 机密性不受影响 *)
+query attacker(probe).
+
+let sta_proc(sta:bitstring, ap:bitstring, rmsk:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  out(c, (sta,ap,aan5,seq1,dhgrp,gs,sn,sess,rsne));
+
+  in(c, (apR:bitstring, staR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan5 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+
+    let dhss = exp(gaR, sS) in
+    let pmk = hmac((sn,anR), (rmsk,dhss)) in
+    let ptk = kdf(pmk, label_ptk, (sta,ap,sn,anR)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = hmac(ick, (sn,anR,sta,ap,gs,gaR)) in
+    let aad = (sta,ap,sn,anR,sess,rsne) in
+    let ct = aead((aad,ka),kek) in
+    out(c, (sta,ap,sess,rsne,ct));
+
+    in(c, (ap2R:bitstring, sta2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if sta2R = sta then
+    if sess2R = sess then
+    if st2R = st_ok then
+    if rsne2R = rsne then
+
+      let aad2 = (ap,sta,anR,sn,sess,rsne) in
+      let kaAR = adec(ct2R, aad2, kek) in
+      if kaAR = hmac(ick, (anR,sn,ap,sta,gaR,gs)) then
+        out(c, aead((label_data,probe),tk)).
+
+let ap_proc(sta:bitstring, ap:bitstring, dedup:bitstring, rmsk:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring));
+  if apR = ap then
+  if staR = sta then
+  if aanR = aan5 then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR,sA) in
+    let pmk = hmac((snR,an), (rmsk,dhss)) in
+    let ptk = kdf(pmk, label_ptk, (sta,ap,snR,an)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    out(c, (ap,sta,aan5,seq2,st_ok,dhgrp,ga,snR,sessR,rsneR,an));
+
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ctR:bitstring));
+    if sta2R = sta then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if rsne2R = rsneR then
+
+      let aad = (sta,ap,snR,an,sessR,rsne2R) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR,an,sta,ap,gsR,ga)) then
+        let kaap = hmac(ick, (an,snR,ap,sta,ga,gsR)) in
+        let aad2 = (ap,sta,an,snR,sessR,rsneR) in
+        let ct2 = aead((aad2,kaap),kek) in
+        out(c, (ap,sta,sessR,st_ok,rsneR,ct2));
+
+        (* 攻击者重放同一条 M3（同一密文 ctR） *)
+        in(c, (sta3R:bitstring, ap3R:bitstring, sess3R:bitstring,
+               rsne3R:bitstring, ct3R:bitstring));
+        if sta3R = sta then
+        if ap3R = ap then
+        if sess3R = sessR then
+        if rsne3R = rsneR then
+        if ct3R = ctR then
+
+          event ApReplaySeen(ap,sta);
+          if dedup = no then
+            ( event ApDeauth(ap,sta);
+              out(c, (ap,sta,sessR,st_ok,rsneR,ct2)) )
+          else
+            out(c, (ap,sta,sessR,st_ok,rsneR,ct2)).
+
+process
+  ( sta_proc(sb, ab, rmsk_b) | ap_proc(sb, ab, no, rmsk_b) |
+    sta_proc(sg, ag, rmsk_g) | ap_proc(sg, ag, yes, rmsk_g) )
