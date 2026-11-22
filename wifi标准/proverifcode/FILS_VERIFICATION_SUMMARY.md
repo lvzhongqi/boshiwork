@@ -4,6 +4,13 @@
 > （PTK 重装）。归档原因见 `archive/README.md`。
 > 文献调研见 `../FILS形式化分析调研.md`（是否已有 ProVerif/其他形式化工作、
 > 覆盖矩阵与新颖性表述建议）。
+> 2026-11-20 扩展目标（PMKID 隐私、M1/M2 DoS、PTK 重装）见
+> `../FILS_扩展安全目标与攻击分析.md`；新增模型
+> `FILS_SK_PRIVACY.pv`、`FILS_PK_PRIVACY.pv`、`FILS_PRIVACY_EQUIV.pv`、
+> `FILS_DOS_M1M2.pv`、`FILS_KRACK_SK_bad/good.pv`；
+> 方法可移植性实例 `METHOD_4WAY_PAW_KIS_bad/good.pv`（PAW-KI 套到 4-way）。
+> 论文整理见 `../论文/01_论文素材_现有工作.md`、`02_实现核查清单与代码定位.md`、
+> `03_未来工作.md`；实现忠实的隐私对照见 `FILS_SK_PRIVACY_MACBOUND.pv`。
 
 # FILS 协议 ProVerif 验证 —— 今日工作总结
 

@@ -1,0 +1,402 @@
+Process 0 (that is, the initial process):
+(
+    {1}let dummy: bitstring = none in
+    {2}new an: bitstring;
+    {3}out(c, (sta,ap,an));
+    {4}event ApSentMsg1(ap,sta,an);
+    {5}in(c, (sta2R: bitstring,ap2R: bitstring,sn2R: bitstring,mic2R: bitstring));
+    {6}if (sta2R = sta) then
+    {7}if (ap2R = ap) then
+    {8}let ptk: bitstring = prf(pmk,an,sn2R) in
+    {9}let kck: bitstring = hmac(ptk,label_kck) in
+    {10}let kek: bitstring = hmac(ptk,label_kek) in
+    {11}if (mic2R = hmac(kck,(an,sn2R))) then
+    {12}event ApAuth(ap,sta,an);
+    {13}let mic3: bitstring = hmac(kck,(sn2R,an,gtk)) in
+    {14}out(c, (ap,sta,sn2R,an,enc((gtk,mic3),kek)))
+) | (
+    {15}!
+    {16}let dummy_1: bitstring = none in
+    {17}in(c, (staR: bitstring,apR: bitstring,anR: bitstring));
+    {18}if (staR = sta) then
+    {19}if (apR = ap) then
+    {20}new sn: bitstring;
+    {21}let ptk_1: bitstring = prf(pmk,anR,sn) in
+    {22}let kck_1: bitstring = hmac(ptk_1,label_kck) in
+    {23}let kek_1: bitstring = hmac(ptk_1,label_kek) in
+    {24}let mic2: bitstring = hmac(kck_1,(anR,sn)) in
+    {25}event StaWorkMsg2(sta,ap,anR,ptk_1);
+    {26}out(c, (sta,ap,sn,mic2));
+    {27}in(c, (ap3R: bitstring,sta3R: bitstring,sn3R: bitstring,an3R: bitstring,ct3R: bitstring));
+    {28}if (ap3R = ap) then
+    {29}if (sta3R = sta) then
+    {30}if (sn3R = sn) then
+    {31}if (an3R = anR) then
+    {32}let (gtk3R: bitstring,mic3R: bitstring) = dec(ct3R,kek_1) in
+    {33}if (mic3R = hmac(kck_1,(sn,anR,gtk3R))) then
+    {34}event StaInstalls(sta,ap,anR,ptk_1);
+    {35}out(c, hmac(kck_1,(anR,sn,label_data)));
+    {36}event HonestDone(sta,ap,anR);
+    {37}in(c, (ap4R: bitstring,sta4R: bitstring,sn4R: bitstring,an4R: bitstring,ct4R: bitstring));
+    {38}if (ap4R = ap) then
+    {39}if (sta4R = sta) then
+    {40}if (sn4R = sn) then
+    {41}if (an4R = anR) then
+    {42}if (ct4R = ct3R) then
+    {43}event ReplaySeen(sta,ap,anR);
+    {44}out(c, hmac(kck_1,(anR,sn,label_data)))
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {2}new an: bitstring;
+    {3}out(c, (sta,ap,an));
+    {4}event ApSentMsg1(ap,sta,an);
+    {5}in(c, (sta2R: bitstring,ap2R: bitstring,sn2R: bitstring,mic2R: bitstring));
+    {6}if (sta2R = sta) then
+    {7}if (ap2R = ap) then
+    {8}let ptk: bitstring = prf(pmk,an,sn2R) in
+    {9}let kck: bitstring = hmac(ptk,label_kck) in
+    {11}if (mic2R = hmac(kck,(an,sn2R))) then
+    {12}event ApAuth(ap,sta,an);
+    {13}let mic3: bitstring = hmac(kck,(sn2R,an,gtk)) in
+    {10}let kek: bitstring = hmac(ptk,label_kek) in
+    {14}out(c, (ap,sta,sn2R,an,enc((gtk,mic3),kek)))
+) | (
+    {15}!
+    {17}in(c, (staR: bitstring,apR: bitstring,anR: bitstring));
+    {18}if (staR = sta) then
+    {19}if (apR = ap) then
+    {20}new sn: bitstring;
+    {21}let ptk_1: bitstring = prf(pmk,anR,sn) in
+    {25}event StaWorkMsg2(sta,ap,anR,ptk_1);
+    {22}let kck_1: bitstring = hmac(ptk_1,label_kck) in
+    {24}let mic2: bitstring = hmac(kck_1,(anR,sn)) in
+    {26}out(c, (sta,ap,sn,mic2));
+    {27}in(c, (ap3R: bitstring,sta3R: bitstring,sn3R: bitstring,an3R: bitstring,ct3R: bitstring));
+    {28}if (ap3R = ap) then
+    {29}if (sta3R = sta) then
+    {30}if (sn3R = sn) then
+    {31}if (an3R = anR) then
+    {23}let kek_1: bitstring = hmac(ptk_1,label_kek) in
+    {32}let (gtk3R: bitstring,mic3R: bitstring) = dec(ct3R,kek_1) in
+    {33}if (mic3R = hmac(kck_1,(sn,anR,gtk3R))) then
+    {34}event StaInstalls(sta,ap,anR,ptk_1);
+    {35}out(c, hmac(kck_1,(anR,sn,label_data)));
+    {36}event HonestDone(sta,ap,anR);
+    {37}in(c, (ap4R: bitstring,sta4R: bitstring,sn4R: bitstring,an4R: bitstring,ct4R: bitstring));
+    {38}if (ap4R = ap) then
+    {39}if (sta4R = sta) then
+    {40}if (sn4R = sn) then
+    {41}if (an4R = anR) then
+    {42}if (ct4R = ct3R) then
+    {43}event ReplaySeen(sta,ap,anR);
+    {44}out(c, hmac(kck_1,(anR,sn,label_data)))
+)
+
+-- Query event(StaWorkMsg2(s,a,an_1,k)) ==> event(ApSentMsg1(a,s,an_1)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(StaWorkMsg2(s,a,an_1,k)) ==> event(ApSentMsg1(a,s,an_1))
+goal reachable: attacker(an_1) -> event(StaWorkMsg2(sta,ap,an_1,prf(pmk[],an_1,sn_1)))
+Abbreviations:
+sn_1 = sn[anR = an_1,apR = ap,staR = sta,!1 = @sid]
+
+Derivation:
+Abbreviations:
+sn_1 = sn[anR = an_1,apR = ap,staR = sta,!1 = @sid]
+
+1. We assume as hypothesis that
+attacker(an_1).
+
+2. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+3. Using the function sta the attacker may obtain sta.
+attacker(sta).
+
+4. By 3, the attacker may know sta.
+By 2, the attacker may know ap.
+By 1, the attacker may know an_1.
+Using the function 3-tuple the attacker may obtain (sta,ap,an_1).
+attacker((sta,ap,an_1)).
+
+5. The message (sta,ap,an_1) that the attacker may have by 4 may be received at input {17}.
+So event StaWorkMsg2(sta,ap,an_1,prf(pmk[],an_1,sn_1)) may be executed at {25}.
+event(StaWorkMsg2(sta,ap,an_1,prf(pmk[],an_1,sn_1))).
+
+6. By 5, event(StaWorkMsg2(sta,ap,an_1,prf(pmk[],an_1,sn_1))).
+The goal is reached, represented in the following fact:
+event(StaWorkMsg2(sta,ap,an_1,prf(pmk[],an_1,sn_1))).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new an: bitstring creating an_2 at {2}
+
+out(c, (~M,~M_1,~M_2)) with ~M = sta, ~M_1 = ap, ~M_2 = an_2 at {3}
+
+in(c, (sta,ap,a)) at {17} in copy a_1
+
+new sn: bitstring creating sn_2 at {20} in copy a_1
+
+event StaWorkMsg2(sta,ap,a,prf(pmk,a,sn_2)) at {25} in copy a_1 (goal)
+
+The event StaWorkMsg2(sta,ap,a,prf(pmk,a,sn_2)) is executed at {25} in copy a_1.
+A trace has been found.
+RESULT event(StaWorkMsg2(s,a,an_1,k)) ==> event(ApSentMsg1(a,s,an_1)) is false.
+-- Query not event(StaReinstalls(s,a,an_1,k)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not event(StaReinstalls(s,a,an_1,k))
+RESULT not event(StaReinstalls(s,a,an_1,k)) is true.
+-- Query not event(ReplaySeen(s,a,an_1)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not event(ReplaySeen(s,a,an_1))
+goal reachable: event(ReplaySeen(sta,ap,an[]))
+
+Derivation:
+Abbreviations:
+sn_1 = sn[anR = an[],apR = ap,staR = sta,!1 = @sid]
+
+1. The message (sta,ap,an[]) may be sent to the attacker at output {3}.
+attacker((sta,ap,an[])).
+
+2. By 1, the attacker may know (sta,ap,an[]).
+Using the function 3-proj-3-tuple the attacker may obtain an[].
+attacker(an[]).
+
+3. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+4. Using the function sta the attacker may obtain sta.
+attacker(sta).
+
+5. By 4, the attacker may know sta.
+By 3, the attacker may know ap.
+By 2, the attacker may know an[].
+Using the function 3-tuple the attacker may obtain (sta,ap,an[]).
+attacker((sta,ap,an[])).
+
+6. The message (sta,ap,an[]) that the attacker may have by 5 may be received at input {17}.
+So the message (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))) may be sent to the attacker at output {26}.
+attacker((sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)))).
+
+7. By 6, the attacker may know (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+Using the function 4-proj-4-tuple the attacker may obtain hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)).
+attacker(hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+
+8. By 6, the attacker may know (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+Using the function 3-proj-4-tuple the attacker may obtain sn_1.
+attacker(sn_1).
+
+9. By 4, the attacker may know sta.
+By 3, the attacker may know ap.
+By 8, the attacker may know sn_1.
+By 7, the attacker may know hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)).
+Using the function 4-tuple the attacker may obtain (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+attacker((sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)))).
+
+10. The message (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))) that the attacker may have by 9 may be received at input {5}.
+So the message (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))) may be sent to the attacker at output {14}.
+attacker((ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)))).
+
+11. By 10, the attacker may know (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))).
+Using the function 5-proj-5-tuple the attacker may obtain enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)).
+attacker(enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))).
+
+12. By 3, the attacker may know ap.
+By 4, the attacker may know sta.
+By 8, the attacker may know sn_1.
+By 2, the attacker may know an[].
+By 11, the attacker may know enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)).
+Using the function 5-tuple the attacker may obtain (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))).
+attacker((ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)))).
+
+13. The message (sta,ap,an[]) that the attacker may have by 5 may be received at input {17}.
+The message (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))) that the attacker may have by 12 may be received at input {27}.
+The message (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))) that the attacker may have by 12 may be received at input {37}.
+So event ReplaySeen(sta,ap,an[]) may be executed at {43}.
+event(ReplaySeen(sta,ap,an[])).
+
+14. By 13, event(ReplaySeen(sta,ap,an[])).
+The goal is reached, represented in the following fact:
+event(ReplaySeen(sta,ap,an[])).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new an: bitstring creating an_1 at {2}
+
+out(c, (~M,~M_1,~M_2)) with ~M = sta, ~M_1 = ap, ~M_2 = an_1 at {3}
+
+event ApSentMsg1(ap,sta,an_1) at {4}
+
+in(c, (sta,ap,~M_2)) with ~M_2 = an_1 at {17} in copy a
+
+new sn: bitstring creating sn_2 at {20} in copy a
+
+event StaWorkMsg2(sta,ap,an_1,prf(pmk,an_1,sn_2)) at {25} in copy a
+
+out(c, (~M_3,~M_4,~M_5,~M_6)) with ~M_3 = sta, ~M_4 = ap, ~M_5 = sn_2, ~M_6 = hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(an_1,sn_2)) at {26} in copy a
+
+in(c, (sta,ap,~M_5,~M_6)) with ~M_5 = sn_2, ~M_6 = hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(an_1,sn_2)) at {5}
+
+event ApAuth(ap,sta,an_1) at {12}
+
+out(c, (~M_7,~M_8,~M_9,~M_10,~M_11)) with ~M_7 = ap, ~M_8 = sta, ~M_9 = sn_2, ~M_10 = an_1, ~M_11 = enc((gtk,hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(sn_2,an_1,gtk))),hmac(prf(pmk,an_1,sn_2),label_kek)) at {14}
+
+in(c, (ap,sta,~M_5,~M_2,~M_11)) with ~M_5 = sn_2, ~M_2 = an_1, ~M_11 = enc((gtk,hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(sn_2,an_1,gtk))),hmac(prf(pmk,an_1,sn_2),label_kek)) at {27} in copy a
+
+event StaInstalls(sta,ap,an_1,prf(pmk,an_1,sn_2)) at {34} in copy a
+
+out(c, ~M_12) with ~M_12 = hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(an_1,sn_2,label_data)) at {35} in copy a
+
+event HonestDone(sta,ap,an_1) at {36} in copy a
+
+in(c, (ap,sta,~M_5,~M_2,~M_11)) with ~M_5 = sn_2, ~M_2 = an_1, ~M_11 = enc((gtk,hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(sn_2,an_1,gtk))),hmac(prf(pmk,an_1,sn_2),label_kek)) at {37} in copy a
+
+event ReplaySeen(sta,ap,an_1) at {43} in copy a (goal)
+
+The event ReplaySeen(sta,ap,an_1) is executed at {43} in copy a.
+A trace has been found.
+RESULT not event(ReplaySeen(s,a,an_1)) is false.
+-- Query not attacker(probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(probe[])
+RESULT not attacker(probe[]) is true.
+-- Query not attacker(gtk[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(gtk[])
+RESULT not attacker(gtk[]) is true.
+-- Query not event(HonestDone(s,a,an_1)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not event(HonestDone(s,a,an_1))
+goal reachable: event(HonestDone(sta,ap,an[]))
+
+Derivation:
+Abbreviations:
+sn_1 = sn[anR = an[],apR = ap,staR = sta,!1 = @sid]
+
+1. The message (sta,ap,an[]) may be sent to the attacker at output {3}.
+attacker((sta,ap,an[])).
+
+2. By 1, the attacker may know (sta,ap,an[]).
+Using the function 3-proj-3-tuple the attacker may obtain an[].
+attacker(an[]).
+
+3. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+4. Using the function sta the attacker may obtain sta.
+attacker(sta).
+
+5. By 4, the attacker may know sta.
+By 3, the attacker may know ap.
+By 2, the attacker may know an[].
+Using the function 3-tuple the attacker may obtain (sta,ap,an[]).
+attacker((sta,ap,an[])).
+
+6. The message (sta,ap,an[]) that the attacker may have by 5 may be received at input {17}.
+So the message (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))) may be sent to the attacker at output {26}.
+attacker((sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)))).
+
+7. By 6, the attacker may know (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+Using the function 4-proj-4-tuple the attacker may obtain hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)).
+attacker(hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+
+8. By 6, the attacker may know (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+Using the function 3-proj-4-tuple the attacker may obtain sn_1.
+attacker(sn_1).
+
+9. By 4, the attacker may know sta.
+By 3, the attacker may know ap.
+By 8, the attacker may know sn_1.
+By 7, the attacker may know hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)).
+Using the function 4-tuple the attacker may obtain (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))).
+attacker((sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1)))).
+
+10. The message (sta,ap,sn_1,hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(an[],sn_1))) that the attacker may have by 9 may be received at input {5}.
+So the message (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))) may be sent to the attacker at output {14}.
+attacker((ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)))).
+
+11. By 10, the attacker may know (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))).
+Using the function 5-proj-5-tuple the attacker may obtain enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)).
+attacker(enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))).
+
+12. By 3, the attacker may know ap.
+By 4, the attacker may know sta.
+By 8, the attacker may know sn_1.
+By 2, the attacker may know an[].
+By 11, the attacker may know enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)).
+Using the function 5-tuple the attacker may obtain (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))).
+attacker((ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek)))).
+
+13. The message (sta,ap,an[]) that the attacker may have by 5 may be received at input {17}.
+The message (ap,sta,sn_1,an[],enc((gtk[],hmac(hmac(prf(pmk[],an[],sn_1),label_kck),(sn_1,an[],gtk[]))),hmac(prf(pmk[],an[],sn_1),label_kek))) that the attacker may have by 12 may be received at input {27}.
+So event HonestDone(sta,ap,an[]) may be executed at {36}.
+event(HonestDone(sta,ap,an[])).
+
+14. By 13, event(HonestDone(sta,ap,an[])).
+The goal is reached, represented in the following fact:
+event(HonestDone(sta,ap,an[])).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new an: bitstring creating an_1 at {2}
+
+out(c, (~M,~M_1,~M_2)) with ~M = sta, ~M_1 = ap, ~M_2 = an_1 at {3}
+
+event ApSentMsg1(ap,sta,an_1) at {4}
+
+in(c, (sta,ap,~M_2)) with ~M_2 = an_1 at {17} in copy a
+
+new sn: bitstring creating sn_2 at {20} in copy a
+
+event StaWorkMsg2(sta,ap,an_1,prf(pmk,an_1,sn_2)) at {25} in copy a
+
+out(c, (~M_3,~M_4,~M_5,~M_6)) with ~M_3 = sta, ~M_4 = ap, ~M_5 = sn_2, ~M_6 = hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(an_1,sn_2)) at {26} in copy a
+
+in(c, (sta,ap,~M_5,~M_6)) with ~M_5 = sn_2, ~M_6 = hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(an_1,sn_2)) at {5}
+
+event ApAuth(ap,sta,an_1) at {12}
+
+out(c, (~M_7,~M_8,~M_9,~M_10,~M_11)) with ~M_7 = ap, ~M_8 = sta, ~M_9 = sn_2, ~M_10 = an_1, ~M_11 = enc((gtk,hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(sn_2,an_1,gtk))),hmac(prf(pmk,an_1,sn_2),label_kek)) at {14}
+
+in(c, (ap,sta,~M_5,~M_2,~M_11)) with ~M_5 = sn_2, ~M_2 = an_1, ~M_11 = enc((gtk,hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(sn_2,an_1,gtk))),hmac(prf(pmk,an_1,sn_2),label_kek)) at {27} in copy a
+
+event StaInstalls(sta,ap,an_1,prf(pmk,an_1,sn_2)) at {34} in copy a
+
+out(c, ~M_12) with ~M_12 = hmac(hmac(prf(pmk,an_1,sn_2),label_kck),(an_1,sn_2,label_data)) at {35} in copy a
+
+event HonestDone(sta,ap,an_1) at {36} in copy a (goal)
+
+The event HonestDone(sta,ap,an_1) is executed at {36} in copy a.
+A trace has been found.
+RESULT not event(HonestDone(s,a,an_1)) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(StaWorkMsg2(s,a,an_1,k)) ==> event(ApSentMsg1(a,s,an_1)) is false.
+
+Query not event(StaReinstalls(s,a,an_1,k)) is true.
+
+Query not event(ReplaySeen(s,a,an_1)) is false.
+
+Query not attacker(probe[]) is true.
+
+Query not attacker(gtk[]) is true.
+
+Query not event(HonestDone(s,a,an_1)) is false.
+
+--------------------------------------------------------------
+

@@ -1,0 +1,474 @@
+Linear part:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Completing equations...
+Completed equations:
+exp(exp(g,x),y) = exp(exp(g,y),x)
+Convergent part: No equation.
+Process 0 (that is, the initial process):
+(
+    {1}!
+    {2}let dummy: bitstring = none in
+    {3}let mac: bitstring = pmk_spa in
+    {4}new sn: bitstring;
+    {5}new sS: bitstring;
+    {6}let gs: bitstring = exp(g,sS) in
+    {7}new sess: bitstring;
+    {8}out(c, (mac,ap,aan5,seq1,dhgrp,gs,sn,sess,rsne,some(pmkid),none));
+    {9}in(c, (apR: bitstring,macR: bitstring,aanR: bitstring,seqR: bitstring,stR: bitstring,dhR: bitstring,gaR: bitstring,snR: bitstring,sessR: bitstring,rsneR: bitstring,anR: bitstring,pidR: bitstring));
+    {10}if (apR = ap) then
+    {11}if (macR = mac) then
+    {12}if (aanR = aan5) then
+    {13}if (seqR = seq2) then
+    {14}if (stR = st_ok) then
+    {15}if (dhR = dhgrp) then
+    {16}if (snR = sn) then
+    {17}if (sessR = sess) then
+    {18}if (rsneR = rsne) then
+    {19}if (pidR = some(pmkid)) then
+    {20}let dhss: bitstring = exp(gaR,sS) in
+    {21}let ptk: bitstring = kdf(pmk,label_ptk,(mac,ap,sn,anR,dhss)) in
+    {22}let ick: bitstring = kdf(ptk,label_ick,none) in
+    {23}let kek: bitstring = kdf(ptk,label_kek,none) in
+    {24}let tk: bitstring = kdf(ptk,label_tk,none) in
+    {25}let ka: bitstring = hmac(ick,(sn,anR,mac,ap,gs,gaR)) in
+    {26}let aad: bitstring = (mac,ap,sn,anR,sess,rsne) in
+    {27}let ct: bitstring = aead((aad,ka),kek) in
+    {28}event StaSession(mac,sess,pmkid);
+    {29}out(c, (mac,ap,sess,rsne,ct));
+    {30}in(c, (ap2R: bitstring,mac2R: bitstring,sess2R: bitstring,st2R: bitstring,rsne2R: bitstring,ct2R: bitstring));
+    {31}if (ap2R = ap) then
+    {32}if (mac2R = mac) then
+    {33}if (sess2R = sess) then
+    {34}if (st2R = st_ok) then
+    {35}if (rsne2R = rsne) then
+    {36}let aad2: bitstring = (ap,mac,anR,sn,sess,rsne) in
+    {37}let pl2: bitstring = adec(ct2R,aad2,kek) in
+    {38}let (kaAR: bitstring,gtkR: bitstring) = pl2 in
+    {39}if (kaAR = hmac(ick,(anR,sn,ap,mac,gaR,gs))) then
+    {40}event StaDone(mac,ap,sess);
+    {41}out(c, aead((label_data,probe),tk))
+) | (
+    {42}!
+    {43}let dummy_1: bitstring = none in
+    {44}new mac_1: bitstring;
+    {45}new sn_1: bitstring;
+    {46}new sS_1: bitstring;
+    {47}let gs_1: bitstring = exp(g,sS_1) in
+    {48}new sess_1: bitstring;
+    {49}out(c, (mac_1,ap,aan5,seq1,dhgrp,gs_1,sn_1,sess_1,rsne,none,none))
+) | (
+    {50}!
+    {51}let dummy_2: bitstring = none in
+    {52}in(c, (macR_1: bitstring,apR_1: bitstring,aanR_1: bitstring,seqR_1: bitstring,dhR_1: bitstring,gsR: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,pidR_1: bitstring,wrR: bitstring));
+    {53}if (apR_1 = ap) then
+    {54}if (aanR_1 = aan5) then
+    {55}if (seqR_1 = seq1) then
+    {56}if (dhR_1 = dhgrp) then
+    {57}if (macR_1 = pmk_spa) then
+    {58}if (pidR_1 = some(pmkid)) then
+    {59}new an: bitstring;
+    {60}new sA: bitstring;
+    {61}let ga: bitstring = exp(g,sA) in
+    {62}let dhss_1: bitstring = exp(gsR,sA) in
+    {63}let ptk_1: bitstring = kdf(pmk,label_ptk,(macR_1,ap,snR_1,an,dhss_1)) in
+    {64}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
+    {65}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
+    {66}let tk_1: bitstring = kdf(ptk_1,label_tk,none) in
+    {67}event ApSession(ap,macR_1,sessR_1,pmkid);
+    {68}out(c, (ap,macR_1,aan5,seq2,st_ok,dhgrp,ga,snR_1,sessR_1,rsneR_1,an,some(pmkid)));
+    {69}in(c, (mac2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,rsne2R_1: bitstring,ctR: bitstring));
+    {70}if (mac2R_1 = macR_1) then
+    {71}if (ap2R_1 = ap) then
+    {72}if (sess2R_1 = sessR_1) then
+    {73}if (rsne2R_1 = rsneR_1) then
+    {74}let aad_1: bitstring = (macR_1,ap,snR_1,an,sessR_1,rsneR_1) in
+    {75}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
+    {76}if (kaR = hmac(ick_1,(snR_1,an,macR_1,ap,gsR,ga))) then
+    {77}event ApDone(ap,macR_1,sessR_1,pmkid);
+    {78}let kaap: bitstring = hmac(ick_1,(an,snR_1,ap,macR_1,ga,gsR)) in
+    {79}let aad2_1: bitstring = (ap,macR_1,an,snR_1,sessR_1,rsneR_1) in
+    {80}let ct2: bitstring = aead((aad2_1,(kaap,gtk)),kek_1) in
+    {81}out(c, (ap,macR_1,sessR_1,st_ok,rsneR_1,ct2))
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {1}!
+    {4}new sn: bitstring;
+    {5}new sS: bitstring;
+    {7}new sess: bitstring;
+    {6}let gs: bitstring = exp(g,sS) in
+    {3}let mac: bitstring = pmk_spa in
+    {8}out(c, (mac,ap,aan5,seq1,dhgrp,gs,sn,sess,rsne,some(pmkid),none));
+    {9}in(c, (apR: bitstring,macR: bitstring,aanR: bitstring,seqR: bitstring,stR: bitstring,dhR: bitstring,gaR: bitstring,snR: bitstring,sessR: bitstring,rsneR: bitstring,anR: bitstring,pidR: bitstring));
+    {10}if (apR = ap) then
+    {11}if (macR = mac) then
+    {12}if (aanR = aan5) then
+    {13}if (seqR = seq2) then
+    {14}if (stR = st_ok) then
+    {15}if (dhR = dhgrp) then
+    {16}if (snR = sn) then
+    {17}if (sessR = sess) then
+    {18}if (rsneR = rsne) then
+    {19}if (pidR = some(pmkid)) then
+    {28}event StaSession(mac,sess,pmkid);
+    {26}let aad: bitstring = (mac,ap,sn,anR,sess,rsne) in
+    {20}let dhss: bitstring = exp(gaR,sS) in
+    {21}let ptk: bitstring = kdf(pmk,label_ptk,(mac,ap,sn,anR,dhss)) in
+    {22}let ick: bitstring = kdf(ptk,label_ick,none) in
+    {25}let ka: bitstring = hmac(ick,(sn,anR,mac,ap,gs,gaR)) in
+    {23}let kek: bitstring = kdf(ptk,label_kek,none) in
+    {27}let ct: bitstring = aead((aad,ka),kek) in
+    {29}out(c, (mac,ap,sess,rsne,ct));
+    {30}in(c, (ap2R: bitstring,mac2R: bitstring,sess2R: bitstring,st2R: bitstring,rsne2R: bitstring,ct2R: bitstring));
+    {31}if (ap2R = ap) then
+    {32}if (mac2R = mac) then
+    {33}if (sess2R = sess) then
+    {34}if (st2R = st_ok) then
+    {35}if (rsne2R = rsne) then
+    {36}let aad2: bitstring = (ap,mac,anR,sn,sess,rsne) in
+    {37}let pl2: bitstring = adec(ct2R,aad2,kek) in
+    {38}let (kaAR: bitstring,gtkR: bitstring) = pl2 in
+    {39}if (kaAR = hmac(ick,(anR,sn,ap,mac,gaR,gs))) then
+    {40}event StaDone(mac,ap,sess);
+    {24}let tk: bitstring = kdf(ptk,label_tk,none) in
+    {41}out(c, aead((label_data,probe),tk))
+) | (
+    {42}!
+    {44}new mac_1: bitstring;
+    {45}new sn_1: bitstring;
+    {46}new sS_1: bitstring;
+    {48}new sess_1: bitstring;
+    {47}let gs_1: bitstring = exp(g,sS_1) in
+    {49}out(c, (mac_1,ap,aan5,seq1,dhgrp,gs_1,sn_1,sess_1,rsne,none,none))
+) | (
+    {50}!
+    {52}in(c, (macR_1: bitstring,apR_1: bitstring,aanR_1: bitstring,seqR_1: bitstring,dhR_1: bitstring,gsR: bitstring,snR_1: bitstring,sessR_1: bitstring,rsneR_1: bitstring,pidR_1: bitstring,wrR: bitstring));
+    {53}if (apR_1 = ap) then
+    {54}if (aanR_1 = aan5) then
+    {55}if (seqR_1 = seq1) then
+    {56}if (dhR_1 = dhgrp) then
+    {57}if (macR_1 = pmk_spa) then
+    {58}if (pidR_1 = some(pmkid)) then
+    {59}new an: bitstring;
+    {60}new sA: bitstring;
+    {67}event ApSession(ap,macR_1,sessR_1,pmkid);
+    {61}let ga: bitstring = exp(g,sA) in
+    {68}out(c, (ap,macR_1,aan5,seq2,st_ok,dhgrp,ga,snR_1,sessR_1,rsneR_1,an,some(pmkid)));
+    {69}in(c, (mac2R_1: bitstring,ap2R_1: bitstring,sess2R_1: bitstring,rsne2R_1: bitstring,ctR: bitstring));
+    {70}if (mac2R_1 = macR_1) then
+    {71}if (ap2R_1 = ap) then
+    {72}if (sess2R_1 = sessR_1) then
+    {73}if (rsne2R_1 = rsneR_1) then
+    {74}let aad_1: bitstring = (macR_1,ap,snR_1,an,sessR_1,rsneR_1) in
+    {62}let dhss_1: bitstring = exp(gsR,sA) in
+    {63}let ptk_1: bitstring = kdf(pmk,label_ptk,(macR_1,ap,snR_1,an,dhss_1)) in
+    {65}let kek_1: bitstring = kdf(ptk_1,label_kek,none) in
+    {75}let kaR: bitstring = adec(ctR,aad_1,kek_1) in
+    {64}let ick_1: bitstring = kdf(ptk_1,label_ick,none) in
+    {76}if (kaR = hmac(ick_1,(snR_1,an,macR_1,ap,gsR,ga))) then
+    {77}event ApDone(ap,macR_1,sessR_1,pmkid);
+    {79}let aad2_1: bitstring = (ap,macR_1,an,snR_1,sessR_1,rsneR_1) in
+    {78}let kaap: bitstring = hmac(ick_1,(an,snR_1,ap,macR_1,ga,gsR)) in
+    {80}let ct2: bitstring = aead((aad2_1,(kaap,gtk)),kek_1) in
+    {81}out(c, (ap,macR_1,sessR_1,st_ok,rsneR_1,ct2))
+)
+
+-- Query event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> s1 = s2 in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 141 rules (54 with conclusion selected). Queue: 14 rules.
+Starting query event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> s1 = s2
+goal reachable: event(StaSession(pmk_spa,sess_2,pmkid)) && event(StaSession(pmk_spa,sess_3,pmkid))
+Abbreviations:
+sess_2 = sess[!1 = @sid]
+sess_3 = sess[!1 = @sid_1]
+
+Derivation:
+Abbreviations:
+sess_2 = sess[!1 = @sid]
+sess_3 = sess[!1 = @sid_1]
+sn_2 = sn[!1 = @sid]
+sS_2 = sS[!1 = @sid]
+sn_3 = sn[!1 = @sid_1]
+sS_3 = sS[!1 = @sid_1]
+
+1. Using the function pmkid the attacker may obtain pmkid.
+attacker(pmkid).
+
+2. By 1, the attacker may know pmkid.
+Using the function some the attacker may obtain some(pmkid).
+attacker(some(pmkid)).
+
+3. The attacker has some term anR_1.
+attacker(anR_1).
+
+4. Using the function rsne the attacker may obtain rsne.
+attacker(rsne).
+
+5. The message (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_3),sn_3,sess_3,rsne,some(pmkid),none) may be sent to the attacker at output {8}.
+attacker((pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_3),sn_3,sess_3,rsne,some(pmkid),none)).
+
+6. By 5, the attacker may know (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_3),sn_3,sess_3,rsne,some(pmkid),none).
+Using the function 8-proj-11-tuple the attacker may obtain sess_3.
+attacker(sess_3).
+
+7. By 5, the attacker may know (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_3),sn_3,sess_3,rsne,some(pmkid),none).
+Using the function 7-proj-11-tuple the attacker may obtain sn_3.
+attacker(sn_3).
+
+8. The attacker has some term gaR_1.
+attacker(gaR_1).
+
+9. Using the function dhgrp the attacker may obtain dhgrp.
+attacker(dhgrp).
+
+10. Using the function st_ok the attacker may obtain st_ok.
+attacker(st_ok).
+
+11. Using the function seq2 the attacker may obtain seq2.
+attacker(seq2).
+
+12. Using the function aan5 the attacker may obtain aan5.
+attacker(aan5).
+
+13. Using the function pmk_spa the attacker may obtain pmk_spa.
+attacker(pmk_spa).
+
+14. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+15. By 14, the attacker may know ap.
+By 13, the attacker may know pmk_spa.
+By 12, the attacker may know aan5.
+By 11, the attacker may know seq2.
+By 10, the attacker may know st_ok.
+By 9, the attacker may know dhgrp.
+By 8, the attacker may know gaR_1.
+By 7, the attacker may know sn_3.
+By 6, the attacker may know sess_3.
+By 4, the attacker may know rsne.
+By 3, the attacker may know anR_1.
+By 2, the attacker may know some(pmkid).
+Using the function 12-tuple the attacker may obtain (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_1,sn_3,sess_3,rsne,anR_1,some(pmkid)).
+attacker((ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_1,sn_3,sess_3,rsne,anR_1,some(pmkid))).
+
+16. The message (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_1,sn_3,sess_3,rsne,anR_1,some(pmkid)) that the attacker may have by 15 may be received at input {9}.
+So event StaSession(pmk_spa,sess_3,pmkid) may be executed at {28}.
+event(StaSession(pmk_spa,sess_3,pmkid)).
+
+17. The attacker has some term anR_2.
+attacker(anR_2).
+
+18. The message (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none) may be sent to the attacker at output {8}.
+attacker((pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none)).
+
+19. By 18, the attacker may know (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none).
+Using the function 8-proj-11-tuple the attacker may obtain sess_2.
+attacker(sess_2).
+
+20. By 18, the attacker may know (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none).
+Using the function 7-proj-11-tuple the attacker may obtain sn_2.
+attacker(sn_2).
+
+21. The attacker has some term gaR_2.
+attacker(gaR_2).
+
+22. By 14, the attacker may know ap.
+By 13, the attacker may know pmk_spa.
+By 12, the attacker may know aan5.
+By 11, the attacker may know seq2.
+By 10, the attacker may know st_ok.
+By 9, the attacker may know dhgrp.
+By 21, the attacker may know gaR_2.
+By 20, the attacker may know sn_2.
+By 19, the attacker may know sess_2.
+By 4, the attacker may know rsne.
+By 17, the attacker may know anR_2.
+By 2, the attacker may know some(pmkid).
+Using the function 12-tuple the attacker may obtain (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_2,sn_2,sess_2,rsne,anR_2,some(pmkid)).
+attacker((ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_2,sn_2,sess_2,rsne,anR_2,some(pmkid))).
+
+23. The message (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_2,sn_2,sess_2,rsne,anR_2,some(pmkid)) that the attacker may have by 22 may be received at input {9}.
+So event StaSession(pmk_spa,sess_2,pmkid) may be executed at {28}.
+event(StaSession(pmk_spa,sess_2,pmkid)).
+
+24. By 23, event(StaSession(pmk_spa,sess_2,pmkid)).
+By 16, event(StaSession(pmk_spa,sess_3,pmkid)).
+The goals are reached, combined in the following fact:
+event(StaSession(pmk_spa,sess_2,pmkid)) && event(StaSession(pmk_spa,sess_3,pmkid)).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new sn: bitstring creating sn_4 at {4} in copy a
+
+new sS: bitstring creating sS_4 at {5} in copy a
+
+new sess: bitstring creating sess_4 at {7} in copy a
+
+out(c, (~M,~M_1,~M_2,~M_3,~M_4,~M_5,~M_6,~M_7,~M_8,~M_9,~M_10)) with ~M = pmk_spa, ~M_1 = ap, ~M_2 = aan5, ~M_3 = seq1, ~M_4 = dhgrp, ~M_5 = exp(g,sS_4), ~M_6 = sn_4, ~M_7 = sess_4, ~M_8 = rsne, ~M_9 = some(pmkid), ~M_10 = none at {8} in copy a
+
+new sn: bitstring creating sn_5 at {4} in copy a_1
+
+new sS: bitstring creating sS_5 at {5} in copy a_1
+
+new sess: bitstring creating sess_5 at {7} in copy a_1
+
+out(c, (~M_11,~M_12,~M_13,~M_14,~M_15,~M_16,~M_17,~M_18,~M_19,~M_20,~M_21)) with ~M_11 = pmk_spa, ~M_12 = ap, ~M_13 = aan5, ~M_14 = seq1, ~M_15 = dhgrp, ~M_16 = exp(g,sS_5), ~M_17 = sn_5, ~M_18 = sess_5, ~M_19 = rsne, ~M_20 = some(pmkid), ~M_21 = none at {8} in copy a_1
+
+in(c, (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,a_2,~M_17,~M_18,rsne,a_3,some(pmkid))) with ~M_17 = sn_5, ~M_18 = sess_5 at {9} in copy a_1
+
+event StaSession(pmk_spa,sess_5,pmkid) at {28} in copy a_1 (goal)
+
+out(c, (~M_22,~M_23,~M_24,~M_25,~M_26)) with ~M_22 = pmk_spa, ~M_23 = ap, ~M_24 = sess_5, ~M_25 = rsne, ~M_26 = aead(((pmk_spa,ap,sn_5,a_3,sess_5,rsne),hmac(kdf(kdf(pmk,label_ptk,(pmk_spa,ap,sn_5,a_3,exp(a_2,sS_5))),label_ick,none),(sn_5,a_3,pmk_spa,ap,exp(g,sS_5),a_2))),kdf(kdf(pmk,label_ptk,(pmk_spa,ap,sn_5,a_3,exp(a_2,sS_5))),label_kek,none)) at {29} in copy a_1
+
+in(c, (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,a_4,~M_6,~M_7,rsne,a_5,some(pmkid))) with ~M_6 = sn_4, ~M_7 = sess_4 at {9} in copy a
+
+event StaSession(pmk_spa,sess_4,pmkid) at {28} in copy a (goal)
+
+The event StaSession(pmk_spa,sess_5,pmkid) is executed at {28} in copy a_1.
+The event StaSession(pmk_spa,sess_4,pmkid) is executed at {28} in copy a.
+A trace has been found.
+RESULT event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> s1 = s2 is false.
+-- Query event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> m1 = m2 in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 141 rules (54 with conclusion selected). Queue: 14 rules.
+Starting query event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> m1 = m2
+goal reachable: event(StaSession(pmk_spa,sess_2,pmkid)) && event(StaSession(pmk_spa,sess_3,pmkid))
+Abbreviations:
+sess_2 = sess[!1 = @sid]
+sess_3 = sess[!1 = @sid_1]
+RESULT event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> m1 = m2 is true.
+-- Query not attacker(gtk[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 143 rules (54 with conclusion selected). Queue: 14 rules.
+Starting query not attacker(gtk[])
+RESULT not attacker(gtk[]) is true.
+-- Query not attacker(probe[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 143 rules (54 with conclusion selected). Queue: 14 rules.
+Starting query not attacker(probe[])
+RESULT not attacker(probe[]) is true.
+-- Query not event(StaSession(m,s,p)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+200 rules inserted. Base: 141 rules (54 with conclusion selected). Queue: 14 rules.
+Starting query not event(StaSession(m,s,p))
+goal reachable: event(StaSession(pmk_spa,sess_2,pmkid))
+Abbreviations:
+sess_2 = sess[!1 = @sid]
+
+Derivation:
+Abbreviations:
+sess_2 = sess[!1 = @sid]
+sn_2 = sn[!1 = @sid]
+sS_2 = sS[!1 = @sid]
+
+1. Using the function pmkid the attacker may obtain pmkid.
+attacker(pmkid).
+
+2. By 1, the attacker may know pmkid.
+Using the function some the attacker may obtain some(pmkid).
+attacker(some(pmkid)).
+
+3. The attacker has some term anR_1.
+attacker(anR_1).
+
+4. Using the function rsne the attacker may obtain rsne.
+attacker(rsne).
+
+5. The message (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none) may be sent to the attacker at output {8}.
+attacker((pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none)).
+
+6. By 5, the attacker may know (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none).
+Using the function 8-proj-11-tuple the attacker may obtain sess_2.
+attacker(sess_2).
+
+7. By 5, the attacker may know (pmk_spa,ap,aan5,seq1,dhgrp,exp(g,sS_2),sn_2,sess_2,rsne,some(pmkid),none).
+Using the function 7-proj-11-tuple the attacker may obtain sn_2.
+attacker(sn_2).
+
+8. The attacker has some term gaR_1.
+attacker(gaR_1).
+
+9. Using the function dhgrp the attacker may obtain dhgrp.
+attacker(dhgrp).
+
+10. Using the function st_ok the attacker may obtain st_ok.
+attacker(st_ok).
+
+11. Using the function seq2 the attacker may obtain seq2.
+attacker(seq2).
+
+12. Using the function aan5 the attacker may obtain aan5.
+attacker(aan5).
+
+13. Using the function pmk_spa the attacker may obtain pmk_spa.
+attacker(pmk_spa).
+
+14. Using the function ap the attacker may obtain ap.
+attacker(ap).
+
+15. By 14, the attacker may know ap.
+By 13, the attacker may know pmk_spa.
+By 12, the attacker may know aan5.
+By 11, the attacker may know seq2.
+By 10, the attacker may know st_ok.
+By 9, the attacker may know dhgrp.
+By 8, the attacker may know gaR_1.
+By 7, the attacker may know sn_2.
+By 6, the attacker may know sess_2.
+By 4, the attacker may know rsne.
+By 3, the attacker may know anR_1.
+By 2, the attacker may know some(pmkid).
+Using the function 12-tuple the attacker may obtain (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_1,sn_2,sess_2,rsne,anR_1,some(pmkid)).
+attacker((ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_1,sn_2,sess_2,rsne,anR_1,some(pmkid))).
+
+16. The message (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,gaR_1,sn_2,sess_2,rsne,anR_1,some(pmkid)) that the attacker may have by 15 may be received at input {9}.
+So event StaSession(pmk_spa,sess_2,pmkid) may be executed at {28}.
+event(StaSession(pmk_spa,sess_2,pmkid)).
+
+17. By 16, event(StaSession(pmk_spa,sess_2,pmkid)).
+The goal is reached, represented in the following fact:
+event(StaSession(pmk_spa,sess_2,pmkid)).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new sn: bitstring creating sn_3 at {4} in copy a
+
+new sS: bitstring creating sS_3 at {5} in copy a
+
+new sess: bitstring creating sess_3 at {7} in copy a
+
+out(c, (~M,~M_1,~M_2,~M_3,~M_4,~M_5,~M_6,~M_7,~M_8,~M_9,~M_10)) with ~M = pmk_spa, ~M_1 = ap, ~M_2 = aan5, ~M_3 = seq1, ~M_4 = dhgrp, ~M_5 = exp(g,sS_3), ~M_6 = sn_3, ~M_7 = sess_3, ~M_8 = rsne, ~M_9 = some(pmkid), ~M_10 = none at {8} in copy a
+
+in(c, (ap,pmk_spa,aan5,seq2,st_ok,dhgrp,a_1,~M_6,~M_7,rsne,a_2,some(pmkid))) with ~M_6 = sn_3, ~M_7 = sess_3 at {9} in copy a
+
+event StaSession(pmk_spa,sess_3,pmkid) at {28} in copy a (goal)
+
+The event StaSession(pmk_spa,sess_3,pmkid) is executed at {28} in copy a.
+A trace has been found.
+RESULT not event(StaSession(m,s,p)) is false.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> s1 = s2 is false.
+
+Query event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p)) ==> m1 = m2 is true.
+
+Query not attacker(gtk[]) is true.
+
+Query not attacker(probe[]) is true.
+
+Query not event(StaSession(m,s,p)) is false.
+
+--------------------------------------------------------------
+

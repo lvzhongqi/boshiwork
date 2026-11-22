@@ -1,14 +1,19 @@
 # FILS 协议安全问题汇总（含 DoS 分析）
 
-- 日期：2026-11-05（初版）／**2026-11-14（全量复核更新）**
+- 日期：2026-11-05（初版）／**2026-11-14（全量复核更新）**／**2026-11-20（扩展目标）**
 - 范围：IEEE 802.11-2024 §12.11（FILS）中的 FILS PK（ANA=6）、FILS SK（ANA=4/5）、
   PMKSA 缓存、EAP-RP 接口、GTK rekey、status/失败处理、证书/原始公钥信任
 - 工具：ProVerif 2.05（`proverifcode/proverifbin2.05/proverif.exe`）
-- 模型目录：`wifi标准/proverifcode/`（主集 12 个 `.pv`；实现偏差/历史模型 12 个在 `archive/`）
+- 模型目录：`wifi标准/proverifcode/`（2026-11-14 主集 12 个 `.pv`；
+  2026-11-20 追加 6 个 FILS 扩展目标模型 + 2 个方法可移植性模型（4-way），见 §15；实现偏差/历史模型 12 个在 `archive/`）
 - 配套文档：
   - `FILS_VERIFICATION_SUMMARY.md`（逐模型结果与逐条结论）
   - `FILS_PK_证书与延迟认证分析.md`（证书/无证书/延迟认证专题）
   - `../FILS密钥重装攻击_2024标准分析.md`（KRACK / PTK 重装专题）
+  - `../FILS_扩展安全目标与攻击分析.md`（隐私/DoS/KRACK 扩展目标、论文与方法建议）
+  - `../论文/01_论文素材_现有工作.md`（论文可用的结论、表格、摘要草稿、表述红线）
+  - `../论文/02_实现核查清单与代码定位.md`（标准→实现关键点→代码位置→判定）
+  - `../论文/03_未来工作.md`（工作包、8 周计划、风险与降级）
   - 本文：把所有已分析出的问题按“合规残余风险 / 不合规实现 / 信任锚 / DoS”归类
 
 ## 本次更新（2026-11-14）
@@ -946,3 +951,103 @@ event ApReinstalls(ap,sess_1,PTK) at {77}    ← 重放命中
 
 主集 12/12 模型运行 OK，`stderr` 全 0，总耗时约 8 s
 （`FILS_SK.pv` 4.2 s、`FILS_PK.pv` 3.0 s、`FILS_KRACK_PTK_*` 各 0.1 s）。
+
+---
+
+## 15. 2026-11-20 扩展：隐私 / DoS / PTK 重装作为“新增安全目标”
+
+> 本节只追加，不修改 §7 的历史 12 模型表。基线模型（`FILS_SK.pv` /
+> `FILS_PK.pv`）仍然全 true；本节模型把标准未列出的三类目标写成查询，
+> 结果全部为“攻击可达”。详细论述见 `../FILS_扩展安全目标与攻击分析.md`。
+
+### 15.1 新增模型与结果
+
+| 模型 | 新增目标 | 结果 | 结论 |
+|---|---|---|---|
+| `FILS_SK_PRIVACY.pv` | 同一 PMKID 不跨会话 / 不跨 MAC | G-P1 false、G-P2 false；GTK/TK true | PMKID 可链接；MAC 随机化无效 |
+| `FILS_PK_PRIVACY.pv` | 同上 | 同上 | PK 缓存分支结论一致 |
+| `FILS_PRIVACY_EQUIV.pv` | 观察等价（同一设备 vs 两设备） | cannot be proved | 攻击者可区分；隐私目标失败 |
+| `FILS_DOS_M1M2.pv` | `ApWorkM1/M2 ==> StaStart`；三槽被同一伪造身份占满 | 两条 false；槽占满可达；诚实路径可达 | 未认证 M1/M2 工作可达，有限槽可耗尽 |
+| `FILS_KRACK_SK_bad.pv` | `ApReinstalls` 不可达 | false（可达） | SK 可 PTK 重装 |
+| `FILS_KRACK_SK_good.pv` | 同上 + Session 去重 | true；重放分支仍可达 | 去重修复有效 |
+| `FILS_KRACK_PTK_bad/good.pv` | 公钥分支（FILS PK） | bad false / good true | PK 同样 |
+
+### 15.2 关键理解：为什么“标准目标 true”与“攻击成立”不矛盾
+
+ProVerif 的查询集合就是安全目标的定义。基线模型的 22/17 条查询覆盖的是
+**机密性、认证、单射、PTK 一致性/唯一性**；它们不覆盖：
+
+- PMKID 的可观察性/可链接性（隐私）；
+- AP 在认证前做多少工作、能保持多少半开状态（可用性）；
+- 同一 PTK 被安装几次、PN 是否复位（密钥安装状态）。
+
+因此：
+
+- `not attacker(gtk)`、`StaFinish ==> ApFinish` 仍然 true；
+- 新增的 `StaSession(...) ==> ...`、`ApWork ==> StaStart`、
+  `not ApReinstalls` 为 false。
+
+这不是模型错误，而是**性质缺口**：标准目标集合本身不包含这三类性质。
+这也是论文最值得写的叙事——“FILS 的密码学目标成立，但隐私、可用性、
+密钥安装目标不成立”。
+
+### 15.3 输出语义提醒
+
+- `query event(E).` 在 ProVerif 中表示“E **不可达**”；结果为 `false`
+  表示 E **可达**（攻击成立）。
+- `query event(E) ==> event(F).` 结果为 `false` 表示存在 E 发生而 F
+  未发生的轨迹。
+- `query attacker(x).` 结果为 `true` 表示 x 保密；`false` 表示攻击者可得 x。
+- 裸事件合取查询会被 ProVerif 自动取反为 `not (E1 && E2 && ...)`；
+  结果为 `false` 表示合取可达。
+
+### 15.4 复现
+
+```powershell
+$exe = "C:\Users\10092\Desktop\boshiwork\wifi标准\proverifcode\proverifbin2.05\proverif.exe"
+$dir = "C:\Users\10092\Desktop\boshiwork\wifi标准\proverifcode"
+& $exe "$dir\FILS_SK_PRIVACY.pv"
+& $exe "$dir\FILS_PK_PRIVACY.pv"
+& $exe "$dir\FILS_PRIVACY_EQUIV.pv"
+& $exe "$dir\FILS_DOS_M1M2.pv"
+& $exe "$dir\FILS_KRACK_SK_bad.pv"
+& $exe "$dir\FILS_KRACK_SK_good.pv"
+& $exe "$dir\FILS_KRACK_PTK_bad.pv"
+& $exe "$dir\FILS_KRACK_PTK_good.pv"
+
+# 方法可移植性（4-way）：同一 PAW/KIS 模板的第二个协议实例
+& $exe "$dir\METHOD_4WAY_PAW_KIS_bad.pv"
+& $exe "$dir\METHOD_4WAY_PAW_KIS_good.pv"
+```
+
+### 15.5 注意事项
+
+- `FILS_SK_PRIVACY.pv` / `FILS_PK_PRIVACY.pv` 的链接性结论适用于
+  **同一 PMKSA 被复用**的场景；不同 AP 各自建立不同 PMKSA 时 PMKID
+  不同，不能直接跨 AP 关联。
+- `FILS_DOS_M1M2.pv` 只证明“未认证工作可达”和“有限槽可占满”，
+  不证明 AP 一定被打垮；实际影响取决于速率限制、超时、anti-clogging。
+- `FILS_KRACK_*` 只证明“重装事件可达”，PN 复位是协议后果；
+  ProVerif 无 PN 语义，定量计数器性质需 Tamarin/ASMETA 补充。
+
+### 15.6 方法可移植性：同一模板套到 WPA2 4-way
+
+§15.1 的 FILS 模型用的是“预认证工作量（PAW）+ 密钥安装状态（KIS）”两个事件模板。
+为了说明它不是 FILS 专用，本文用完全相同的查询形状建了 4-way 的两个模型：
+
+| 模型 | 目标 | 结果 |
+|---|---|---|
+| `METHOD_4WAY_PAW_KIS_bad.pv` | PAW：`StaWorkMsg2 ==> ApSentMsg1` | **false**（伪造 Msg1 可让 STA 算 PTK、回 Msg2） |
+|  | KIS-1：`StaReinstalls` 不可达 | **false**（重放 Msg3 重装 PTK） |
+|  | `ReplaySeen` 可达（非空验证） | 可达 |
+|  | `attacker(probe)` / `attacker(gtk)` | true / true |
+| `METHOD_4WAY_PAW_KIS_good.pv` | KIS-1：`StaReinstalls` 不可达 | **true**（按 `(ANonce,SNonce)` 去重） |
+|  | PAW：`StaWorkMsg2 ==> ApSentMsg1` | **false**（去重不修 PAW） |
+
+要点：
+
+- 两个目标**正交**：修好 KIS-1 不会让 PAW 变 true，因此必须分别验证；
+- 建模错误会被基线查询抓住：初版把 GTK 明文放进 Msg3，`attacker(gtk)` 立刻为 false，
+  改成 `enc((GTK, MIC), KEK)` 后才恢复 true；
+- 该模型只覆盖与 PAW/KIS 相关的消息，不替代 4-way 的完整分析
+  （Cremers et al., USENIX Security 2020）。

@@ -1,8 +1,13 @@
-param(
-  [string]$Pv = "C:\Users\10092\Desktop\boshiwork\wifi标准\proverifcode\proverifbin2.05\proverif.exe",
-  [string]$Dir = "C:\Users\10092\Desktop\boshiwork\wifi标准\proverifcode",
+﻿param(
+  [string]$Pv = "",
+  [string]$Dir = "",
   [int]$TimeoutSec = 600
 )
+# 默认值用脚本自身位置推导，避免在脚本里写死含中文的绝对路径
+# （Windows PowerShell 5.1 会把无 BOM 的 UTF-8 脚本按 ANSI 读取，导致路径乱码）。
+if (-not $Dir) { $Dir = $PSScriptRoot }
+if (-not $Pv)  { $Pv = Join-Path $Dir "proverifbin2.05\proverif.exe" }
+if (-not (Test-Path -LiteralPath $Pv)) { throw "proverif.exe not found: $Pv" }
 $report = Join-Path $Dir "REVERIFY_$(Get-Date -Format yyyyMMdd_HHmmss).txt"
 "# reverify report $(Get-Date -Format s)" | Out-File -FilePath $report -Encoding utf8
 $rows = @()

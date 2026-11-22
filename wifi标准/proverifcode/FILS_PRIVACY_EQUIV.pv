@@ -1,0 +1,34 @@
+(* =====================================================================
+   FILS PMKID 不可链接性（observational equivalence）—— 反例模型
+   目标（理想隐私性质）：
+     攻击者看到两次 FILS 接入的 (MAC, PMKID) 后，不能判断它们是
+     “同一设备的两次接入”还是“两个不同设备的接入”。
+   建模：
+     - 两个分支都使用新生成的 MAC（模拟 MAC 随机化），因此 MAC 本身
+       不提供链接信息；
+     - 分支 A（同一设备）：两次 PMKID 都是 pmkid1；
+     - 分支 B（不同设备）：第二次 PMKID 为 pmkid2；
+     - 用 choice 让 ProVerif 检查两分支是否观察等价。
+   结论（预期）：
+     Observational equivalence cannot be proved。
+     原因是 PMKID 在空口明文可见且对同一 PMKSA 保持不变；攻击者只需
+     比较两个 PMKID 是否相等，就能把两次接入关联到同一设备。
+     这与 FILS_SK_PRIVACY.pv / FILS_PK_PRIVACY.pv 的可达性结论一致。
+   ===================================================================== *)
+
+free c:channel.
+
+const pmkid1:bitstring.
+const pmkid2:bitstring.
+
+process
+  new mac1:bitstring;
+  new mac2:bitstring;
+  new sess1:bitstring;
+  new sess2:bitstring;
+
+  (* 第一次接入：PMKID 固定为 pmkid1 *)
+  out(c, (mac1, sess1, pmkid1));
+
+  (* 第二次接入：MAC/会话都是新的；PMKID 是否与第一次相同由 choice 决定 *)
+  out(c, (mac2, sess2, choice[pmkid1, pmkid2]))

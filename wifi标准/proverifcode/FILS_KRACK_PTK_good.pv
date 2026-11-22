@@ -1,5 +1,7 @@
 (* =====================================================================
    FILS PTK 密钥重装攻击（KRACK，AP 侧）—— good 版：按 FILS Session 去重
+   （本模型使用公钥签名 KeyAuth，对应 FILS PK / ANA=6；FILS SK 版本见
+     FILS_KRACK_SK_good.pv）
    IEEE 802.11-2024 参照：
      §12.11.2.6.2  KeyAuth / AAD（无重放计数器）
      §12.11.2.5.3  PTK = PRF-X(PMK, …, SNonce || ANonce)

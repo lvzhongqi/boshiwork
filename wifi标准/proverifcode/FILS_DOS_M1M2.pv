@@ -1,0 +1,167 @@
+(* =====================================================================
+   FILS 未认证 M1/M2 → AP 资源占用（DoS 前提）—— ProVerif 模型
+   依据 IEEE Std 802.11-2024 §12.11.2.4：
+     M1 = Authentication(Seq=1, gSTA, SNonce, Session, ...)
+     M2 = Authentication(Seq=2, gAP, ANonce, Session, ...)
+     M3/M4 = (Re)Association 中才做身份认证/密钥确认。
+   因此 AP 在收到 M1 后必须先做 DH、派生 PTK、分配状态并回 M2，
+   此时尚未验证对端身份。
+
+   本模型回答两个问题：
+     Q1  event(ApWorkM1/ApWorkM2) 是否一定对应一个真实 STA 的启动？
+         → 否（查询为 false）：攻击者可只发 M1，让 AP 工作而不完成 M3。
+     Q2  攻击者能否占满 AP 的有限会话槽？
+         → 是：3 个槽可同时被同一个伪造身份 sta_fake 的 M1 占用（裸事件查询输出 false = 合取可达）。
+
+   重要边界：
+     ProVerif 没有时间/CPU/内存语义，因此这里证明的是“未认证工作可达”
+     与“有限槽可被占满”，不是定量证明 AP 一定被打垮。实际影响取决于
+     速率限制、状态上限、超时与 anti-clogging 实现。
+
+   预期结果：
+     - ApWorkM1 ==> StaStart       false（未认证工作可达）
+     - ApWorkM2 ==> StaStart       false（未认证 M2 也可达）
+     - SlotBusy(slot_i, sta_fake) i=1..3   可达（三个槽可被同一伪造者占满）
+     - HonestDone                  可达（诚实路径非空，排除空模型）
+   ===================================================================== *)
+
+free c:channel.
+
+const ap:bitstring.
+const sta_honest:bitstring.
+const sta_fake:bitstring.
+const slot1:bitstring.
+const slot2:bitstring.
+const slot3:bitstring.
+
+const g:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const dh_valid:bitstring.
+const none:bitstring.
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+(* 只接受形如 g^x 的群元素 *)
+reduc forall x:bitstring; dh_ok(exp(g,x)) = dh_valid.
+
+fun hmac(bitstring,bitstring):bitstring.
+
+event StaStart(bitstring,bitstring,bitstring).
+event ApWorkM1(bitstring,bitstring,bitstring,bitstring).
+event ApWorkM2(bitstring,bitstring,bitstring,bitstring).
+event SlotBusy(bitstring,bitstring).
+event ApAuth(bitstring,bitstring,bitstring).
+event ApDone(bitstring,bitstring,bitstring,bitstring).
+event HonestDone(bitstring,bitstring,bitstring).
+
+(* Q1：M1 阶段的昂贵工作是否一定对应真实 STA 启动 *)
+query a:bitstring, s:bitstring, se:bitstring, sl:bitstring;
+  event(ApWorkM1(a,s,se,sl)) ==> event(StaStart(s,a,se)).
+
+(* Q1'：M2 阶段（DH/PTK/状态）是否一定对应真实 STA 启动 *)
+query a:bitstring, s:bitstring, se:bitstring, sl:bitstring;
+  event(ApWorkM2(a,s,se,sl)) ==> event(StaStart(s,a,se)).
+
+(* Q2：三个有限槽能否同时被未认证 M1 占用 *)
+query event(SlotBusy(slot1,sta_fake)) && event(SlotBusy(slot2,sta_fake)) && event(SlotBusy(slot3,sta_fake)).
+
+(* 非空性：诚实 STA 可以完成 *)
+query s:bitstring, a:bitstring, se:bitstring;
+  event(HonestDone(s,a,se)).
+
+(* 辅助：认证完成前一定做过 M1/M2 工作（说明攻击点在工作顺序） *)
+query a:bitstring, s:bitstring, se:bitstring, sl:bitstring;
+  event(ApAuth(a,s,se)) ==> event(ApWorkM2(a,s,se,sl)).
+
+(* =====================================================================
+   AP 槽：收到 M1 先做 DH/派生/回 M2，然后才等 M3 认证
+   ===================================================================== *)
+let ap_slot(slot:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, seqR:bitstring, dhR:bitstring,
+         gsR:bitstring, snR:bitstring, sessR:bitstring, rsneR:bitstring));
+  if apR = ap then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if dh_ok(gsR) = dh_valid then
+
+    (* 未认证工作 1：分配状态、校验群元素 *)
+    event ApWorkM1(ap, staR, sessR, slot);
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+
+    (* 未认证工作 2：DH + PTK 派生 + 生成 M2 *)
+    event ApWorkM2(ap, staR, sessR, slot);
+    event SlotBusy(slot, staR);
+    out(c, (ap, staR, seq2, st_ok, dhgrp, ga, snR, sessR, rsneR, an));
+
+    (* 槽在此保持占用，直到 M3 或超时；攻击者可以永远不发 M3 *)
+    in(c, (sta2R:bitstring, ap2R:bitstring, sess2R:bitstring, okR:bitstring));
+    if sta2R = staR then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if okR = hmac((gsR, ga, snR, an, sessR), dhss) then
+      event ApAuth(ap, staR, sessR);
+      event ApDone(ap, staR, sessR, slot).
+
+(* =====================================================================
+   诚实 STA：完整 M1..M3
+   ===================================================================== *)
+let honest(dummy:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  event StaStart(sta_honest, ap, sess);
+  out(c, (sta_honest, ap, seq1, dhgrp, gs, sn, sess, rsne));
+
+  in(c, (apR:bitstring, staR:bitstring, seqR:bitstring, stR:bitstring,
+         dhR:bitstring, gaR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, anR:bitstring));
+  if apR = ap then
+  if staR = sta_honest then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if dh_ok(gaR) = dh_valid then
+
+    let dhss = exp(gaR, sS) in
+    let ok = hmac((gs, gaR, sn, anR, sess), dhss) in
+    out(c, (sta_honest, ap, sess, ok));
+    event HonestDone(sta_honest, ap, sess).
+
+(* =====================================================================
+   伪造 STA：只发 M1，不发 M3；可无限复制
+   ===================================================================== *)
+let fake(dummy:bitstring) =
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+  out(c, (sta_fake, ap, seq1, dhgrp, gs, sn, sess, rsne)).
+
+(* =====================================================================
+   顶层：3 个有限槽 + 无限伪造者 + 诚实 STA
+   ===================================================================== *)
+process
+  ( ap_slot(slot1)
+    |
+    ap_slot(slot2)
+    |
+    ap_slot(slot3)
+    |
+    !fake(none)
+    |
+    !honest(none) )

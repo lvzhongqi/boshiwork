@@ -1,0 +1,72 @@
+Biprocess 0 (that is, the initial process):
+{1}new mac1: bitstring;
+{2}new mac2: bitstring;
+{3}new sess1: bitstring;
+{4}new sess2: bitstring;
+{5}out(c, (mac1,sess1,pmkid1));
+{6}out(c, (mac2,sess2,choice[pmkid1,pmkid2]))
+
+-- Observational equivalence in biprocess 0.
+Translating the process into Horn clauses...
+Termination warning: v ≠ v_1 && attacker2(v_2,v) && attacker2(v_2,v_1) -> bad
+Selecting 0
+Termination warning: v ≠ v_1 && attacker2(v,v_2) && attacker2(v_1,v_2) -> bad
+Selecting 0
+Completing...
+Termination warning: v ≠ v_1 && attacker2(v_2,v) && attacker2(v_2,v_1) -> bad
+Selecting 0
+Termination warning: v ≠ v_1 && attacker2(v,v_2) && attacker2(v_1,v_2) -> bad
+Selecting 0
+goal reachable: bad
+
+Derivation:
+
+1. Using the function pmkid2 the attacker may obtain pmkid2 (resp. pmkid2).
+attacker2(pmkid2,pmkid2).
+
+2. The message (mac2[],sess2[],pmkid1) (resp. (mac2[],sess2[],pmkid2)) may be sent to the attacker at output {6}.
+attacker2((mac2[],sess2[],pmkid1),(mac2[],sess2[],pmkid2)).
+
+3. By 2, the attacker may know (mac2[],sess2[],pmkid1) (resp. (mac2[],sess2[],pmkid2)).
+Using the function 3-proj-3-tuple the attacker may obtain pmkid1 (resp. pmkid2).
+attacker2(pmkid1,pmkid2).
+
+4. By 3, the attacker may know pmkid1 (resp. pmkid2).
+By 1, the attacker may know pmkid2 (resp. pmkid2).
+We have pmkid1 ≠ pmkid2.
+The attacker tests equality between the two terms he knows, which may allow it to distinguish cases.
+bad.
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new mac1: bitstring creating mac1_1 at {1}
+
+new mac2: bitstring creating mac2_1 at {2}
+
+new sess1: bitstring creating sess1_1 at {3}
+
+new sess2: bitstring creating sess2_1 at {4}
+
+out(c, (~M,~M_1,~M_2)) with ~M = mac1_1, ~M_1 = sess1_1, ~M_2 = pmkid1 at {5}
+
+out(c, (~M_3,~M_4,~M_5)) with ~M_3 = mac2_1, ~M_4 = sess2_1, ~M_5 = choice[pmkid1,pmkid2] at {6}
+
+The attacker tests whether
+~M_5 = choice[pmkid1,pmkid2]
+is equal to
+pmkid2.
+The result in the left-hand side is different from the result in the right-hand side.
+A trace has been found.
+RESULT Observational equivalence cannot be proved.
+Looking for simplified processes ...
+No simplified process found.
+
+--------------------------------------------------------------
+Verification summary:
+
+Observational equivalence cannot be proved.
+
+--------------------------------------------------------------
+

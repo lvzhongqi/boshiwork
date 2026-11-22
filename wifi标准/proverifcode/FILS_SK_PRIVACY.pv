@@ -1,0 +1,199 @@
+(* =====================================================================
+   FILS SK（ANA=5 + PMKSA caching）—— PMKID 链接性 / MAC 随机化失效
+   依据 IEEE Std 802.11-2024：
+     §12.11.2.3.2/.3  Auth Seq=1/2 中明文携带 PMKID
+     §12.11.2.5.2     PMKID = Truncate-128(Hash(EAP-Initiate/Reauth))
+     §12.11.2.5.2/.3  缓存 PMK 与 PTK 推导
+     §12.11.2.6.2/.3  (Re)Association KeyAuth（缓存分支用 ICK-HMAC）
+
+   目的（与既有机密性/认证模型互补）：
+     既有 FILS_SK.pv 证明的是“标准列出的安全目标”：
+       PMK/PTK/TK/GTK 保密、双向认证、单射、PTK 一致性/唯一性。
+     本模型把“隐私”作为**新增安全目标**：
+       G-P1  同一 PMKID 不得同时出现在两个不同会话（否则可链接）；
+       G-P2  同一 PMKID 不得同时对应两个不同 MAC（否则 MAC 随机化无效）。
+
+   结论（预期）：
+     G-P1 为 false：两个会话可共用同一 pmkid；
+     G-P2 为 false：两个会话可共用同一 pmkid 而 MAC 不同。
+     即：MAC 随机化只改变帧头地址，PMKID 仍是稳定伪标识，攻击者可
+     据此把两次接入关联到同一设备。这是“标准目标全 true”与“人工
+     发现隐私攻击”并不矛盾的原因——隐私不在标准目标集合里。
+
+   建模要点：
+     - 两个 STA 会话由 !sta(none) 无界复制产生，每次 new mac，模拟 MAC 随机化；
+     - AP 按 PMKID 查缓存（不按 MAC 查），因此同一 pmkid 可服务不同 MAC；
+     - PMK 是预置缓存条目（free private），对空口攻击者不可见；
+     - PMKID 在 M1/M2 中明文出现，攻击者可直接观察。
+   ===================================================================== *)
+
+free c:channel.
+
+const ap:bitstring.
+const g:bitstring.
+const aan5:bitstring.
+const seq1:bitstring.
+const seq2:bitstring.
+const st_ok:bitstring.
+const dhgrp:bitstring.
+const rsne:bitstring.
+const none:bitstring.
+
+const label_ptk:bitstring.
+const label_ick:bitstring.
+const label_kek:bitstring.
+const label_tk:bitstring.
+const label_data:bitstring.
+
+(* 预置 PMKSA 缓存：PMK 私有，PMKID 公开 *)
+free pmk:bitstring [private].
+const pmkid:bitstring.
+
+(* 机密性对照探针：证明本模型没有把密钥泄露给攻击者 *)
+free gtk:bitstring [private].
+free probe:bitstring [private].
+
+fun exp(bitstring,bitstring):bitstring.
+equation forall x:bitstring, y:bitstring;
+  exp(exp(g,x),y) = exp(exp(g,y),x).
+
+fun hmac(bitstring,bitstring):bitstring.
+fun kdf(bitstring,bitstring,bitstring):bitstring.
+fun some(bitstring):bitstring.
+
+fun aead(bitstring,bitstring):bitstring.
+reduc forall a:bitstring, p:bitstring, k:bitstring;
+  adec(aead((a,p),k), a, k) = p.
+
+(* 事件：MAC、会话、PMKID *)
+event StaSession(bitstring,bitstring,bitstring).
+event ApSession(bitstring,bitstring,bitstring,bitstring).
+event StaDone(bitstring,bitstring,bitstring).
+event ApDone(bitstring,bitstring,bitstring,bitstring).
+
+(* =====================================================================
+   隐私目标查询
+   ===================================================================== *)
+
+(* G-P1：同一 PMKID 出现在两个会话 ⇒ 两个会话必须是同一个 *)
+query m1:bitstring, s1:bitstring, m2:bitstring, s2:bitstring, p:bitstring;
+  event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p))
+  ==> s1 = s2.
+
+(* G-P2：同一 PMKID 出现在两个会话 ⇒ 两个 MAC 必须相同（MAC 随机化有效） *)
+query m1:bitstring, s1:bitstring, m2:bitstring, s2:bitstring, p:bitstring;
+  event(StaSession(m1,s1,p)) && event(StaSession(m2,s2,p))
+  ==> m1 = m2.
+
+(* 对照：即使可链接，PMK/GTK/TK 仍应保密（隐私与机密性是两个维度） *)
+query attacker(gtk).
+query attacker(probe).
+
+(* =====================================================================
+   STA：每次会话新 MAC（MAC 随机化）
+   ===================================================================== *)
+let sta(dummy:bitstring) =
+  new mac:bitstring;
+  new sn:bitstring;
+  new sS:bitstring;
+  let gs = exp(g,sS) in
+  new sess:bitstring;
+
+  (* M1：明文携带 PMKID *)
+  out(c, (mac, ap, aan5, seq1, dhgrp, gs, sn, sess, rsne,
+          some(pmkid), none));
+
+  (* M2 *)
+  in(c, (apR:bitstring, macR:bitstring, aanR:bitstring, seqR:bitstring,
+         stR:bitstring, dhR:bitstring, gaR:bitstring, snR:bitstring,
+         sessR:bitstring, rsneR:bitstring, anR:bitstring, pidR:bitstring));
+  if apR = ap then
+  if macR = mac then
+  if aanR = aan5 then
+  if seqR = seq2 then
+  if stR = st_ok then
+  if dhR = dhgrp then
+  if snR = sn then
+  if sessR = sess then
+  if rsneR = rsne then
+  if pidR = some(pmkid) then
+
+    let dhss = exp(gaR, sS) in
+    (* 缓存分支：PTK 上下文含 DHss *)
+    let ptk = kdf(pmk, label_ptk, (mac, ap, sn, anR, dhss)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    let ka = hmac(ick, (sn, anR, mac, ap, gs, gaR)) in
+    let aad = (mac, ap, sn, anR, sess, rsne) in
+    let ct = aead((aad, ka), kek) in
+
+    event StaSession(mac, sess, pmkid);
+    out(c, (mac, ap, sess, rsne, ct));
+
+    (* M4 *)
+    in(c, (ap2R:bitstring, mac2R:bitstring, sess2R:bitstring,
+           st2R:bitstring, rsne2R:bitstring, ct2R:bitstring));
+    if ap2R = ap then
+    if mac2R = mac then
+    if sess2R = sess then
+    if st2R = st_ok then
+    if rsne2R = rsne then
+
+      let aad2 = (ap, mac, anR, sn, sess, rsne) in
+      let pl2 = adec(ct2R, aad2, kek) in
+      let (kaAR:bitstring, gtkR:bitstring) = pl2 in
+      if kaAR = hmac(ick, (anR, sn, ap, mac, gaR, gs)) then
+        event StaDone(mac, ap, sess);
+        out(c, aead((label_data, probe), tk)).
+
+(* =====================================================================
+   AP：按 PMKID 查缓存，不按 MAC 查
+   ===================================================================== *)
+let ap_proc(dummy:bitstring) =
+  in(c, (macR:bitstring, apR:bitstring, aanR:bitstring, seqR:bitstring,
+         dhR:bitstring, gsR:bitstring, snR:bitstring, sessR:bitstring,
+         rsneR:bitstring, pidR:bitstring, wrR:bitstring));
+  if apR = ap then
+  if aanR = aan5 then
+  if seqR = seq1 then
+  if dhR = dhgrp then
+  if pidR = some(pmkid) then
+
+    new an:bitstring;
+    new sA:bitstring;
+    let ga = exp(g,sA) in
+    let dhss = exp(gsR, sA) in
+    let ptk = kdf(pmk, label_ptk, (macR, ap, snR, an, dhss)) in
+    let ick = kdf(ptk, label_ick, none) in
+    let kek = kdf(ptk, label_kek, none) in
+    let tk  = kdf(ptk, label_tk, none) in
+
+    event ApSession(ap, macR, sessR, pmkid);
+    out(c, (ap, macR, aan5, seq2, st_ok, dhgrp, ga, snR, sessR, rsneR,
+            an, some(pmkid)));
+
+    (* M3 *)
+    in(c, (mac2R:bitstring, ap2R:bitstring, sess2R:bitstring,
+           rsne2R:bitstring, ctR:bitstring));
+    if mac2R = macR then
+    if ap2R = ap then
+    if sess2R = sessR then
+    if rsne2R = rsneR then
+
+      let aad = (macR, ap, snR, an, sessR, rsneR) in
+      let kaR = adec(ctR, aad, kek) in
+      if kaR = hmac(ick, (snR, an, macR, ap, gsR, ga)) then
+        event ApDone(ap, macR, sessR, pmkid);
+
+        let kaap = hmac(ick, (an, snR, ap, macR, ga, gsR)) in
+        let aad2 = (ap, macR, an, snR, sessR, rsneR) in
+        let ct2 = aead((aad2, (kaap, gtk)), kek) in
+        out(c, (ap, macR, sessR, st_ok, rsneR, ct2)).
+
+(* =====================================================================
+   顶层：STA 可无界复制（每次新 MAC），AP 也可处理多个并发会话
+   ===================================================================== *)
+process
+  ( !sta(none) | !ap_proc(none) )

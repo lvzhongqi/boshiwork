@@ -1,0 +1,151 @@
+(* =====================================================================
+   PAW-KI 方法的第二个实例：WPA2 4-way handshake（AP 侧 + STA 侧）
+   —— bad 版（无去重）
+
+   用途：证明“预认证工作量（PAW）+ 密钥安装状态（KIS）”不是 FILS 专用，
+   而是同一组事件与查询可以搬到别的 802.11 密钥建立协议上。
+   本文件只保留与两类目标相关的消息，不重复 4-way 的完整密码学分析
+   （完整分析见 Cremers et al., USENIX Security 2020）。
+
+   协议（简化）：
+     Msg1  AP -> STA : ANonce                      （无 MIC，可被伪造）
+     Msg2  STA -> AP : SNonce, MIC_KCK(ANonce,SNonce)
+     Msg3  AP -> STA : ANonce, GTK, MIC_KCK(SNonce,ANonce,GTK)
+     Msg4  STA -> AP : MIC_KCK(...)
+     PTK = PRF(PMK, ANonce, SNonce),  KCK = HMAC(PTK, label_kck)
+
+   两个目标：
+     PAW  event(StaWorkMsg2(...)) ==> event(ApSentMsg1(...))
+          → false：攻击者可自造 ANonce 的 Msg1，让 STA 做 PRF/分配状态/回 Msg2，
+            而 AP 从未发送过该 Msg1。这就是 4-way 的“Msg1 泛洪/伪造”面。
+     KIS  event(StaReinstalls(...)) 不可达
+          → false：重放 Msg3 会让 STA 再次安装同一把 PTK（KRACK 客户端侧）。
+     基线 attacker(ptk)/attacker(gtk) → true：重装不泄露密钥。
+
+   预期（bad）：
+     PAW 查询 false；StaReinstalls 可达（输出 false）；
+     ReplaySeen 可达（非空验证）；PTK/GTK 保密 true；HonestDone 可达。
+   ===================================================================== *)
+
+free c:channel.
+
+const ap:bitstring.
+const sta:bitstring.
+const none:bitstring.
+
+const label_kck:bitstring.
+const label_kek:bitstring.
+const label_data:bitstring.
+
+free pmk:bitstring [private].
+free gtk:bitstring [private].
+free probe:bitstring [private].
+
+fun hmac(bitstring,bitstring):bitstring.
+fun prf(bitstring,bitstring,bitstring):bitstring.
+
+fun enc(bitstring,bitstring):bitstring.
+reduc forall m:bitstring, k:bitstring; dec(enc(m,k),k) = m.
+
+event ApSentMsg1(bitstring,bitstring,bitstring).      (* ap, sta, anonce *)
+event StaWorkMsg2(bitstring,bitstring,bitstring,bitstring). (* sta, ap, anonce, ptk *)
+event ApAuth(bitstring,bitstring,bitstring).          (* ap, sta, anonce *)
+event StaInstalls(bitstring,bitstring,bitstring,bitstring). (* sta, ap, anonce, ptk *)
+event StaReinstalls(bitstring,bitstring,bitstring,bitstring).
+event ReplaySeen(bitstring,bitstring,bitstring).
+event HonestDone(bitstring,bitstring,bitstring).
+
+(* PAW-1：STA 的 Msg2 工作是否一定对应 AP 真的发过 Msg1 *)
+query s:bitstring, a:bitstring, an:bitstring, k:bitstring;
+  event(StaWorkMsg2(s,a,an,k)) ==> event(ApSentMsg1(a,s,an)).
+
+(* KIS-1：同一 (STA, ANonce, PTK) 不应被安装两次 *)
+query s:bitstring, a:bitstring, an:bitstring, k:bitstring;
+  event(StaReinstalls(s,a,an,k)).
+
+(* 非空性：重放分支确实可达 *)
+query s:bitstring, a:bitstring, an:bitstring;
+  event(ReplaySeen(s,a,an)).
+
+(* 基线：重装不泄露密钥 *)
+query attacker(probe).
+query attacker(gtk).
+
+(* 非空性：诚实路径可达 *)
+query s:bitstring, a:bitstring, an:bitstring;
+  event(HonestDone(s,a,an)).
+
+(* =====================================================================
+   STA：Msg1 → Msg2 → 等 Msg3 → 装钥 → Msg4 → 再等 Msg3（可被重放）
+   ===================================================================== *)
+let sta_proc(dummy:bitstring) =
+  in(c, (staR:bitstring, apR:bitstring, anR:bitstring));
+  if staR = sta then
+  if apR = ap then
+
+    new sn:bitstring;
+    let ptk = prf(pmk, anR, sn) in
+    let kck = hmac(ptk, label_kck) in
+    let kek = hmac(ptk, label_kek) in
+    let mic2 = hmac(kck, (anR, sn)) in
+
+    (* STA 在 AP 未认证的情况下就算 PTK、分配状态、回 Msg2 *)
+    event StaWorkMsg2(sta, ap, anR, ptk);
+    out(c, (sta, ap, sn, mic2));
+
+    in(c, (ap3R:bitstring, sta3R:bitstring, sn3R:bitstring, an3R:bitstring,
+           ct3R:bitstring));
+    if ap3R = ap then
+    if sta3R = sta then
+    if sn3R = sn then
+    if an3R = anR then
+
+      let (gtk3R:bitstring, mic3R:bitstring) = dec(ct3R, kek) in
+      if mic3R = hmac(kck, (sn, anR, gtk3R)) then
+
+        (* 第一次装钥 *)
+        event StaInstalls(sta, ap, anR, ptk);
+        out(c, hmac(kck, (anR, sn, label_data)));
+        event HonestDone(sta, ap, anR);
+
+        (* 攻击者原样重放同一条 Msg3（同一密文） *)
+        in(c, (ap4R:bitstring, sta4R:bitstring, sn4R:bitstring, an4R:bitstring,
+               ct4R:bitstring));
+        if ap4R = ap then
+        if sta4R = sta then
+        if sn4R = sn then
+        if an4R = anR then
+        if ct4R = ct3R then
+
+          event ReplaySeen(sta, ap, anR);
+
+          (* 无去重：再次安装同一把 PTK（KRACK 客户端侧重装） *)
+          event StaInstalls(sta, ap, anR, ptk);
+          event StaReinstalls(sta, ap, anR, ptk);
+          out(c, hmac(kck, (anR, sn, label_data))).
+
+(* =====================================================================
+   AP：发 Msg1（无 MIC）→ 收 Msg2 验证 MIC → 发 Msg3
+   ===================================================================== *)
+let ap_proc(dummy:bitstring) =
+  new an:bitstring;
+  out(c, (sta, ap, an));
+  event ApSentMsg1(ap, sta, an);
+
+  in(c, (sta2R:bitstring, ap2R:bitstring, sn2R:bitstring, mic2R:bitstring));
+  if sta2R = sta then
+  if ap2R = ap then
+
+    let ptk = prf(pmk, an, sn2R) in
+    let kck = hmac(ptk, label_kck) in
+    let kek = hmac(ptk, label_kek) in
+    if mic2R = hmac(kck, (an, sn2R)) then
+      event ApAuth(ap, sta, an);
+      let mic3 = hmac(kck, (sn2R, an, gtk)) in
+      out(c, (ap, sta, sn2R, an, enc((gtk, mic3), kek))).
+
+(* =====================================================================
+   顶层：一个 AP 会话 + 无限 STA 会话
+   ===================================================================== *)
+process
+  ( ap_proc(none) | !sta_proc(none) )
